@@ -10,7 +10,10 @@ const char * USE_KBEMACHINED = 0;
 
 struct Bundle;
 struct Channel;
-
+struct Bundle;
+struct Packet;
+struct Nub;
+struct Messages;
 struct NetworkInterface
 {
 	typedef std::map<ACE_INET_Addr, Channel*>	ChannelMap;

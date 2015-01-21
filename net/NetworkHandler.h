@@ -4,9 +4,11 @@
 #include "ace\Event_Handler.h"
 #include "ace/SOCK_Stream.h"
 #include "net_common.h"
+#include "net\Nub.h"
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
+struct NetworkInterface;
 struct Channel;
 struct Message;
 
@@ -16,7 +18,23 @@ struct Message;
  */
 struct TCP_SOCK_Handler : public ACE_Event_Handler
 {
+	ChannelScope channelScope_;
+	NetworkInterface* networkInterface_;
 	ACE_SOCK_Stream sock_;
+
+	TCP_SOCK_Handler(ChannelScope channelScope, NetworkInterface* networkInterface) :
+		channelScope_(channelScope),
+		networkInterface_(networkInterface),
+		sock_()
+	{
+	}
+	~TCP_SOCK_Handler() { }
+
+	virtual int handleInputNotification(int fd)
+	{
+	
+	}
+	Nub* dispatcher();
 
 	//FUZZ: disable check_for_lack_ACE_OS
 	int open(void);
