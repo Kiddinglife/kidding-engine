@@ -32,7 +32,7 @@ struct TCP_SOCK_Handler : public ACE_Event_Handler
 
 	virtual int handleInputNotification(int fd)
 	{
-	
+
 	}
 	Nub* dispatcher();
 
