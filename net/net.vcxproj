@@ -116,6 +116,7 @@
     <ClCompile Include="FixedMessages.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="NetStats.cpp" />
+    <ClCompile Include="NetworkHandler.cpp" />
     <ClCompile Include="NetworkInterface.cpp" />
     <ClCompile Include="net_common.cpp" />
     <ClCompile Include="Nub.cpp" />

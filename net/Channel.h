@@ -99,7 +99,7 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	ACE_UINT32						      lastTickBytesReceived_;
 
 	Channel();
-	Channel(NetworkInterface& networkInterface, const ACE_SOCK_IO* endpoint,
+	Channel(NetworkInterface* networkInterface, ACE_SOCK_IO* endpoint,
 		ChannelScope traits, ProtocolType pt = PROTOCOL_TCP,
 		/*PacketFilterPtr pFilter = NULL,*/ ChannelID id = CHANNEL_ID_NULL);
 	virtual ~Channel();
