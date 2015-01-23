@@ -83,7 +83,7 @@ struct TCP_Acceptor_Handler : public ACE_Event_Handler
 	inline int open(const ACE_INET_Addr &listen_addr);
 
 	// Get this handler's I/O handle.
-	virtual ACE_HANDLE get_handle(void) const { return this->acceptor_.get_handle(); }
+	virtual ACE_HANDLE get_handle(void) const { return this->acceptor_->get_handle(); }
 
 	// Called when a connection is ready to accept.
 	virtual int handle_input(ACE_HANDLE fd = ACE_INVALID_HANDLE);

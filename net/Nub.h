@@ -18,7 +18,7 @@ class EventPoller;
 class Task;
 class Tasks;
 
-class Nub
+struct Nub
 {
 	public:
 	ACE_Reactor* rec;

@@ -62,6 +62,7 @@ struct NetworkInterface
 		ACE_UINT32 intwbuffer = 0);
 
 	~NetworkInterface();
+
 };
 
 NETWORK_NAMESPACE_END_DECL
