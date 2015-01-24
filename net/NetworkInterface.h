@@ -62,7 +62,7 @@ struct NetworkInterface
 		ACE_UINT32 intwbuffer = 0);
 
 	~NetworkInterface();
-
+	bool get_ip_addr_str(const char* src, char* dest);
 };
 
 NETWORK_NAMESPACE_END_DECL

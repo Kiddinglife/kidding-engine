@@ -5,13 +5,10 @@
 #include "ace\Event_Handler.h"
 #include "ace/SOCK_Stream.h"
 #include "ace/SOCK_Acceptor.h"
-#include "net/Channel.h"
+#include "Channel.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
-
-struct NetworkInterface;
-struct Message;
 
 /**
  * @Brief
@@ -38,6 +35,7 @@ struct TCP_SOCK_Handler : public ACE_Event_Handler
 	virtual int handle_close(ACE_HANDLE handle,
 		ACE_Reactor_Mask close_mask);
 };
+
 struct UDP_SOCK_Handler : public ACE_Event_Handler
 {
 	ACE_SOCK_Dgram sock_;
@@ -67,11 +65,11 @@ struct UDP_SOCK_Handler : public ACE_Event_Handler
  */
 struct TCP_Acceptor_Handler : public ACE_Event_Handler
 {
-	ChannelScope channelScope_;
+	Channel::ChannelScope channelScope_;
 	NetworkInterface* networkInterface_;
 	ACE_SOCK_Acceptor* acceptor_;
 
-	TCP_Acceptor_Handler(ChannelScope channelScope, ACE_SOCK_Acceptor* acceptor, NetworkInterface* networkInterface) :
+	TCP_Acceptor_Handler(Channel::ChannelScope channelScope, ACE_SOCK_Acceptor* acceptor, NetworkInterface* networkInterface) :
 		channelScope_(channelScope),
 		networkInterface_(networkInterface),
 		acceptor_(acceptor)
