@@ -60,15 +60,15 @@ struct NetStats
 	/**
 	 * @Brief
 	 * 该方法会更新该消息的stats，之后会调用所有的回掉函数来记录相关的网络数据
-	 * This method eill update the stats of the msg and then call all callbacks to 
+	 * This method eill update the stats of the msg and then call all callbacks to
 	 * record the related network stats.
 	 * /n
-	 * @para OPTION op  
+	 * @para OPTION op
 	 * is this sent msg or received msg 发送的消息还是接受的消息
-	 * @para Message* msg 
+	 * @para Message* msg
 	 * msg pointer 消息指针
-	 * @para ACE_UINT32 size 
-	 * the length of this msg including all fields in it 
+	 * @para ACE_UINT32 size
+	 * the length of this msg including all fields in it
 	 * 该消息的总长度包括包含所有的域
 	 * /n
 	 * @ret void

@@ -76,5 +76,14 @@ int TCP_SOCK_Handler::handle_close(ACE_HANDLE, ACE_Reactor_Mask mask)
 	pool->Dtor(this);
 	return 0;
 }
+int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)
+{
+	return 0;
+}
+
+int TCP_SOCK_Handler::handle_output(ACE_HANDLE fd)
+{
+	return 0;
+}
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

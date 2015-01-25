@@ -9,7 +9,7 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
 const int RECV_BUFFER_SIZE = 16 * 1024 * 1024; // 16MB
-const char * USE_KBEMACHINED = "kbemachine";;
+const char* const USE_KBEMACHINED = "kbemachine";
 
 struct Bundle;
 struct Channel;
@@ -20,6 +20,7 @@ struct Packet;
 struct Nub;
 struct Messages;
 struct TCP_Acceptor_Handler;
+struct DelayedChannelHandlers;
 
 struct NetworkInterface
 {
@@ -42,7 +43,7 @@ struct NetworkInterface
 	TCP_Acceptor_Handler*                                    pExtListenerReceiver_;
 	TCP_Acceptor_Handler*                                    pIntListenerReceiver_;
 
-	DelayedChannels * 						                    pDelayedChannels_;
+	DelayedChannelHandlers* 						        pDelayedChannels_;
 	/// 超时的通道可被这个句柄捕捉， 例如告知上层client断开
 	ChannelTimeOutHandler*					                pChannelTimeOutHandler_;
 	ChannelDeregisterHandler*				                pChannelDeregisterHandler_;
@@ -50,19 +51,42 @@ struct NetworkInterface
 	const bool								                        isExternal_;
 	ACE_INT32									                    numExtChannels_;
 
-	NetworkInterface(Nub* pDispatcher,
-		ACE_INT32 extlisteningPort_min = -1,
-		ACE_INT32 extlisteningPort_max = -1,
-		const char * extlisteningInterface = "NONE",
-		ACE_UINT32 extrbuffer = 0,
-		ACE_UINT32 extwbuffer = 0,
-		ACE_INT32 intlisteningPort = 0,
-		const char * intlisteningInterface = "NONE",
-		ACE_UINT32 intrbuffer = 0,
-		ACE_UINT32 intwbuffer = 0);
+	NetworkInterface(
+		Nub*              pDispatcher = NULL,
+		ACE_INT32     extlisteningPort_min = -1,
+		ACE_INT32     extlisteningPort_max = -1,
+		const char *    extlisteningInterface = "NONE",
+		ACE_UINT32   extrbuffer = 0,
+		ACE_UINT32   extwbuffer = 0,
+		ACE_INT32      intlisteningPort = 0,
+		const char *    intlisteningInterface = "NONE",
+		ACE_UINT32   intrbuffer = 0,
+		ACE_UINT32   intwbuffer = 0);
 
 	~NetworkInterface();
-	bool get_ip_addr_str(const char* src, char* dest);
+
+	/**
+	* This method will extacrt the host or domain name and ip adress based on the given string
+	*
+	* @param {in} spec host name or ip adress or domain name
+	* such as hostname: eth0, IP addr: 192.168.2.4 or 192.168.2.4/24,domain name: www.domain.com
+	*
+	* @param {out} host name or domain name
+	* @param {out} unsigned long IP addr in network byte order
+	* @ret bool true if success false if fail
+	*
+	* @responsibility the caller needs to ensure @param spec like ip addr host name  does exist
+	*
+	* gethostbyname()
+	* return ip adrr given host name or domain name
+	* 通过域名或者主机命返回IP地址. 传进去的参数是一个域名或者主机名.
+	* 返回值是一个Hostent指针结构.(如传进去的是一个空字符串,那么返回的是本机的主机名与IP地址)
+	*
+	* gethostname()
+	* get host name or domain name
+	* 得到本机主机名或者域名.有两个参数,一个是用来存放主机名或者域名的变量,一个是缓冲区的大小.
+	*/
+	bool get_net_interface_info(const char* spec, char* name, unsigned long& addr);
 };
 
 NETWORK_NAMESPACE_END_DECL

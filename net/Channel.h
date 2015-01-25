@@ -4,9 +4,6 @@
 #include "ace\pre.h"
 #include "ace\Refcounted_Auto_Ptr.h"
 #include "common\ace_object_pool.h"
-//#include "NetworkHandler.h"
-#include "Nub.h"
-#include "Packet.h"
 #include "Bundle.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
@@ -95,11 +92,14 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	ACE_UINT32						      numBytesReceived_;
 	ACE_UINT32						      lastTickBytesReceived_;
 
-	Channel();
-	Channel(NetworkInterface* networkInterface, ACE_SOCK_IO* endpoint,
-		ChannelScope traits, ProtocolType pt = PROTOCOL_TCP,
-		/*PacketFilterPtr pFilter = NULL,*/ ChannelID id = CHANNEL_ID_NULL);
-	virtual ~Channel();
+	Channel(NetworkInterface* networkInterface = NULL,
+		ACE_SOCK_IO* endpoint = NULL,
+		ChannelScope traits = EXTERNAL,
+		ProtocolType pt = PROTOCOL_TCP,
+		PacketFilterPtr pFilter = PacketFilterPtr(),
+		ChannelID id = CHANNEL_ID_NULL);
+
+	virtual ~Channel() { }
 };
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

@@ -5,6 +5,7 @@
 #include "ace\Event_Handler.h"
 #include "ace/SOCK_Stream.h"
 #include "ace/SOCK_Acceptor.h"
+#include "ace\Reactor.h"
 #include "Channel.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL

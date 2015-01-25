@@ -6,11 +6,11 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-class DelayedChannelHandler
+class DelayedChannelHandlers
 {
 	public:
-	DelayedChannelHandler();
-	~DelayedChannelHandler();
+	DelayedChannelHandlers();
+	~DelayedChannelHandlers();
 };
 
 NETWORK_NAMESPACE_END_DECL

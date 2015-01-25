@@ -2,12 +2,12 @@
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
-DelayedChannelHandler::DelayedChannelHandler()
+DelayedChannelHandlers::DelayedChannelHandlers()
 {
 }
 
 
-DelayedChannelHandler::~DelayedChannelHandler()
+DelayedChannelHandlers::~DelayedChannelHandlers()
 {
 }
 NETWORK_NAMESPACE_END_DECL

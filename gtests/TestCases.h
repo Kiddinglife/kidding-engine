@@ -1035,3 +1035,29 @@ TEST(BundleTest, write_variable_msg)
 	p->clear();
 	pool->Dtor(p);
 }
+
+#include "net\NetworkInterface.h"
+TEST(NetworkInterfaceTest, get_ip_addr_str)
+{
+	Nub              pDispatcher;
+	ACE_INT32     extlisteningPort_min = 10000;
+	ACE_INT32     extlisteningPort_max = 10005;
+	const char *    extlisteningInterface = "eth0"; /*"127.0.0.1/24";*/
+	ACE_UINT32   extrbuffer = 0;
+	ACE_UINT32   extwbuffer = 0;
+	ACE_INT32      intlisteningPort = 0;
+	const char *    intlisteningInterface = "NONE";
+	ACE_UINT32   intrbuffer = 0;
+	ACE_UINT32   intwbuffer = 0;
+
+	NetworkInterface in(&pDispatcher,
+		extlisteningPort_min,
+		extlisteningPort_max,
+		extlisteningInterface,
+		extrbuffer,
+		extwbuffer,
+		intlisteningPort,
+		intlisteningInterface,
+		intrbuffer,
+		intwbuffer);
+}
