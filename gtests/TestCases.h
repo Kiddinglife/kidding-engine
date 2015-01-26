@@ -1042,7 +1042,10 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	Nub              pDispatcher;
 	ACE_INT32     extlisteningPort_min = 10000;
 	ACE_INT32     extlisteningPort_max = 10005;
-	const char *    extlisteningInterface = "eth0"; /*"127.0.0.1/24";*/
+	//const char *    extlisteningInterface = "192.168.2.47";
+	//const char *    extlisteningInterface = "";
+	//const char *    extlisteningInterface = "127.0.0.1";
+	const char *    extlisteningInterface = USE_KBEMACHINED;
 	ACE_UINT32   extrbuffer = 0;
 	ACE_UINT32   extwbuffer = 0;
 	ACE_INT32      intlisteningPort = 0;
@@ -1061,3 +1064,9 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 		intrbuffer,
 		intwbuffer);
 }
+
+//#include "network/endpoint.h"
+//TEST(KBEENPOINTTEST, findinterfaceaddr)
+//{
+//	KBEngine::Network::EndPoint ep(2);
+//}

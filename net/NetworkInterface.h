@@ -53,12 +53,12 @@ struct NetworkInterface
 
 	NetworkInterface(
 		Nub*              pDispatcher = NULL,
-		ACE_INT32     extlisteningPort_min = -1,
-		ACE_INT32     extlisteningPort_max = -1,
+		ACE_INT16     extlisteningPort_min = -1,
+		ACE_INT16     extlisteningPort_max = -1,
 		const char *    extlisteningInterface = "NONE",
 		ACE_UINT32   extrbuffer = 0,
 		ACE_UINT32   extwbuffer = 0,
-		ACE_INT32      intlisteningPort = 0,
+		ACE_INT16      intlisteningPort = 0,
 		const char *    intlisteningInterface = "NONE",
 		ACE_UINT32   intrbuffer = 0,
 		ACE_UINT32   intwbuffer = 0);
@@ -68,11 +68,9 @@ struct NetworkInterface
 	/**
 	* This method will extacrt the host or domain name and ip adress based on the given string
 	*
-	* @param {in} spec host name or ip adress or domain name
-	* such as hostname: eth0, IP addr: 192.168.2.4 or 192.168.2.4/24,domain name: www.domain.com
+	* @param {in} spec ip address string such as 192.168.2.5 127.0.0.1 and so on
 	*
-	* @param {out} host name or domain name
-	* @param {out} unsigned long IP addr in network byte order
+	* @param {out} host name or domain name such as localhost or eth0
 	* @ret bool true if success false if fail
 	*
 	* @responsibility the caller needs to ensure @param spec like ip addr host name  does exist
@@ -86,7 +84,7 @@ struct NetworkInterface
 	* get host name or domain name
 	* 得到本机主机名或者域名.有两个参数,一个是用来存放主机名或者域名的变量,一个是缓冲区的大小.
 	*/
-	bool get_net_interface_info(const char* spec, char* name, unsigned long& addr);
+	bool is_ip_addr_valid(const char* spec, char* name);
 };
 
 NETWORK_NAMESPACE_END_DECL
