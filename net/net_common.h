@@ -284,7 +284,7 @@ inline int setnodelay(bool nodelay, ACE_SOCK& mSockIO)
 }
 inline int setbuffersize(int optname, int size, ACE_SOCK& mSockIO)
 {
-	return mSockIO.set_option(SOL_SOCKET, optname, (const char*) &size, sizeof(size));
+	return mSockIO.set_option(SOL_SOCKET, optname, &size, sizeof(size));
 }
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

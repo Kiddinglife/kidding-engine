@@ -86,11 +86,6 @@ int TCP_SOCK_Handler::handle_output(ACE_HANDLE fd)
 	return 0;
 }
 
-int UDP_SOCK_Handler::open(void)
-{
-	return 0;
-}
-
 // Called when input is available from the client.
 int UDP_SOCK_Handler::handle_input(ACE_HANDLE fd)
 {

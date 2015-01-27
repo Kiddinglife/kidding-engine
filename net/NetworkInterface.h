@@ -20,6 +20,7 @@ struct Packet;
 struct Nub;
 struct Messages;
 struct TCP_Acceptor_Handler;
+struct UDP_SOCK_Handler;
 struct DelayedChannelHandlers;
 
 struct NetworkInterface
@@ -41,7 +42,7 @@ struct NetworkInterface
 
 	/// 
 	TCP_Acceptor_Handler*                                    pExtListenerReceiver_;
-	TCP_Acceptor_Handler*                                    pIntListenerReceiver_;
+	UDP_SOCK_Handler*                                        pIntListenerReceiver_;
 
 	DelayedChannelHandlers* 						        pDelayedChannels_;
 	/// 超时的通道可被这个句柄捕捉， 例如告知上层client断开
@@ -53,8 +54,8 @@ struct NetworkInterface
 
 	NetworkInterface(
 		Nub*              pDispatcher = NULL,
-		ACE_INT16     extlisteningPort_min = -1,
-		ACE_INT16     extlisteningPort_max = -1,
+		ACE_INT16     extlisteningPort_min = 0,
+		ACE_INT16     extlisteningPort_max = 0,
 		const char *    extlisteningInterface = "NONE",
 		ACE_UINT32   extrbuffer = 0,
 		ACE_UINT32   extwbuffer = 0,
@@ -85,7 +86,6 @@ struct NetworkInterface
 	* 得到本机主机名或者域名.有两个参数,一个是用来存放主机名或者域名的变量,一个是缓冲区的大小.
 	*/
 	bool is_ip_addr_valid(const char* spec, char* name);
-
 };
 
 NETWORK_NAMESPACE_END_DECL

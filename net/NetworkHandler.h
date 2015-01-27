@@ -18,7 +18,18 @@ NETWORK_NAMESPACE_BEGIN_DECL
  */
 struct TCP_SOCK_Handler : public ACE_Event_Handler
 {
+	Channel::ChannelScope channelScope_;
+	NetworkInterface* networkInterface_;
 	ACE_SOCK_Stream sock_;
+
+	TCP_SOCK_Handler(Channel::ChannelScope channelScope = Channel::ChannelScope::EXTERNAL,
+		NetworkInterface* networkInterface = NULL) :
+		ACE_Event_Handler(),
+		channelScope_(channelScope),
+		networkInterface_(networkInterface),
+		sock_()
+	{
+	}
 
 	int open(void);
 
@@ -39,11 +50,19 @@ struct TCP_SOCK_Handler : public ACE_Event_Handler
 
 struct UDP_SOCK_Handler : public ACE_Event_Handler
 {
+	Channel::ChannelScope channelScope_;
+	NetworkInterface* networkInterface_;
 	ACE_SOCK_Dgram sock_;
 
-	//FUZZ: disable check_for_lack_ACE_OS
-	int open(void);
-	//FUZZ: enable check_for_lack_ACE_OS
+	UDP_SOCK_Handler(ACE_INET_Addr& addr,
+		Channel::ChannelScope channelScope = Channel::ChannelScope::INTERNAL,
+		NetworkInterface* networkInterface = NULL) :
+		ACE_Event_Handler(),
+		channelScope_(channelScope),
+		networkInterface_(networkInterface),
+		sock_(addr)
+	{
+	}
 
 	// Get this handler's I/O handle.
 	virtual ACE_HANDLE get_handle(void) const
@@ -70,7 +89,9 @@ struct TCP_Acceptor_Handler : public ACE_Event_Handler
 	NetworkInterface* networkInterface_;
 	ACE_SOCK_Acceptor acceptor_;
 
-	TCP_Acceptor_Handler(Channel::ChannelScope channelScope, NetworkInterface* networkInterface) :
+	TCP_Acceptor_Handler(Channel::ChannelScope channelScope = Channel::ChannelScope::EXTERNAL,
+		NetworkInterface* networkInterface = NULL) :
+		ACE_Event_Handler(),
 		channelScope_(channelScope),
 		networkInterface_(networkInterface),
 		acceptor_()

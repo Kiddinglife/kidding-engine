@@ -31,11 +31,14 @@ pChannelDeregisterHandler_(NULL),
 isExternal_(extlisteningPort_min != -1),
 numExtChannels_(0)
 {
+	/// first listen on external interface
 	if( isExternal_ )
 	{
+		ACE_DEBUG(( LM_DEBUG, "D::NetworkInterface::setup external interface\n" ));
 		pExtListenerReceiver_ = new TCP_Acceptor_Handler(
 			Channel::ChannelScope::EXTERNAL, this);
 		pExtListenerReceiver_->reactor(nub_->rec);
+		char* pEndPointName = "External";
 
 		/// if extlisteningInterface is null, we need ask KBEMachined for ip adress
 		if( ( extlisteningInterface == NULL || extlisteningInterface[0] == 0 ) )
@@ -43,7 +46,7 @@ numExtChannels_(0)
 			ACE_DEBUG(( LM_WARNING,
 				"NetworkInterface::@if1::Couldn't parse interface spec '{%s, %s}'"
 				"will use wild interface\n",
-				"External", "empty ip addr" ));
+				pEndPointName, "empty ip addr" ));
 		} else if( !strcmp(extlisteningInterface, USE_KBEMACHINED) )
 		{
 			ACE_DEBUG(( LM_INFO,
@@ -86,26 +89,77 @@ numExtChannels_(0)
 
 				if( !found_port )
 					ACE_ERROR(( LM_ERROR,
-					"NetworkInterface::recreateListeningSocket({ }) : "
-					"Couldn't bind the socket to {%s}:{%s}:{%d}\n",
-					"External", extlisteningInterface, listen_port ));
+					"NetworkInterface::Couldn't listen on {%s}:{%s}:{%d}\n",
+					pEndPointName, extlisteningInterface, listen_port ));
 				else
 					ACE_DEBUG(( LM_INFO,
 					"NetworkInterface::listen on interface {%s, %s, %s, %d}\n",
-					"External", ifname, extlisteningInterface, listen_port ));
-					
+					pEndPointName, ifname, extlisteningInterface, listen_port ));
+
 				///Setup socket options
 				setnonblocking(true, pExtListenerReceiver_->acceptor_);
 				setnodelay(true, pExtListenerReceiver_->acceptor_);
 				if( extrbuffer > 0 )
 				{
-					
+					setbuffersize(SO_RCVBUF, extrbuffer, pExtListenerReceiver_->acceptor_);
 				}
-
+				if( extwbuffer > 0 )
+				{
+					setbuffersize(SO_SNDBUF, extrbuffer, pExtListenerReceiver_->acceptor_);
+				}
 			}
-
 		}
+	}
 
+	/// secondly listen on internal interface
+	if( intlisteningPort != 0 )
+	{
+		ACE_DEBUG(( LM_DEBUG, "D::NetworkInterface::setup internal interface\n" ));
+
+		char* pEndPointName = "Internal";
+		/// if extlisteningInterface is null, we need ask KBEMachined for ip adress
+		if( ( intlisteningInterface == NULL || intlisteningInterface[0] == 0 ) )
+		{
+			ACE_DEBUG(( LM_WARNING,
+				"NetworkInterface::@if1::Couldn't parse interface spec '{%s, %s}'"
+				"will use wild interface\n",
+				pEndPointName, "empty ip addr" ));
+		} else if( !strcmp(intlisteningInterface, USE_KBEMACHINED) )
+		{
+			ACE_DEBUG(( LM_INFO,
+				"NetworkInterface::Querying KBEMachined for interface\n" ));
+		} else ///noy nil, parse it to get the right ip adress string
+		{
+			ACE_DEBUG(( LM_DEBUG, "D::NetworkInterface::starts valid address\n" ));
+
+			char ifname[IFNAMSIZ] = { 0 };  /// hold host name like eth0 or localhost
+			if( is_ip_addr_valid(intlisteningInterface, ifname) )
+			{
+				ACE_DEBUG(( LM_DEBUG, "D::NetworkInterface::qualified address\n" ));
+
+				ACE_INET_Addr addr(intlisteningInterface, intlisteningPort);
+				pIntListenerReceiver_ = new UDP_SOCK_Handler(addr,
+					Channel::ChannelScope::INTERNAL, this);
+				pIntListenerReceiver_->reactor(nub_->rec);
+
+				ACE_DEBUG(( LM_INFO,
+					"NetworkInterface::listen on interface {%s, %s, %s, %d}\n",
+					pEndPointName, ifname, intlisteningInterface, intlisteningPort ));
+
+				///Setup socket options
+				setnonblocking(true, pIntListenerReceiver_->sock_);
+				setnodelay(true, pIntListenerReceiver_->sock_);
+				setreuseaddr(true, pIntListenerReceiver_->sock_);
+				if( extrbuffer > 0 )
+				{
+					setbuffersize(SO_RCVBUF, extrbuffer, pIntListenerReceiver_->sock_);
+				}
+				if( extwbuffer > 0 )
+				{
+					setbuffersize(SO_SNDBUF, extrbuffer, pIntListenerReceiver_->sock_);
+				}
+			}
+		}
 	}
 }
 
