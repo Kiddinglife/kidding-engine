@@ -21,8 +21,6 @@ ACE_UINT32 intrbuffer,
 ACE_UINT32 intwbuffer)
 :
 channelMap_(),
-extEndpoint_(),
-intEndpoint_(),
 nub_(pDispatcher),
 pExtensionData_(NULL),
 pExtListenerReceiver_(NULL),
@@ -35,8 +33,8 @@ numExtChannels_(0)
 {
 	if( isExternal_ )
 	{
-		pExtListenerReceiver_ = new TCP_Acceptor_Handler(Channel::ChannelScope::EXTERNAL,
-			&extEndpoint_, this);
+		pExtListenerReceiver_ = new TCP_Acceptor_Handler(
+			Channel::ChannelScope::EXTERNAL, this);
 		pExtListenerReceiver_->reactor(nub_->rec);
 
 		/// if extlisteningInterface is null, we need ask KBEMachined for ip adress
@@ -46,33 +44,66 @@ numExtChannels_(0)
 				"NetworkInterface::@if1::Couldn't parse interface spec '{%s, %s}'"
 				"will use wild interface\n",
 				"External", "empty ip addr" ));
-		} 
-		else if( !strcmp(extlisteningInterface, USE_KBEMACHINED))
+		} else if( !strcmp(extlisteningInterface, USE_KBEMACHINED) )
 		{
-				ACE_DEBUG(( LM_INFO,
-				"NetworkInterface::@1::Querying KBEMachined for interface\n" ));
-		}
-		else ///noy nil, parse it to get the right ip adress string
+			ACE_DEBUG(( LM_INFO,
+				"NetworkInterface::Querying KBEMachined for interface\n" ));
+		} else ///noy nil, parse it to get the right ip adress string
 		{
-			ACE_DEBUG(( LM_DEBUG, "NetworkInterface::@if2\n" ));
+			ACE_DEBUG(( LM_DEBUG, "D::NetworkInterface::@if2\n" ));
 			char ifname[IFNAMSIZ] = { 0 };  /// hold host name like eth0 or localhost
 			if( is_ip_addr_valid(extlisteningInterface, ifname) )
 			{
-				ACE_DEBUG(( LM_INFO,
-					"NetworkInterface::@if3::listen on interface {%s, %s, %s}\n",
-					"External", ifname, extlisteningInterface ));
-			}
-		}
+				ACE_DEBUG(( LM_DEBUG, "D::NetworkInterface::@if2.1\n" ));
+				bool found_port = false;
+				ACE_UINT16 listen_port = extlisteningPort_min;
+				ACE_INET_Addr addr(extlisteningInterface, listen_port);
 
-		bool found_port = false;
-		ACE_UINT16 listen_port = extlisteningPort_min;
-		if( extlisteningPort_min != extlisteningPort_max )
-		{
-			for( ACE_UINT16 i = extlisteningPort_min; i<extlisteningPort_max ; ++i)
-			{
-				listen_port = ACE_HTONS(i);
-				//pExtListenerReceiver_ = new TCP_Acceptor_Handler(Channel::)
+				if( extlisteningPort_min != extlisteningPort_max )
+				{
+					ACE_DEBUG(( LM_DEBUG, "D::NetworkInterface::@if2.1.1::not enqual port\n" ));
+					for( ACE_UINT16 i = extlisteningPort_min; i < extlisteningPort_max; ++i )
+					{
+						listen_port = i;
+						addr.set_port_number(listen_port);
+						if( pExtListenerReceiver_->open(addr) == -1 )
+						{
+							continue;
+						} else
+						{
+							found_port = true;
+							break;
+						}
+					}
+				} else
+				{
+					ACE_DEBUG(( LM_DEBUG, "D::NetworkInterface::@if2.1.1::enqual port\n" ));
+					if( pExtListenerReceiver_->open(addr) == 0 )
+					{
+						found_port = true;
+					}
+				}
+
+				if( !found_port )
+					ACE_ERROR(( LM_ERROR,
+					"NetworkInterface::recreateListeningSocket({ }) : "
+					"Couldn't bind the socket to {%s}:{%s}:{%d}\n",
+					"External", extlisteningInterface, listen_port ));
+				else
+					ACE_DEBUG(( LM_INFO,
+					"NetworkInterface::listen on interface {%s, %s, %s, %d}\n",
+					"External", ifname, extlisteningInterface, listen_port ));
+					
+				///Setup socket options
+				setnonblocking(true, pExtListenerReceiver_->acceptor_);
+				setnodelay(true, pExtListenerReceiver_->acceptor_);
+				if( extrbuffer > 0 )
+				{
+					
+				}
+
 			}
+
 		}
 
 	}

@@ -96,7 +96,7 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 		ACE_SOCK_IO* endpoint = NULL,
 		ChannelScope traits = EXTERNAL,
 		ProtocolType pt = PROTOCOL_TCP,
-		PacketFilterPtr pFilter = PacketFilterPtr(),
+		PacketFilterPtr pFilter = PacketFilterPtr(NULL),
 		ChannelID id = CHANNEL_ID_NULL);
 
 	virtual ~Channel() { }

@@ -68,21 +68,21 @@ struct TCP_Acceptor_Handler : public ACE_Event_Handler
 {
 	Channel::ChannelScope channelScope_;
 	NetworkInterface* networkInterface_;
-	ACE_SOCK_Acceptor* acceptor_;
+	ACE_SOCK_Acceptor acceptor_;
 
-	TCP_Acceptor_Handler(Channel::ChannelScope channelScope, ACE_SOCK_Acceptor* acceptor, NetworkInterface* networkInterface) :
+	TCP_Acceptor_Handler(Channel::ChannelScope channelScope, NetworkInterface* networkInterface) :
 		channelScope_(channelScope),
 		networkInterface_(networkInterface),
-		acceptor_(acceptor)
+		acceptor_()
 	{
 	}
 
 	virtual ~TCP_Acceptor_Handler() { this->handle_close(ACE_INVALID_HANDLE, 0); }
 
-	inline int open(const ACE_INET_Addr &listen_addr);
+	int open(const ACE_INET_Addr &listen_addr);
 
 	// Get this handler's I/O handle.
-	virtual ACE_HANDLE get_handle(void) const { return this->acceptor_->get_handle(); }
+	virtual ACE_HANDLE get_handle(void) const { return this->acceptor_.get_handle(); }
 
 	// Called when a connection is ready to accept.
 	virtual int handle_input(ACE_HANDLE fd = ACE_INVALID_HANDLE);

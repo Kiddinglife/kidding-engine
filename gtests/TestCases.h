@@ -1040,12 +1040,12 @@ TEST(BundleTest, write_variable_msg)
 TEST(NetworkInterfaceTest, get_ip_addr_str)
 {
 	Nub              pDispatcher;
-	ACE_INT32     extlisteningPort_min = 10000;
-	ACE_INT32     extlisteningPort_max = 10005;
+	ACE_INT32     extlisteningPort_min = 20001;
+	ACE_INT32     extlisteningPort_max = 20005;
 	//const char *    extlisteningInterface = "192.168.2.47";
 	//const char *    extlisteningInterface = "";
-	//const char *    extlisteningInterface = "127.0.0.1";
-	const char *    extlisteningInterface = USE_KBEMACHINED;
+	const char *    extlisteningInterface = "127.0.0.1";
+	//const char *    extlisteningInterface = USE_KBEMACHINED;
 	ACE_UINT32   extrbuffer = 0;
 	ACE_UINT32   extwbuffer = 0;
 	ACE_INT32      intlisteningPort = 0;

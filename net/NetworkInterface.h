@@ -28,10 +28,10 @@ struct NetworkInterface
 	ChannelMap                                                    channelMap_;
 
 	/// Acceptor TCP SOCK
-	ACE_SOCK_Acceptor                                         extEndpoint_;
+	//ACE_SOCK_Acceptor                                         extEndpoint_;
 
 	/// UDP SOCK
-	ACE_SOCK_DGRAM                                          intEndpoint_;
+	//ACE_SOCK_DGRAM                                          intEndpoint_;
 
 	///事件分发
 	Nub*                                                                nub_;
@@ -85,6 +85,7 @@ struct NetworkInterface
 	* 得到本机主机名或者域名.有两个参数,一个是用来存放主机名或者域名的变量,一个是缓冲区的大小.
 	*/
 	bool is_ip_addr_valid(const char* spec, char* name);
+
 };
 
 NETWORK_NAMESPACE_END_DECL

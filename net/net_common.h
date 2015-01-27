@@ -252,6 +252,40 @@ inline void finalise(void)
 	//
 	//			Network::destroyObjPool();
 }
+
+/// socket optitons
+inline int setnonblocking(bool nonblocking, ACE_SOCK& mSockIO)
+{
+#if KBE_PLATFORM == PLATFORM_WIN32
+	u_long val = nonblocking ? 1 : 0;
+	return ::ioctlsocket(reinterpret_cast <SOCKET>( mSockIO.get_handle() ), FIONBIO, &val);
+#else
+	int val = nonblocking ? ACE_NONBLOCK : 0;
+	ACE_OS::fcntl(mSockIO.get_handle(), F_SETFL, val);
+#endif
+}
+
+inline int setbroadcast(bool broadcast, ACE_SOCK& mSockIO)
+{
+	return mSockIO.set_option(SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(bool));
+}
+
+inline int setreuseaddr(bool reuseaddr, ACE_SOCK& mSockIO)
+{
+	return mSockIO.set_option(SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(bool));
+}
+inline int setkeepalive(bool keepalive, ACE_SOCK& mSockIO)
+{
+	return mSockIO.set_option(SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof(bool));
+}
+inline int setnodelay(bool nodelay, ACE_SOCK& mSockIO)
+{
+	return mSockIO.set_option(IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(bool));
+}
+inline int setbuffersize(int optname, int size, ACE_SOCK& mSockIO)
+{
+	return mSockIO.set_option(SOL_SOCKET, optname, (const char*) &size, sizeof(size));
+}
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #endif

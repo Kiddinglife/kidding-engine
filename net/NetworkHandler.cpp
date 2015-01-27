@@ -6,7 +6,7 @@ NETWORK_NAMESPACE_BEGIN_DECL
 
 int TCP_Acceptor_Handler::open(const ACE_INET_Addr &listen_addr)
 {
-	if( this->acceptor_->open(listen_addr, 1) == -1 )
+	if( this->acceptor_.open(listen_addr, 1) == -1 )
 		ACE_ERROR_RETURN(( LM_ERROR,
 		ACE_TEXT("%p\n"),
 		ACE_TEXT("acceptor.open") ),
@@ -20,7 +20,7 @@ int TCP_Acceptor_Handler::handle_input(ACE_HANDLE fd)
 {
 	ACE_PoolPtr_Getter(pool, TCP_SOCK_Handler, ACE_Null_Mutex);
 	TCP_SOCK_Handler* client = pool->Ctor();
-	if( this->acceptor_->accept(client->sock_) == -1 )
+	if( this->acceptor_.accept(client->sock_) == -1 )
 	{
 		pool->Dtor(client);
 		ACE_ERROR_RETURN(( LM_ERROR,
@@ -43,11 +43,11 @@ int TCP_Acceptor_Handler::handle_input(ACE_HANDLE fd)
 
 int TCP_Acceptor_Handler::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
 {
-	if( this->acceptor_->get_handle() != ACE_INVALID_HANDLE )
+	if( this->acceptor_.get_handle() != ACE_INVALID_HANDLE )
 	{
 		ACE_Reactor_Mask m = ACE_Event_Handler::ACCEPT_MASK | ACE_Event_Handler::DONT_CALL;
 		this->reactor()->remove_handler(this, m);
-		this->acceptor_->close();
+		this->acceptor_.close();
 	}
 	return 0;
 }
@@ -82,6 +82,29 @@ int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)
 }
 
 int TCP_SOCK_Handler::handle_output(ACE_HANDLE fd)
+{
+	return 0;
+}
+
+int UDP_SOCK_Handler::open(void)
+{
+	return 0;
+}
+
+// Called when input is available from the client.
+int UDP_SOCK_Handler::handle_input(ACE_HANDLE fd)
+{
+	return 0;
+}
+
+// Called when output is possible.
+int UDP_SOCK_Handler::handle_output(ACE_HANDLE fd)
+{
+	return 0;
+}
+
+// Called when this handler is removed from the ACE_Reactor.
+int UDP_SOCK_Handler::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
 {
 	return 0;
 }
