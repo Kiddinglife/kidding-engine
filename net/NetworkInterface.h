@@ -86,6 +86,10 @@ struct NetworkInterface
 	* 得到本机主机名或者域名.有两个参数,一个是用来存放主机名或者域名的变量,一个是缓冲区的大小.
 	*/
 	bool is_ip_addr_valid(const char* spec, char* name);
+
+	bool registerChannel(Channel* pChannel);
+	bool deregisterChannel(Channel* pChannel);
+	bool deregisterAllChannels();
 };
 
 NETWORK_NAMESPACE_END_DECL

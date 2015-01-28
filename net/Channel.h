@@ -9,8 +9,10 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
+struct TimerHandle { };
 struct PacketReader;
 struct PacketReceiver;
+struct PacketSender;
 struct PacketFilter;
 typedef ACE_Refcounted_Auto_Ptr<PacketFilter, ACE_Null_Mutex> PacketFilterPtr;
 
@@ -32,7 +34,7 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	};
 
 	//@TO-DO 可能需要查看apg timer那个例子
-	//TimerHandle					inactivityTimerHandle_;
+	TimerHandle					          inactivityTimerHandle_;
 
 	/// 该通道所需的网络接口
 	NetworkInterface*                  pNetworkInterface_;
@@ -44,11 +46,11 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	PacketReader*				          pPacketReader_; //bufferedReceives_ 
 
 	//@TO-DO maybe can use ace_handle 
-	ACE_SOCK_IO*					      pEndPoint_;
+	ACE_SOCK*					          pEndPoint_;
 
 	//@TO-DO need create struct PacketReceiver
 	PacketReceiver*				      pPacketReceiver_;
-
+	PacketSender*				          pPacketSender_;
 	//@TO-DO need create struct PacketFilter
 	PacketFilterPtr				          pFilter_;
 
@@ -65,6 +67,7 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	ProtocolType				          protocolType_;
 	ChannelID					          channelId_;
 	bool						                  isDestroyed_;
+	bool						                  sending_;
 
 	/// 如果为true，则该频道已经变得不合法
 	/// if true, this channel has become unusable
@@ -91,15 +94,36 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	ACE_UINT32						      numBytesSent_;
 	ACE_UINT32						      numBytesReceived_;
 	ACE_UINT32						      lastTickBytesReceived_;
+	ACE_UINT32                           lastTickBytesSent_;
+
+	/// Reference count.
+	int ref_count_;
+
+	static void intrusive_add_ref(Channel* channel)
+	{
+		++channel->ref_count_;
+	}
+
+	static void intrusive_remove_ref(Channel* channel)
+	{
+		--channel->ref_count_;
+		ACE_ASSERT(channel->ref_count_ >= 0 && "RefCountable:ref_count_ maybe a error!");
+		if( !channel->ref_count_ ) delete channel;
+	}
 
 	Channel(NetworkInterface* networkInterface = NULL,
-		ACE_SOCK_IO* endpoint = NULL,
+		ACE_SOCK* endpoint = NULL,
 		ChannelScope traits = EXTERNAL,
 		ProtocolType pt = PROTOCOL_TCP,
 		PacketFilterPtr pFilter = PacketFilterPtr(NULL),
 		ChannelID id = CHANNEL_ID_NULL);
 
 	virtual ~Channel() { }
+
+	const char*  c_str() const;
+
+	void clearBundle();
+	bool initialize();
 };
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

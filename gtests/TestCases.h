@@ -1037,6 +1037,7 @@ TEST(BundleTest, write_variable_msg)
 }
 
 #include "net\NetworkInterface.h"
+#include "net\Channel.h"
 TEST(NetworkInterfaceTest, get_ip_addr_str)
 {
 	Nub              pDispatcher;
@@ -1063,6 +1064,11 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 		intlisteningInterface,
 		intrbuffer,
 		intwbuffer);
+		
+	ACE_INET_Addr addr(20006,"192.168.2.47");
+	ACE_SOCK_Dgram dg(addr);
+	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
+	in.registerChannel(&tcpchannel);
 }
 
 //#include "network/endpoint.h"

@@ -4,6 +4,7 @@
 #include "net\DelayedChannelHandler.h"
 #include "net\Bundle.h"
 #include "net\Nub.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
@@ -225,6 +226,72 @@ bool NetworkInterface::is_ip_addr_valid(const char* spec, char* name)
 
 	return false;
 
+}
+
+bool NetworkInterface::registerChannel(Channel* pChannel)
+{
+	TRACE("NetworkInterface::registerChannel\n");
+	/// get the current channel's address
+	ACE_INET_Addr localAddr;
+	pChannel->pEndPoint_->get_local_addr(localAddr);
+
+	//ACE_ASSERT(localAddr.get_ip_address() != 0);
+	//ACE_ASSERT(pChannel->pNetworkInterface_ == this);
+
+	///// check if this channel has already been added
+	//ChannelMap::iterator iter = channelMap_.find(localAddr);
+	//Channel * pExisting = iter != channelMap_.end() ? iter->second : NULL;
+	//if( pExisting )
+	//{
+	//	ACE_DEBUG(( LM_CRITICAL,
+	//		"NetworkInterface::registerChannel: channel {%s} is exist.\n",
+	//		pChannel->c_str() ));
+	//	return false;
+	//}
+
+	///// if not added  then add it
+	//channelMap_[localAddr] = pChannel;
+
+	/////if it is external channel, increment by 1
+	//if( pChannel->channelScope_ = Channel::EXTERNAL )
+	//	numExtChannels_++;
+
+	//ACE_DEBUG(( LM_DEBUG,
+	//	"numExtChannels_ = %d, map size = %d\n",
+	//	numExtChannels_ , channelMap_.size()));
+
+	TRACE_RETURN(true);
+}
+bool NetworkInterface::deregisterChannel(Channel* pChannel)
+{
+	/// get the current channel's address
+	ACE_INET_Addr localAddr;
+	pChannel->pEndPoint_->get_local_addr(localAddr);
+
+	///if it is external channel, decrement by 1
+	if( pChannel->channelScope_ = Channel::EXTERNAL )
+		numExtChannels_--;
+
+	if( !channelMap_.erase(localAddr) )
+	{
+		ACE_DEBUG(( LM_ERROR, "NetworkInterface::deregisterChannel: "
+			"Channel not found {}!\n",
+			pChannel->c_str() ));
+		return false;
+	}
+
+
+	if( pChannelDeregisterHandler_ )
+	{
+		pChannelDeregisterHandler_->onChannelDeregister(pChannel);
+	}
+
+	return true;
+}
+
+bool NetworkInterface::deregisterAllChannels()
+{
+	return true;
 }
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
