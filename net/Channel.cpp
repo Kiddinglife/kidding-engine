@@ -1,4 +1,4 @@
-#include "Channel.h"
+﻿#include "Channel.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -47,17 +47,26 @@ pMsgs_(NULL)
 
 const char * Channel::c_str() const
 {
-	return "stub";
+	TRACE("Channel::c_str()");
+	TRACE_RETURN("test");
 }
 
 void Channel::clearBundle()
 {
-
+	TRACE("Channel::clearBundle()");
+	TRACE_RETURN_VOID();
 }
 
 bool Channel::initialize()
 {
-	return true;
+	TRACE("Channel::initialize()");
+	TRACE_RETURN(true);
+}
+
+void Channel::destroy(void)
+{
+	TRACE("Channel::destroy()");
+	TRACE_RETURN_VOID();
 }
 
 NETWORK_NAMESPACE_END_DECL

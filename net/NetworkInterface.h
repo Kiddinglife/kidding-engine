@@ -87,6 +87,9 @@ struct NetworkInterface
 	*/
 	bool is_ip_addr_valid(const char* spec, char* name);
 
+	/**
+	 * These three methods are used to register and deregister the channel
+	 */
 	bool registerChannel(Channel* pChannel);
 	bool deregisterChannel(Channel* pChannel);
 	bool deregisterAllChannels();

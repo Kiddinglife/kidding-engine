@@ -1069,6 +1069,8 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	ACE_SOCK_Dgram dg(addr);
 	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
 	in.registerChannel(&tcpchannel);
+	in.deregisterChannel(&tcpchannel);
+	in.deregisterAllChannels();
 }
 
 //#include "network/endpoint.h"

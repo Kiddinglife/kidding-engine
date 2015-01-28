@@ -1,4 +1,4 @@
-#ifndef Channel_H_
+ï»¿#ifndef Channel_H_
 #define Channel_H_
 
 #include "ace\pre.h"
@@ -22,8 +22,8 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	/// EXTERNAL describes the properties of a channel from client to server.
 	enum ChannelScope { INTERNAL, EXTERNAL };
 
-	/// CHANNEL_NORMAL = ÆÕÍ¨Í¨µÀ
-	// CHANNEL_WEB = ä¯ÀÀÆ÷webÍ¨µÀ
+	/// CHANNEL_NORMAL = æ™®é€šé€šé“
+	// CHANNEL_WEB = æµè§ˆå™¨webé€šé“
 	enum ChannelType { CHANNEL_NORMAL, CHANNEL_WEB };
 
 	enum ChannelRecvWinStatus
@@ -33,13 +33,13 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 		PACKET_IS_CORRUPT
 	};
 
-	//@TO-DO ¿ÉÄÜĞèÒª²é¿´apg timerÄÇ¸öÀı×Ó
+	//@TO-DO å¯èƒ½éœ€è¦æŸ¥çœ‹apg timeré‚£ä¸ªä¾‹å­
 	TimerHandle					          inactivityTimerHandle_;
 
-	/// ¸ÃÍ¨µÀËùĞèµÄÍøÂç½Ó¿Ú
+	/// è¯¥é€šé“æ‰€éœ€çš„ç½‘ç»œæ¥å£
 	NetworkInterface*                  pNetworkInterface_;
 
-	/// ¸ÃÍ¨µÀĞèÒªÊ¹ÓÃbundleÀ´»º´æ½ÓÊÕºÍ·¢ËÍµÄÏûÏ¢
+	/// è¯¥é€šé“éœ€è¦ä½¿ç”¨bundleæ¥ç¼“å­˜æ¥æ”¶å’Œå‘é€çš„æ¶ˆæ¯
 	Bundle						              bundle_;
 
 	//@TO-DO need create struct PacketReader
@@ -54,11 +54,11 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	//@TO-DO need create struct PacketFilter
 	PacketFilterPtr				          pFilter_;
 
-	/// ¿ÉÒÔÖ¸¶¨Í¨µÀÊ¹ÓÃÄ³Ğ©ÌØ¶¨µÄÏûÏ¢
+	/// å¯ä»¥æŒ‡å®šé€šé“ä½¿ç”¨æŸäº›ç‰¹å®šçš„æ¶ˆæ¯
 	/// can designate the channel to use some specific msgs
 	Messages*                              pMsgs_;
 
-	/// ½ÓÊÕµ½µÄËùÓĞ°üµÄ¼¯ºÏ£ºthe container for the received packets
+	/// æ¥æ”¶åˆ°çš„æ‰€æœ‰åŒ…çš„é›†åˆï¼šthe container for the received packets
 	typedef std::vector<Packet*> RecvPackets;
 	RecvPackets                           recvPackets[2];
 
@@ -69,18 +69,18 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	bool						                  isDestroyed_;
 	bool						                  sending_;
 
-	/// Èç¹ûÎªtrue£¬Ôò¸ÃÆµµÀÒÑ¾­±äµÃ²»ºÏ·¨
+	/// å¦‚æœä¸ºtrueï¼Œåˆ™è¯¥é¢‘é“å·²ç»å˜å¾—ä¸åˆæ³•
 	/// if true, this channel has become unusable
 	bool						                  isCondemn_;
 
-	/// Èç¹ûÊÇÍâ²¿Í¨µÀÇÒ´úÀíÁËÒ»¸öÇ°¶ËÔò»á°ó¶¨Ç°¶Ë´úÀíID
+	/// å¦‚æœæ˜¯å¤–éƒ¨é€šé“ä¸”ä»£ç†äº†ä¸€ä¸ªå‰ç«¯åˆ™ä¼šç»‘å®šå‰ç«¯ä»£ç†ID
 	/// if this channel is external and proxy the client, it will  binds the client id
 	ENTITY_ID					              proxyID_;
 
-	/// ¸ÃchannelËùÔÚµÄ·şÎñÆ÷×é¼şµÄid
+	/// è¯¥channelæ‰€åœ¨çš„æœåŠ¡å™¨ç»„ä»¶çš„id
 	KBE_SRV_COMPONENT_ID	  componentID_;
 
-	/// À©Õ¹ÓÃ, for extension
+	/// æ‰©å±•ç”¨, for extension
 	std::string					              strextra_;
 
 	ACE_UINT64						      inactivityExceptionPeriod_;
@@ -120,10 +120,11 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 
 	virtual ~Channel() { }
 
-	const char*  c_str() const;
+	const char*  c_str(void) const;
 
-	void clearBundle();
-	bool initialize();
+	void clearBundle(void);
+	bool initialize(void);
+	void destroy(void);
 };
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

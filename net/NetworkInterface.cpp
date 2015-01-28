@@ -1,4 +1,4 @@
-#include "NetworkInterface.h"
+﻿#include "NetworkInterface.h"
 #include "net\Channel.h"
 #include "net\NetworkHandler.h"
 #include "net\DelayedChannelHandler.h"
@@ -167,7 +167,18 @@ numExtChannels_(0)
 
 NetworkInterface::~NetworkInterface()
 {
+	TRACE("NetworkInterface::deregisterAllChannels\n");
 
+	deregisterAllChannels();
+	if( nub_ )
+	{
+	
+	}
+	SAFE_RELEASE(pDelayedChannels_);
+	SAFE_RELEASE(pExtListenerReceiver_);
+	SAFE_RELEASE(pIntListenerReceiver_);
+
+	TRACE_RETURN_VOID();
 }
 
 bool NetworkInterface::is_ip_addr_valid(const char* spec, char* name)
@@ -235,35 +246,33 @@ bool NetworkInterface::registerChannel(Channel* pChannel)
 	ACE_INET_Addr localAddr;
 	pChannel->pEndPoint_->get_local_addr(localAddr);
 
-	//ACE_ASSERT(localAddr.get_ip_address() != 0);
-	//ACE_ASSERT(pChannel->pNetworkInterface_ == this);
+	ACE_ASSERT(localAddr.get_ip_address() != 0);
+	ACE_ASSERT(pChannel->pNetworkInterface_ == this);
 
-	///// check if this channel has already been added
-	//ChannelMap::iterator iter = channelMap_.find(localAddr);
-	//Channel * pExisting = iter != channelMap_.end() ? iter->second : NULL;
-	//if( pExisting )
-	//{
-	//	ACE_DEBUG(( LM_CRITICAL,
-	//		"NetworkInterface::registerChannel: channel {%s} is exist.\n",
-	//		pChannel->c_str() ));
-	//	return false;
-	//}
+	/// check if this channel has already been added
+	ChannelMap::iterator iter = channelMap_.find(localAddr);
+	Channel * pExisting = iter != channelMap_.end() ? iter->second : NULL;
+	if( pExisting )
+	{
+		ACE_ERROR_RETURN(( LM_CRITICAL,
+			"NetworkInterface::registerChannel: channel {%s} is exist.\n",
+			pChannel->c_str() ), false);
+	}
 
-	///// if not added  then add it
-	//channelMap_[localAddr] = pChannel;
+	/// if not added  then add it
+	channelMap_[localAddr] = pChannel;
 
-	/////if it is external channel, increment by 1
-	//if( pChannel->channelScope_ = Channel::EXTERNAL )
-	//	numExtChannels_++;
-
-	//ACE_DEBUG(( LM_DEBUG,
-	//	"numExtChannels_ = %d, map size = %d\n",
-	//	numExtChannels_ , channelMap_.size()));
+	///if it is external channel, increment by 1
+	if( pChannel->channelScope_ = Channel::EXTERNAL )
+		numExtChannels_++;
 
 	TRACE_RETURN(true);
 }
+
 bool NetworkInterface::deregisterChannel(Channel* pChannel)
 {
+	TRACE("NetworkInterface::deregisterChannel\n");
+
 	/// get the current channel's address
 	ACE_INET_Addr localAddr;
 	pChannel->pEndPoint_->get_local_addr(localAddr);
@@ -286,12 +295,24 @@ bool NetworkInterface::deregisterChannel(Channel* pChannel)
 		pChannelDeregisterHandler_->onChannelDeregister(pChannel);
 	}
 
-	return true;
+	TRACE_RETURN(true);
 }
 
 bool NetworkInterface::deregisterAllChannels()
 {
-	return true;
+	TRACE("NetworkInterface::deregisterAllChannels\n");
+
+	ChannelMap::iterator iter = channelMap_.begin();
+	while( iter != channelMap_.end() )
+	{
+		ChannelMap::iterator oldIter = iter++;
+		oldIter->second->destroy();
+	}
+
+	channelMap_.clear();
+	numExtChannels_ = 0;
+
+	TRACE_RETURN(true);
 }
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
