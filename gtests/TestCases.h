@@ -1071,16 +1071,13 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	ACE_INET_Addr addr(20006, "192.168.2.47");
 	ACE_SOCK_Dgram dg(addr);
 	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
+	Messages msgs;
 
 	in.register_channel(&tcpchannel);
-	in.findChannel(addr);
-	in.findChannel(dg.get_handle());
+	in.channel(addr);
+	in.channel(dg.get_handle());
+	in.process_all_channels_packets(&msgs);
 	in.deregister_channel(&tcpchannel);
 	in.deregister_all_channels();
-}
 
-//#include "network/endpoint.h"
-//TEST(KBEENPOINTTEST, findinterfaceaddr)
-//{
-//	KBEngine::Network::EndPoint ep(2);
-//}
+}

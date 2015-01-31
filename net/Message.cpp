@@ -96,5 +96,6 @@ void Messages::finalise(void)
 	SAFE_RELEASE(gPtrFixedMsgs);
 	SAFE_RELEASE(gPtrMsgsPtrContainer);
 }
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

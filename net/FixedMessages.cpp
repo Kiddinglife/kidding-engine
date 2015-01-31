@@ -38,5 +38,11 @@ bool FixedMessages::isFixed(MessageID msgid)
 	}
 	return false;
 }
+
+bool FixedMessages::loadConfig(std::string fileName)
+{
+	TRACE("FixedMessages::loadConfig()");
+	TRACE_RETURN(true);
+}
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

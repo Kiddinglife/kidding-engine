@@ -358,7 +358,7 @@ inline void NetworkInterface::send_on_delayed(Channel* channel)
 	TRACE_RETURN_VOID();
 }
 
-Channel * NetworkInterface::findChannel(const ACE_INET_Addr& addr)
+Channel * NetworkInterface::channel(const ACE_INET_Addr& addr)
 {
 	TRACE("NetworkInterface::findChannel(const ACE_INET_Addr&)");
 
@@ -368,7 +368,7 @@ Channel * NetworkInterface::findChannel(const ACE_INET_Addr& addr)
 	TRACE_RETURN(( iter != channelMap_.end() ) ? iter->second : NULL);
 }
 
-Channel * NetworkInterface::findChannel(ACE_HANDLE handle)
+Channel * NetworkInterface::channel(ACE_HANDLE handle)
 {
 	TRACE("NetworkInterface::findChannel(ACE_HANDLE)");
 
@@ -383,11 +383,13 @@ Channel * NetworkInterface::findChannel(ACE_HANDLE handle)
 	TRACE_RETURN(NULL);
 }
 
-inline void NetworkInterface::onChannelGone(Channel* pChannel)
+inline void NetworkInterface::on_channel_left(Channel* pChannel)
 {
+	TRACE("NetworkInterface::onChannelGone()");
+	TRACE_RETURN_VOID();
 }
 
-inline void NetworkInterface::onChannelTimeOut(Channel* pChannel)
+inline void NetworkInterface::on_channel_timeout(Channel* pChannel)
 {
 	TRACE("NetworkInterface::onChannelTimeOut()");
 
@@ -405,10 +407,11 @@ inline void NetworkInterface::onChannelTimeOut(Channel* pChannel)
 	TRACE_RETURN_VOID();
 }
 
-void NetworkInterface::processAllChannelPackets(Messages* pMsgHandlers)
+void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
 {
+	TRACE("NetworkInterface::process_all_channels_packets()");
 	ChannelMap::iterator iter = channelMap_.begin();
-	while( iter != channelMap_.end())
+	while( iter != channelMap_.end() )
 	{
 		Channel* pChannel = iter->second;
 
@@ -423,6 +426,7 @@ void NetworkInterface::processAllChannelPackets(Messages* pMsgHandlers)
 			++iter;
 		}
 	}
+	TRACE_RETURN_VOID();
 }
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

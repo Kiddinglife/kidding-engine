@@ -102,18 +102,18 @@ struct NetworkInterface : public ACE_Event_Handler
 	bool deregister_all_channels();
 
 	/// These twp methods are used to find the channel 
-	Channel* findChannel(const ACE_INET_Addr& addr);
-	Channel* findChannel(ACE_HANDLE  handle);
+	Channel* channel(const ACE_INET_Addr& addr);
+	Channel* channel(ACE_HANDLE  handle);
 
 	/// call back functon when the specific channel goes away
-	void onChannelGone(Channel * pChannel);
+	void on_channel_left(Channel * pChannel);
 
-	void NetworkInterface::onChannelTimeOut(Channel * pChannel);
+	void NetworkInterface::on_channel_timeout(Channel * pChannel);
 
 	/// Handle the timeout.
 	virtual int handle_timeout(const ACE_Time_Value &tv, const void *arg);
 
-	void processAllChannelPackets(Messages* pMsgHandlers);
+	void process_all_channels_packets(Messages* pMsgHandlers);
 };
 
 NETWORK_NAMESPACE_END_DECL
