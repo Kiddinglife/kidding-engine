@@ -1,13 +1,7 @@
 ﻿#include "NetworkInterface.h"
-#include "net\Channel.h"
-#include "net\NetworkHandler.h"
-#include "net\DelayedChannelHandler.h"
-#include "net\Bundle.h"
-#include "net\Nub.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
-
 
 NetworkInterface::NetworkInterface(
 Nub* pDispatcher,
@@ -19,8 +13,9 @@ ACE_UINT32 extwbuffer,
 ACE_INT16 intlisteningPort,
 const char * intlisteningInterface,
 ACE_UINT32 intrbuffer,
-ACE_UINT32 intwbuffer)
-:
+ACE_UINT32 intwbuffer) :
+
+ACE_Event_Handler(),
 channelMap_(),
 nub_(pDispatcher),
 pExtensionData_(NULL),
@@ -61,7 +56,7 @@ numExtChannels_(0)
 				ACE_DEBUG(( LM_DEBUG, "D::NetworkInterface::@if2.1\n" ));
 				bool found_port = false;
 				ACE_UINT16 listen_port = extlisteningPort_min;
-				ACE_INET_Addr addr(extlisteningInterface, listen_port);
+				ACE_INET_Addr addr(listen_port, extlisteningInterface);
 
 				if( extlisteningPort_min != extlisteningPort_max )
 				{
@@ -100,10 +95,12 @@ numExtChannels_(0)
 				///Setup socket options
 				setnonblocking(true, pExtListenerReceiver_->acceptor_);
 				setnodelay(true, pExtListenerReceiver_->acceptor_);
+
 				if( extrbuffer > 0 )
 				{
 					setbuffersize(SO_RCVBUF, extrbuffer, pExtListenerReceiver_->acceptor_);
 				}
+
 				if( extwbuffer > 0 )
 				{
 					setbuffersize(SO_SNDBUF, extrbuffer, pExtListenerReceiver_->acceptor_);
@@ -138,47 +135,79 @@ numExtChannels_(0)
 			{
 				ACE_DEBUG(( LM_DEBUG, "D::NetworkInterface::qualified address\n" ));
 
-				ACE_INET_Addr addr(intlisteningInterface, intlisteningPort);
-				pIntListenerReceiver_ = new UDP_SOCK_Handler(addr,
-					Channel::ChannelScope::INTERNAL, this);
+				ACE_INET_Addr addr(intlisteningPort, intlisteningInterface);
+
+				pIntListenerReceiver_ = new TCP_Acceptor_Handler(Channel::ChannelScope::INTERNAL, this);
 				pIntListenerReceiver_->reactor(nub_->rec);
+				if( pIntListenerReceiver_->open(addr) != 0 )
+				{
+					ACE_ERROR(( LM_ERROR,
+						"NetworkInterface::Couldn't listen on {%s}:{%s}:{%s}:{%d}\n",
+						pEndPointName, ifname, intlisteningInterface, intlisteningPort ));
+				}
 
 				ACE_DEBUG(( LM_INFO,
 					"NetworkInterface::listen on interface {%s, %s, %s, %d}\n",
 					pEndPointName, ifname, intlisteningInterface, intlisteningPort ));
 
 				///Setup socket options
-				setnonblocking(true, pIntListenerReceiver_->sock_);
-				setnodelay(true, pIntListenerReceiver_->sock_);
-				setreuseaddr(true, pIntListenerReceiver_->sock_);
+				setnonblocking(true, pIntListenerReceiver_->acceptor_);
+				setnodelay(true, pIntListenerReceiver_->acceptor_);
+				setreuseaddr(true, pIntListenerReceiver_->acceptor_);
+
 				if( extrbuffer > 0 )
 				{
-					setbuffersize(SO_RCVBUF, extrbuffer, pIntListenerReceiver_->sock_);
+					setbuffersize(SO_RCVBUF, extrbuffer, pIntListenerReceiver_->acceptor_);
 				}
+
 				if( extwbuffer > 0 )
 				{
-					setbuffersize(SO_SNDBUF, extrbuffer, pIntListenerReceiver_->sock_);
+					setbuffersize(SO_SNDBUF, extrbuffer, pIntListenerReceiver_->acceptor_);
 				}
 			}
 		}
 	}
 }
 
-
 NetworkInterface::~NetworkInterface()
 {
-	TRACE("NetworkInterface::deregisterAllChannels\n");
+	TRACE("NetworkInterface::dtor()");
 
-	deregisterAllChannels();
+	deregister_all_channels();
+
 	if( nub_ )
 	{
-	
+		pDelayedChannels_->fini(nub_);
+		pDelayedChannels_ = NULL;
 	}
+
 	SAFE_RELEASE(pDelayedChannels_);
 	SAFE_RELEASE(pExtListenerReceiver_);
 	SAFE_RELEASE(pIntListenerReceiver_);
 
 	TRACE_RETURN_VOID();
+}
+
+int NetworkInterface::handle_timeout(const ACE_Time_Value& tv, const void* arg)
+{
+	TRACE("NetworkInterface::handle_timeout()");
+
+	static ACE_INET_Addr intaddr;
+	static ACE_INET_Addr extaddr;
+	static char intaddrstr[128];
+	static char extaddrstr[128];
+
+	pIntListenerReceiver_->acceptor_.get_local_addr(intaddr);
+	intaddr.addr_to_string(intaddrstr, 128);
+
+	pExtListenerReceiver_->acceptor_.get_local_addr(extaddr);
+	extaddr.addr_to_string(extaddrstr, 128);
+
+	ACE_DEBUG(( LM_INFO,
+		"NetworkInterface::handleTimeout: EXTERNAL({%s}), INTERNAL({%s}).\n",
+		extaddrstr, intaddrstr ));
+
+	TRACE_RETURN(0);
 }
 
 bool NetworkInterface::is_ip_addr_valid(const char* spec, char* name)
@@ -239,9 +268,9 @@ bool NetworkInterface::is_ip_addr_valid(const char* spec, char* name)
 
 }
 
-bool NetworkInterface::registerChannel(Channel* pChannel)
+bool NetworkInterface::register_channel(Channel* pChannel)
 {
-	TRACE("NetworkInterface::registerChannel\n");
+	TRACE("NetworkInterface::registerChannel");
 	/// get the current channel's address
 	ACE_INET_Addr localAddr;
 	pChannel->pEndPoint_->get_local_addr(localAddr);
@@ -269,9 +298,9 @@ bool NetworkInterface::registerChannel(Channel* pChannel)
 	TRACE_RETURN(true);
 }
 
-bool NetworkInterface::deregisterChannel(Channel* pChannel)
+bool NetworkInterface::deregister_channel(Channel* pChannel)
 {
-	TRACE("NetworkInterface::deregisterChannel\n");
+	TRACE("NetworkInterface::deregisterChannel");
 
 	/// get the current channel's address
 	ACE_INET_Addr localAddr;
@@ -286,21 +315,21 @@ bool NetworkInterface::deregisterChannel(Channel* pChannel)
 		ACE_DEBUG(( LM_ERROR, "NetworkInterface::deregisterChannel: "
 			"Channel not found {}!\n",
 			pChannel->c_str() ));
-		return false;
+		TRACE_RETURN(false);
 	}
 
 
 	if( pChannelDeregisterHandler_ )
 	{
-		pChannelDeregisterHandler_->onChannelDeregister(pChannel);
+		( *pChannelDeregisterHandler_ )( pChannel );
 	}
 
 	TRACE_RETURN(true);
 }
 
-bool NetworkInterface::deregisterAllChannels()
+bool NetworkInterface::deregister_all_channels()
 {
-	TRACE("NetworkInterface::deregisterAllChannels\n");
+	TRACE("NetworkInterface::deregisterAllChannels");
 
 	ChannelMap::iterator iter = channelMap_.begin();
 	while( iter != channelMap_.end() )
@@ -313,6 +342,87 @@ bool NetworkInterface::deregisterAllChannels()
 	numExtChannels_ = 0;
 
 	TRACE_RETURN(true);
+}
+
+inline void NetworkInterface::delayed_channels_send(Channel* channel)
+{
+	TRACE("NetworkInterface::delayedSend()");
+	pDelayedChannels_->add(channel);
+	TRACE_RETURN_VOID();
+}
+
+inline void NetworkInterface::send_on_delayed(Channel* channel)
+{
+	TRACE("NetworkInterface::send_on_delayed()");
+	pDelayedChannels_->sendIfDelayed(channel);
+	TRACE_RETURN_VOID();
+}
+
+Channel * NetworkInterface::findChannel(const ACE_INET_Addr& addr)
+{
+	TRACE("NetworkInterface::findChannel(const ACE_INET_Addr&)");
+
+	if( !addr.get_ip_address() ) return NULL;
+	ChannelMap::iterator iter = channelMap_.find(addr);
+
+	TRACE_RETURN(( iter != channelMap_.end() ) ? iter->second : NULL);
+}
+
+Channel * NetworkInterface::findChannel(ACE_HANDLE handle)
+{
+	TRACE("NetworkInterface::findChannel(ACE_HANDLE)");
+
+	ChannelMap::iterator iter = channelMap_.begin();
+	for( ; iter != channelMap_.end(); ++iter )
+	{
+		/// test if the end point in the current channel has the handle that equals to handle
+		if( iter->second->pEndPoint_ && iter->second->pEndPoint_->get_handle() == handle )
+			TRACE_RETURN(iter->second);
+	}
+
+	TRACE_RETURN(NULL);
+}
+
+inline void NetworkInterface::onChannelGone(Channel* pChannel)
+{
+}
+
+inline void NetworkInterface::onChannelTimeOut(Channel* pChannel)
+{
+	TRACE("NetworkInterface::onChannelTimeOut()");
+
+	if( pChannelTimeOutHandler_ )
+	{
+		( *pChannelTimeOutHandler_ )( pChannel );
+	} else
+	{
+		ACE_ERROR(( LM_ERROR,
+			"NetworkInterface::onChannelTimeOut: "
+			"Channel {%s} timed out but no handler is registered.\n",
+			pChannel->c_str() ));
+	}
+
+	TRACE_RETURN_VOID();
+}
+
+void NetworkInterface::processAllChannelPackets(Messages* pMsgHandlers)
+{
+	ChannelMap::iterator iter = channelMap_.begin();
+	while( iter != channelMap_.end())
+	{
+		Channel* pChannel = iter->second;
+
+		if( pChannel->isDestroyed_ || pChannel->isCondemn_ )
+		{
+			++iter;
+			deregister_channel(pChannel);
+			pChannel->destroy();
+		} else
+		{
+			pChannel->process_packets(pMsgHandlers);
+			++iter;
+		}
+	}
 }
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

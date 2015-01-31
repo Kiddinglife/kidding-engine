@@ -1064,13 +1064,19 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 		intlisteningInterface,
 		intrbuffer,
 		intwbuffer);
-		
-	ACE_INET_Addr addr(20006,"192.168.2.47");
+
+	ACE_Time_Value tv;
+	in.handle_timeout(tv, 0);
+
+	ACE_INET_Addr addr(20006, "192.168.2.47");
 	ACE_SOCK_Dgram dg(addr);
 	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
-	in.registerChannel(&tcpchannel);
-	in.deregisterChannel(&tcpchannel);
-	in.deregisterAllChannels();
+
+	in.register_channel(&tcpchannel);
+	in.findChannel(addr);
+	in.findChannel(dg.get_handle());
+	in.deregister_channel(&tcpchannel);
+	in.deregister_all_channels();
 }
 
 //#include "network/endpoint.h"

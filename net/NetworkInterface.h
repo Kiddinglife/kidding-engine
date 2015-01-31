@@ -4,6 +4,11 @@
 #include "ace\pre.h"
 #include "ace/SOCK_Acceptor.h"
 #include "net_common.h"
+#include "net\Channel.h"
+#include "net\NetworkHandler.h"
+#include "net\DelayedChannelHandler.h"
+#include "net\Bundle.h"
+#include "net\Nub.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -14,8 +19,8 @@ const char* const USE_KBEMACHINED = "kbemachine";
 struct Bundle;
 struct Channel;
 struct DelayedChannels;
-struct ChannelTimeOutHandler;
-struct ChannelDeregisterHandler;
+//struct ChannelTimeOutHandler;
+//struct ChannelDeregisterHandler;
 struct Packet;
 struct Nub;
 struct Messages;
@@ -23,7 +28,7 @@ struct TCP_Acceptor_Handler;
 struct UDP_SOCK_Handler;
 struct DelayedChannelHandlers;
 
-struct NetworkInterface
+struct NetworkInterface : public ACE_Event_Handler
 {
 	typedef std::map<ACE_INET_Addr, Channel*>	ChannelMap;
 	ChannelMap                                                    channelMap_;
@@ -40,14 +45,14 @@ struct NetworkInterface
 	/// 数据指针
 	void*                                                                pExtensionData_;
 
-	/// 
 	TCP_Acceptor_Handler*                                    pExtListenerReceiver_;
-	UDP_SOCK_Handler*                                        pIntListenerReceiver_;
+	TCP_Acceptor_Handler*                                    pIntListenerReceiver_;
 
 	DelayedChannelHandlers* 						        pDelayedChannels_;
+
 	/// 超时的通道可被这个句柄捕捉， 例如告知上层client断开
-	ChannelTimeOutHandler*					                pChannelTimeOutHandler_;
-	ChannelDeregisterHandler*				                pChannelDeregisterHandler_;
+	ChannelTimeOutHandler					                pChannelTimeOutHandler_;
+	ChannelDeregisterHandler				                pChannelDeregisterHandler_;
 
 	const bool								                        isExternal_;
 	ACE_INT32									                    numExtChannels_;
@@ -64,6 +69,7 @@ struct NetworkInterface
 		ACE_UINT32   intrbuffer = 0,
 		ACE_UINT32   intwbuffer = 0);
 
+	/// release all resouces and clear the map
 	~NetworkInterface();
 
 	/**
@@ -87,12 +93,27 @@ struct NetworkInterface
 	*/
 	bool is_ip_addr_valid(const char* spec, char* name);
 
-	/**
-	 * These three methods are used to register and deregister the channel
-	 */
-	bool registerChannel(Channel* pChannel);
-	bool deregisterChannel(Channel* pChannel);
-	bool deregisterAllChannels();
+	void delayed_channels_send(Channel* channel);
+	void send_on_delayed(Channel* channel);
+
+	/// These three methods are used to register and deregister the channel
+	bool register_channel(Channel* pChannel);
+	bool deregister_channel(Channel* pChannel);
+	bool deregister_all_channels();
+
+	/// These twp methods are used to find the channel 
+	Channel* findChannel(const ACE_INET_Addr& addr);
+	Channel* findChannel(ACE_HANDLE  handle);
+
+	/// call back functon when the specific channel goes away
+	void onChannelGone(Channel * pChannel);
+
+	void NetworkInterface::onChannelTimeOut(Channel * pChannel);
+
+	/// Handle the timeout.
+	virtual int handle_timeout(const ACE_Time_Value &tv, const void *arg);
+
+	void processAllChannelPackets(Messages* pMsgHandlers);
 };
 
 NETWORK_NAMESPACE_END_DECL

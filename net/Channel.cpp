@@ -69,5 +69,11 @@ void Channel::destroy(void)
 	TRACE_RETURN_VOID();
 }
 
+void Channel::process_packets(Messages* pMsgHandlers)
+{
+	TRACE("Channel::process_packets()");
+	TRACE_RETURN_VOID();
+}
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
