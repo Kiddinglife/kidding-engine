@@ -768,7 +768,7 @@ void Bundle::dumpMsgs()
 	packets.insert(packets.end(), packets_.begin(), packets_.end());
 
 	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
-	Packet* pPacket = pool->Ctor();
+	Packet* temppacket = pool->Ctor();
 
 	MessageID msgid = 0;
 	MessageLength msglen = 0;
@@ -799,14 +799,77 @@ void Bundle::dumpMsgs()
 				ACE_InputCDR in(pPacket->buff);
 				in >> msgid;
 				pPacket->buff->rd_ptr(in.rd_ptr());
-				state = 1;
+				state = len;
 				continue;
 			} else if( state == len )
 			{
 				pCurrMsgHandler = pCurrMsg_->pMsgs_->find(msgid);
+				// 一些sendto操作的包导致找不到MsgHandler, 这类包也不需要追踪
+				if( !pCurrMsgHandler )
+				{
+					pPacket->on_read_packet_done();
+					continue;
+				}
+				if( pCurrMsgHandler->msgType_ == NETWORK_VARIABLE_MESSAGE || g_packetAlwaysContainLength )
+				{
+					ACE_InputCDR in(pPacket->buff);
+					in >> msglen;
+					pPacket->buff->rd_ptr(in.rd_ptr());
+					temppacket->os << msglen;
+					if( msglen == NETWORK_MESSAGE_MAX_SIZE )
+						state = len1;
+					else
+						state = body;
+				} else
+				{
+					msglen = pCurrMsgHandler->msgArgsBytesCount_;
+					temppacket->os << msglen;
+					state = 3;
+				}
+			} else if( state == len1 )
+			{
+				ACE_InputCDR in(pPacket->buff);
+				in >> msglen1;
+				pPacket->buff->rd_ptr(in.rd_ptr());
+				temppacket->os << msglen1;
+				state = body;
+				continue;
+			} else if( state == body )
+			{
+				MessageLength1 totallen = msglen1 > 0 ? msglen1 : msglen;
+				if( pPacket->length() >= totallen - temppacket->length() )
+				{
+					temppacket->os.write_char_array(pPacket->buff->rd_ptr(), totallen);
+					pPacket->buff->rd_ptr(totallen);
+				} else
+				{
+					temppacket->os.write_char_array(pPacket->buff->rd_ptr(), pPacket->length());
+					pPacket->on_read_packet_done();
+				}
+
+
+				if( temppacket->length() - NETWORK_MESSAGE_ID_SIZE - NETWORK_MESSAGE_LENGTH_SIZE == totallen )
+				{
+					state = 0;
+					msglen1 = 0;
+					msglen = 0;
+					msgid = 0;
+
+					//TRACE_MESSAGE_PACKET(false, pMemoryStream, pCurrMsgHandler, pMemoryStream->length(),
+					//	( pChannel_ != NULL ? pChannel_->c_str() : "None" ));
+
+					temppacket->reset();
+					continue;
+				}
 			}
-		}
+		};
+
+		pPacket->buff->rd_ptr(rpos);
+		pPacket->buff->wr_ptr(wpos);
 	}
+
+	pool->Dtor(temppacket);
+
 }
 
 NETWORK_NAMESPACE_END_DECL
