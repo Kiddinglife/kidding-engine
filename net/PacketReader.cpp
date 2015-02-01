@@ -1,4 +1,5 @@
 ﻿#include "PacketReader.h"
+#include "common\ace_object_pool.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -30,6 +31,16 @@ PacketReader::~PacketReader()
 void PacketReader::reset()
 {
 	TRACE("PacketReader::reset()");
+
+	fragmentsFlag_ = FRAGMENT_DATA_UNKNOW;
+	currMsgLen_ = currMsgID_ = pFragmentsRemainning = pFragmentsWpos_ = 0;
+
+	SAFE_RELEASE_ARRAY(pFragments);
+
+	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
+	pool->Dtor(pFragmentPacket_);
+	pFragmentPacket_ = NULL;
+
 	TRACE_RETURN_VOID();
 }
 NETWORK_NAMESPACE_END_DECL

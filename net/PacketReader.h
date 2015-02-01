@@ -2,14 +2,12 @@
 #define PacketReader_H_
 
 #include "ace\pre.h"
-#include "net_common.h"
+#include "net\Packet.h"
+#include "net\Message.h"
+#include "net\Channel.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
-
-struct Channel;
-struct Messages;
-struct Packet;
 
 enum FragmentType
 {
@@ -22,7 +20,7 @@ enum FragmentType
 
 struct PacketReader
 {
-	ACE_UINT8*         pFragments; //pFragmentDatas_
+	ACE_Byte*             pFragments; //pFragmentDatas_
 	ACE_UINT32		    pFragmentsWpos_; //pFragmentDatasWpos_;
 	ACE_UINT32			pFragmentsRemainning; //pFragmentDatasRemain_;
 	FragmentType      fragmentsFlag_; //fragmentDatasFlag_
