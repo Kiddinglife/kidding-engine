@@ -762,6 +762,8 @@ void  Bundle::udp_send(const ACE_SOCK_Dgram* ep, const ACE_INET_Addr* remoteaddr
 
 void Bundle::dumpMsgs()
 {
+	TRACE("Bundle::dumpMsgs()");
+
 	if( !pCurrMsg_ ) return;
 
 	Packets packets;
@@ -866,10 +868,13 @@ void Bundle::dumpMsgs()
 
 		pPacket->buff->rd_ptr(rpos);
 		pPacket->buff->wr_ptr(wpos);
+
+		ACE_HEX_DUMP((LM_DEBUG, temppacket->buff->base(), temppacket->buff->length()));
 	}
 
 	pool->Dtor(temppacket);
 
+	TRACE_RETURN_VOID();
 }
 
 NETWORK_NAMESPACE_END_DECL

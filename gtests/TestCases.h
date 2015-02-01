@@ -912,6 +912,8 @@ TEST(BundleTest, write_variable_msg)
 
 	p->end_new_curr_message();
 
+	p->dumpMsgs();
+
 	//#pragma pack (push, 1)
 	struct Arg
 	{
