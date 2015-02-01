@@ -7,9 +7,9 @@
 #include "FixedMessages.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
-class KBE_MD5;
 NETWORK_NAMESPACE_BEGIN_DECL
 
+class KBE_MD5;
 struct Messages;
 extern std::vector<Messages*>* gPtrMsgsPtrContainer;
 extern FixedMessages* gPtrFixedMsgs;
@@ -57,7 +57,7 @@ struct Message
 	std::string        name_;
 	MessageID      msgID_;
 	MessageArgs* pMsgArgs_;
-	/* -1则为非固定长度消息 : -1 = variable-len msg */
+	/*-1 = variable-len msg */
 	ACE_INT8        msgType_;
 	ACE_UINT8      msgArgsBytesCount_;
 	bool                exposed_;
@@ -108,7 +108,7 @@ struct Message
 		return buf;
 	}
 
-	/// 当这个handler被正是安装到MessageHandlers后被调用
+	/// 当该消息被加入到msgs集合中后被调用
 	virtual void onAdded2Msgs() { }
 
 
@@ -170,6 +170,7 @@ struct Messages
 
 	static std::string getDigestStr();
 };
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include "ace\post.h"

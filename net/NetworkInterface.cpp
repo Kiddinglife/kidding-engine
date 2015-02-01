@@ -3,6 +3,9 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
+/**
+ * ctor creates external and internal listenning socket both are tcp
+ */
 NetworkInterface::NetworkInterface(
 Nub* pDispatcher,
 ACE_INT16 extlisteningPort_min,
@@ -169,6 +172,9 @@ numExtChannels_(0)
 	}
 }
 
+/**
+ * release all resouces and clear the channels map
+ */
 NetworkInterface::~NetworkInterface()
 {
 	TRACE("NetworkInterface::dtor()");
@@ -188,6 +194,10 @@ NetworkInterface::~NetworkInterface()
 	TRACE_RETURN_VOID();
 }
 
+/**
+ * This method is used to handle the timout event in network interface
+ * It just simply print the internal and external interface infos
+ */
 int NetworkInterface::handle_timeout(const ACE_Time_Value& tv, const void* arg)
 {
 	TRACE("NetworkInterface::handle_timeout()");
@@ -210,6 +220,25 @@ int NetworkInterface::handle_timeout(const ACE_Time_Value& tv, const void* arg)
 	TRACE_RETURN(0);
 }
 
+/**
+* This method will extacrt the host or domain name and ip adress based on the given string
+*
+* @param {in} spec ip address string such as 192.168.2.5 127.0.0.1 and so on
+*
+* @param {out} host name or domain name such as localhost or eth0
+* @ret bool true if success false if fail
+*
+* @responsibility the caller needs to ensure @param spec like ip addr host name  does exist
+*
+* gethostbyname()
+* return ip adrr given host name or domain name
+* 通过域名或者主机命返回IP地址. 传进去的参数是一个域名或者主机名.
+* 返回值是一个Hostent指针结构.(如传进去的是一个空字符串,那么返回的是本机的主机名与IP地址)
+*
+* gethostname()
+* get host name or domain name
+* 得到本机主机名或者域名.有两个参数,一个是用来存放主机名或者域名的变量,一个是缓冲区的大小.
+*/
 bool NetworkInterface::is_ip_addr_valid(const char* spec, char* name)
 {
 	// start with it cleared
@@ -268,6 +297,7 @@ bool NetworkInterface::is_ip_addr_valid(const char* spec, char* name)
 
 }
 
+/*These three methods are used to register and deregister the channel*/
 bool NetworkInterface::register_channel(Channel* pChannel)
 {
 	TRACE("NetworkInterface::registerChannel");
@@ -297,7 +327,6 @@ bool NetworkInterface::register_channel(Channel* pChannel)
 
 	TRACE_RETURN(true);
 }
-
 bool NetworkInterface::deregister_channel(Channel* pChannel)
 {
 	TRACE("NetworkInterface::deregisterChannel");
@@ -326,7 +355,6 @@ bool NetworkInterface::deregister_channel(Channel* pChannel)
 
 	TRACE_RETURN(true);
 }
-
 bool NetworkInterface::deregister_all_channels()
 {
 	TRACE("NetworkInterface::deregisterAllChannels");
@@ -350,7 +378,6 @@ inline void NetworkInterface::delayed_channels_send(Channel* channel)
 	pDelayedChannels_->add(channel);
 	TRACE_RETURN_VOID();
 }
-
 inline void NetworkInterface::send_on_delayed(Channel* channel)
 {
 	TRACE("NetworkInterface::send_on_delayed()");
@@ -358,6 +385,7 @@ inline void NetworkInterface::send_on_delayed(Channel* channel)
 	TRACE_RETURN_VOID();
 }
 
+/*These twp methods are used to find the channel */
 Channel * NetworkInterface::channel(const ACE_INET_Addr& addr)
 {
 	TRACE("NetworkInterface::findChannel(const ACE_INET_Addr&)");
@@ -367,7 +395,6 @@ Channel * NetworkInterface::channel(const ACE_INET_Addr& addr)
 
 	TRACE_RETURN(( iter != channelMap_.end() ) ? iter->second : NULL);
 }
-
 Channel * NetworkInterface::channel(ACE_HANDLE handle)
 {
 	TRACE("NetworkInterface::findChannel(ACE_HANDLE)");
@@ -388,7 +415,6 @@ inline void NetworkInterface::on_channel_left(Channel* pChannel)
 	TRACE("NetworkInterface::onChannelGone()");
 	TRACE_RETURN_VOID();
 }
-
 inline void NetworkInterface::on_channel_timeout(Channel* pChannel)
 {
 	TRACE("NetworkInterface::onChannelTimeOut()");
@@ -407,6 +433,7 @@ inline void NetworkInterface::on_channel_timeout(Channel* pChannel)
 	TRACE_RETURN_VOID();
 }
 
+/*this method will go through all the channels and process its packets*/
 void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
 {
 	TRACE("NetworkInterface::process_all_channels_packets()");
@@ -428,5 +455,6 @@ void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
 	}
 	TRACE_RETURN_VOID();
 }
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
