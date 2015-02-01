@@ -134,9 +134,8 @@ void PacketReader::writeFragmentMessage(FragmentType fragmentsFlag, Packet* pPac
 	{
 		/// copy the bytes in the packet into this buffer 
 		memcpy(pFragments_, pPacket->buff->rd_ptr(), opsize);
-
 		/// advance the rd position in this packet
-		pPacket->buff->rd_ptr(opsize);
+		pPacket->on_read_packet_done();
 	}
 
 	TRACE_RETURN_VOID();

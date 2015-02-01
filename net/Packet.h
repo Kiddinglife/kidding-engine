@@ -54,6 +54,13 @@ struct Packet
 		pBundle_ = NULL;
 	}
 
+	/* Make the read ptr = write ptr to show the read is done */
+	void on_read_packet_done()
+	{
+		/// advance the rd position in this packet
+		this->buff->rd_ptr(length());
+	}
+
 	const size_t length() const { return buff->length(); }
 	const bool empty() const { return length() > 0; }
 

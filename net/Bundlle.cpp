@@ -762,11 +762,10 @@ void  Bundle::udp_send(const ACE_SOCK_Dgram* ep, const ACE_INET_Addr* remoteaddr
 
 void Bundle::dumpMsgs()
 {
-	if(!pCurrMsg_) return;
+	if( !pCurrMsg_ ) return;
 
 	Packets packets;
-
-	if(pCurrPacket_) packets.push_back(pCurrPacket_);
+	packets.insert(packets.end(), packets_.begin(), packets_.end());
 
 	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
 	Packet* pPacket = pool->Ctor();
@@ -777,8 +776,13 @@ void Bundle::dumpMsgs()
 	const Message* pCurrMsgHandler = NULL;
 
 	// 0:读取消息ID， 1：读取消息长度， 2：读取消息扩展长度, 3:读取内容
-	int state = 0; 
+	int state = 0;
+	for( Packets::iterator iter = packets.begin(); iter != packets.end(); iter++ )
+	{
+		Packet* pPacket = ( *iter );
+		if( pPacket->length() == 0 ) continue;
 
+	}
 }
 
 NETWORK_NAMESPACE_END_DECL
