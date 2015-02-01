@@ -61,6 +61,7 @@ struct Message
 	ACE_INT8        msgType_;
 	ACE_UINT8      msgArgsBytesCount_;
 	bool                exposed_;
+	Messages*      pMsgs_;
 
 	// stats
 	ACE_UINT32 send_size_;
@@ -78,7 +79,8 @@ struct Message
 		send_size_(0),
 		send_count_(0),
 		recv_size_(0),
-		recv_count_(0)
+		recv_count_(0),
+		pMsgs_(NULL)
 	{
 	}
 

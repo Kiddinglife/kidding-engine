@@ -776,12 +776,36 @@ void Bundle::dumpMsgs()
 	const Message* pCurrMsgHandler = NULL;
 
 	// 0:读取消息ID， 1：读取消息长度， 2：读取消息扩展长度, 3:读取内容
-	int state = 0;
+	enum { id = 0, len, len1, body };
+	int state = id;
 	for( Packets::iterator iter = packets.begin(); iter != packets.end(); iter++ )
 	{
 		Packet* pPacket = ( *iter );
 		if( pPacket->length() == 0 ) continue;
+		char* rpos = pPacket->buff->rd_ptr();
+		char* wpos = pPacket->buff->wr_ptr();
 
+		while( pPacket->length() > 0 )
+		{
+			if( state == id )
+			{
+				// 一些sendto操作的包导致, 这类包也不需要追踪
+				if( pPacket->length() < NETWORK_MESSAGE_ID_SIZE )
+				{
+					pPacket->on_read_packet_done();
+					continue;
+				}
+
+				ACE_InputCDR in(pPacket->buff);
+				in >> msgid;
+				pPacket->buff->rd_ptr(in.rd_ptr());
+				state = 1;
+				continue;
+			} else if( state == len )
+			{
+				pCurrMsgHandler = pCurrMsg_->pMsgs_->find(msgid);
+			}
+		}
 	}
 }
 
