@@ -672,6 +672,7 @@ struct Bundle
 		return *this;
 	}
 
+	void dumpMsgs();
 };
 
 NETWORK_NAMESPACE_END_DECL

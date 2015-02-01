@@ -8,12 +8,12 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-class Bundle;
+struct Bundle;
 struct Packet
 {
 	ACE_OutputCDR os;
 	ACE_Message_Block* buff;
-	ACE_InputCDR in;
+	//ACE_InputCDR in;
 
 	MessageID msgID_;
 	Bundle* pBundle_;

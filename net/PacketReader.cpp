@@ -48,7 +48,7 @@ void PacketReader::reset()
 	TRACE_RETURN_VOID();
 }
 
-void PacketReader::processMessages(Messages* pMsgHandlers, Packet* pPacket)
+void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 {
 	TRACE("PacketReader::processMessages()");
 	while( pPacket->length() > 0 || pFragmentPacket_ != NULL )
@@ -85,13 +85,25 @@ void PacketReader::processMessages(Messages* pMsgHandlers, Packet* pPacket)
 					writeFragmentMessage(FRAGMENT_DATA_MESSAGE_ID, pPacket, NETWORK_MESSAGE_ID_SIZE);
 					break;
 				}
+
+				/// read msg id from this packet to currMsgID_ and reset the msgID_
+				ACE_InputCDR in(pPacket->buff);
+				in >> currMsgID_;
+				pPacket->buff->rd_ptr(in.rd_ptr());
+				pPacket->msgID_ = currMsgID_;
 				//const_cast<ACE_Message_Block*>( in.start() )->base(pPacket->buff->base(),
 				//	pPacket->buff->size());
 				//const_cast<ACE_Message_Block*>( in.start() )->rd_ptr(pPacket->buff->rd_ptr());
-				ACE_InputCDR in(pPacket->buff);
-				in >> currMsgID_;
 			}
 
+			// find the msg based on currMsgID_
+			Message* pMsg = pMsgs->find(currMsgID_);
+			if( pMsg == NULL )
+			{
+				ACE_DEBUG(( LM_DEBUG, "PacketReader::processMessages()::@5::{pMsg == NULL}\n" ));
+				Packet* pPacket1 = pFragmentPacket_ != NULL ? pFragmentPacket_ : pPacket;
+
+			}
 		}
 	}
 	TRACE_RETURN_VOID();
@@ -169,10 +181,7 @@ void PacketReader::mergeFragmentMessage(Packet* pPacket)
 				//pFragmentStream_ = MemoryStream::ObjPool().createObject();
 				//pFragmentStream_->append(pFragmentDatas_, currMsgLen_);
 				break;
-
-			default:
-				break;
-		};
+		}
 
 		ACE_DEBUG(( LM_DEBUG,
 			"PacketReader::mergeFragmentMessage({%s}): channel[{%d}], fragmentsFlag={%d},"

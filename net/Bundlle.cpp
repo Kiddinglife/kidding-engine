@@ -760,5 +760,26 @@ void  Bundle::udp_send(const ACE_SOCK_Dgram* ep, const ACE_INET_Addr* remoteaddr
 	}
 }
 
+void Bundle::dumpMsgs()
+{
+	if(!pCurrMsg_) return;
+
+	Packets packets;
+
+	if(pCurrPacket_) packets.push_back(pCurrPacket_);
+
+	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
+	Packet* pPacket = pool->Ctor();
+
+	MessageID msgid = 0;
+	MessageLength msglen = 0;
+	MessageLength1 msglen1 = 0;
+	const Message* pCurrMsgHandler = NULL;
+
+	// 0:读取消息ID， 1：读取消息长度， 2：读取消息扩展长度, 3:读取内容
+	int state = 0; 
+
+}
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
