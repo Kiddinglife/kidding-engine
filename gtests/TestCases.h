@@ -313,15 +313,15 @@ TEST(timestamp_test, AllMethodsTest)
 	cout << "ageInSecs : " << stamp.ageInSeconds() << endl;
 }
 
-#include "common\md5.hpp"
-TEST(md5_test, AllMethodsTest)
-{
-	std::string text = "hello Jackie";
-	void* t = static_cast<void*>( const_cast<char*>( text.c_str() ) );
-	KBE_MD5 md5(t, text.size());
-	cout << "hello Jackie md5  str is " << md5.getDigestStr() << endl;
-	ACE_HEX_DUMP(( LM_DEBUG, const_cast<char*>( (char*) md5.getDigest() ), 33, "dum result is :" ));
-}
+//#include "common\md5.hpp"
+//TEST(md5_test, AllMethodsTest)
+//{
+//	std::string text = "hello Jackie";
+//	void* t = static_cast<void*>( const_cast<char*>( text.c_str() ) );
+//	KBE_MD5 md5(t, text.size());
+//	cout << "hello Jackie md5  str is " << md5.getDigestStr() << endl;
+//	ACE_HEX_DUMP(( LM_DEBUG, const_cast<char*>( (char*) md5.getDigest() ), 33, "dum result is :" ));
+//}
 
 #include "ace/Get_Opt.h"
 #include "ace/Auto_Ptr.h"
@@ -1079,5 +1079,42 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	in.process_all_channels_packets(&msgs);
 	in.deregister_channel(&tcpchannel);
 	in.deregister_all_channels();
+
+}
+
+#include "net\PacketReader.h"
+TEST(PacketReaderTests, ctor_dtor_test)
+{
+	Nub              pDispatcher;
+	ACE_INT32     extlisteningPort_min = 20001;
+	ACE_INT32     extlisteningPort_max = 20005;
+	const char *    extlisteningInterface = "192.168.2.47";
+	//const char *    extlisteningInterface = "";
+	//const char *    extlisteningInterface = "127.0.0.1";
+	//const char *    extlisteningInterface = USE_KBEMACHINED;
+	ACE_UINT32   extrbuffer = 512;
+	ACE_UINT32   extwbuffer = 512;
+	ACE_INT32      intlisteningPort = 20006;
+	const char *    intlisteningInterface = "192.168.2.47";
+	ACE_UINT32   intrbuffer = 512;
+	ACE_UINT32   intwbuffer = 512;
+
+	NetworkInterface in(&pDispatcher,
+		extlisteningPort_min,
+		extlisteningPort_max,
+		extlisteningInterface,
+		extrbuffer,
+		extwbuffer,
+		intlisteningPort,
+		intlisteningInterface,
+		intrbuffer,
+		intwbuffer);
+
+	ACE_INET_Addr addr(20006, "192.168.2.47");
+	ACE_SOCK_Dgram dg(addr);
+	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
+	Messages msgs;
+
+	PacketReader r(&tcpchannel);
 
 }

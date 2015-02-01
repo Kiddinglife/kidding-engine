@@ -20,7 +20,7 @@ enum FragmentType
 
 struct PacketReader
 {
-	ACE_Byte*             pFragments; //pFragmentDatas_
+	char*                    pFragments_; //pFragmentDatas_
 	ACE_UINT32		    pFragmentsWpos_; //pFragmentDatasWpos_;
 	ACE_UINT32			pFragmentsRemainning; //pFragmentDatasRemain_;
 	FragmentType      fragmentsFlag_; //fragmentDatasFlag_
@@ -30,9 +30,18 @@ struct PacketReader
 	MessageID			currMsgID_;
 	MessageLength1  currMsgLen_;
 
+//	ACE_InputCDR      in;
+
 	PacketReader(Channel* pChannel = NULL);
 	virtual ~PacketReader();
 	void reset();
+
+	void writeFragmentMessage(FragmentType fragmentFlag, Packet* pPacket, 
+	ACE_UINT32 datasize);
+
+	void mergeFragmentMessage(Packet* pPacket);
+
+	void PacketReader::processMessages(Messages* pMsgHandlers, Packet* pPacket);
 };
 
 NETWORK_NAMESPACE_END_DECL

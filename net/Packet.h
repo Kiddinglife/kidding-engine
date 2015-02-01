@@ -13,7 +13,7 @@ struct Packet
 {
 	ACE_OutputCDR os;
 	ACE_Message_Block* buff;
-	//ACE_InputCDR in;
+	ACE_InputCDR in;
 
 	MessageID msgID_;
 	Bundle* pBundle_;
