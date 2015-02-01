@@ -803,11 +803,17 @@ void Bundle::dumpMsgs()
 					pPacket->on_read_packet_done();
 					continue;
 				}
+				ACE_DEBUG(( LM_DEBUG, "pPacket.rdpos = %d\n", pPacket->buff->rd_ptr() ));
+				ACE_DEBUG(( LM_DEBUG, "in.rdpos = %d\n", in.rd_ptr() ));
 
 				ACE_InputCDR in(pPacket->buff);
 				in >> msgid;
-				ACE_DEBUG(( LM_DEBUG, "msgid = %d\n", msgid ));
 				pPacket->buff->rd_ptr(in.rd_ptr());
+
+				ACE_DEBUG(( LM_DEBUG, "pPacket.rdpos = %d\n", pPacket->buff->rd_ptr() ));
+				ACE_DEBUG(( LM_DEBUG, "in.rdpos = %d\n", in.rd_ptr() ));
+				ACE_DEBUG(( LM_DEBUG, "msgid = %d\n", msgid ));
+
 				state = len;
 				break;
 			} else if( state == len )
