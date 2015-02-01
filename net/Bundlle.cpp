@@ -771,6 +771,7 @@ void Bundle::dumpMsgs()
 
 	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
 	Packet* temppacket = pool->Ctor();
+	temppacket->buff->size(512);
 
 	MessageID msgid = 0;
 	MessageLength msglen = 0;
@@ -784,25 +785,31 @@ void Bundle::dumpMsgs()
 	{
 		Packet* pPacket = ( *iter );
 		if( pPacket->length() == 0 ) continue;
+
 		char* rpos = pPacket->buff->rd_ptr();
 		char* wpos = pPacket->buff->wr_ptr();
 
+		ACE_DEBUG(( LM_DEBUG, "pPacket->length() = %d\n", pPacket->length() ));
 		while( pPacket->length() > 0 )
 		{
 			if( state == id )
 			{
+				ACE_DEBUG(( LM_DEBUG, " @1::state == id\n" ));
 				// 一些sendto操作的包导致, 这类包也不需要追踪
 				if( pPacket->length() < NETWORK_MESSAGE_ID_SIZE )
 				{
+					ACE_DEBUG(( LM_DEBUG,
+						"@2::pPacket->length() < NETWORK_MESSAGE_ID_SIZE\n" ));
 					pPacket->on_read_packet_done();
 					continue;
 				}
 
 				ACE_InputCDR in(pPacket->buff);
 				in >> msgid;
+				ACE_DEBUG(( LM_DEBUG, "msgid = %d\n", msgid ));
 				pPacket->buff->rd_ptr(in.rd_ptr());
 				state = len;
-				continue;
+				break;
 			} else if( state == len )
 			{
 				pCurrMsgHandler = pCurrMsg_->pMsgs_->find(msgid);
@@ -856,10 +863,8 @@ void Bundle::dumpMsgs()
 					msglen1 = 0;
 					msglen = 0;
 					msgid = 0;
-
 					//TRACE_MESSAGE_PACKET(false, pMemoryStream, pCurrMsgHandler, pMemoryStream->length(),
 					//	( pChannel_ != NULL ? pChannel_->c_str() : "None" ));
-
 					temppacket->reset();
 					continue;
 				}
@@ -869,7 +874,7 @@ void Bundle::dumpMsgs()
 		pPacket->buff->rd_ptr(rpos);
 		pPacket->buff->wr_ptr(wpos);
 
-		ACE_HEX_DUMP((LM_DEBUG, temppacket->buff->base(), temppacket->buff->length()));
+		ACE_HEX_DUMP(( LM_DEBUG, temppacket->buff->base(), temppacket->buff->length() ));
 	}
 
 	pool->Dtor(temppacket);
