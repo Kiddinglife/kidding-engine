@@ -856,8 +856,8 @@ void Bundle::dumpMsgs()
 				{
 					ACE_DEBUG(( LM_DEBUG, " @4::NETWORK_FIXED_MESSAGE\n" ));
 					msglen = pCurrMsgHandler->msgArgsBytesCount_;
-					headlen += sizeof(MessageLength);
-					temppacket->os << msglen;
+					//headlen += sizeof(MessageLength);
+					//temppacket->os << msglen;
 					state = body;
 				}
 
@@ -892,7 +892,7 @@ void Bundle::dumpMsgs()
 
 				ACE_DEBUG(( LM_DEBUG, "  totallen = %d\n", totallen ));
 
-				if( pPacket->length() >= totallen )
+				if( pPacket->length() >= totallen)
 				{
 					temppacket->os.write_char_array(pPacket->buff->rd_ptr(), totallen);
 					pPacket->buff->rd_ptr(totallen);
