@@ -22,7 +22,8 @@ std::vector<std::string> g_trace_packet_disables;
 
 static const char* name = GET_KBE_SRV_COMPONENT_TYPE_NAME(g_componentType);
 static std::string n(name);
-static std::ofstream normal(( n + ".log" ).c_str());
+std::ofstream normal(( n + ".log" ).c_str());
+
 static  std::ofstream packetlogos("packetlogs.log");
 
 void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
