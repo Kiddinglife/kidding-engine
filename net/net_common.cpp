@@ -54,7 +54,7 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 		} else
 		{
 			ACE_DEBUG(( LM_INFO,
-				"%M::{%s} msgname:{%s}, msgID:{%d}, currMsgLength:{%d}, addr:{%s}\n",
+				"\n%M::{%s} msgname:{%s}, msgID:{%d}, currMsgLength:{%d}, addr:{%s}\n",
 				( isrecv == true ) ? "====>" : "<====",
 				pCurrMsgHandler->name_.c_str(), pCurrMsgHandler->msgID_, length, addr ));
 		}
@@ -65,7 +65,7 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 		ACE_DEBUG(( LM_INFO,
 			"%M::The curr packet rd pos = %d, wr pos = %d\n",
 			pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
-		ACE_HEX_DUMP(( LM_INFO, pPacket->buff->base(), pPacket->length(), "\n"));
+		ACE_HEX_DUMP(( LM_INFO, pPacket->buff->base(), pPacket->length()));
 	}
 
 	if( g_trace_packet_use_logfile )
