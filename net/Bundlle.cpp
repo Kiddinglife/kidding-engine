@@ -773,6 +773,11 @@ void Bundle::dumpMsgs()
 	Packet* temppacket = pool->Ctor();
 	temppacket->buff->size(512);
 
+	char* base = in.start()->base();
+	size_t size = in.start()->size();
+	char* w = in.start()->wr_ptr();
+	char* r = in.start()->rd_ptr();
+
 	MessageID msgid = 0;
 	MessageLength msglen = 0;
 	MessageLength1 msglen1 = 0;
@@ -789,7 +794,12 @@ void Bundle::dumpMsgs()
 		char* rpos = pPacket->buff->rd_ptr();
 		char* wpos = pPacket->buff->wr_ptr();
 
+		const_cast<ACE_Message_Block*>( in.start() )->base(pPacket->buff->base(),
+			pPacket->buff->size());
+		const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(wpos);
+
 		ACE_DEBUG(( LM_DEBUG, "pPacket->length() = %d\n", pPacket->length() ));
+
 		while( pPacket->length() > 0 )
 		{
 			if( state == id )
@@ -803,10 +813,10 @@ void Bundle::dumpMsgs()
 					pPacket->on_read_packet_done();
 					continue;
 				}
+
 				ACE_DEBUG(( LM_DEBUG, "pPacket.rdpos = %d\n", pPacket->buff->rd_ptr() ));
 				ACE_DEBUG(( LM_DEBUG, "in.rdpos = %d\n", in.rd_ptr() ));
 
-				ACE_InputCDR in(pPacket->buff);
 				in >> msgid;
 				pPacket->buff->rd_ptr(in.rd_ptr());
 
@@ -815,22 +825,30 @@ void Bundle::dumpMsgs()
 				ACE_DEBUG(( LM_DEBUG, "msgid = %d\n", msgid ));
 
 				state = len;
-				break;
+				continue;
+
 			} else if( state == len )
 			{
+				ACE_DEBUG(( LM_DEBUG, " @2::state == len\n" ));
+
 				pCurrMsgHandler = pCurrMsg_->pMsgs_->find(msgid);
+
 				// 一些sendto操作的包导致找不到MsgHandler, 这类包也不需要追踪
 				if( !pCurrMsgHandler )
 				{
+					ACE_DEBUG(( LM_DEBUG, " @3::!pCurrMsgHandler\n" ));
 					pPacket->on_read_packet_done();
 					continue;
 				}
+
+				break;
+
 				if( pCurrMsgHandler->msgType_ == NETWORK_VARIABLE_MESSAGE || g_packetAlwaysContainLength )
 				{
-					ACE_InputCDR in(pPacket->buff);
 					in >> msglen;
 					pPacket->buff->rd_ptr(in.rd_ptr());
 					temppacket->os << msglen;
+
 					if( msglen == NETWORK_MESSAGE_MAX_SIZE )
 						state = len1;
 					else
@@ -841,9 +859,10 @@ void Bundle::dumpMsgs()
 					temppacket->os << msglen;
 					state = 3;
 				}
+				break;
+
 			} else if( state == len1 )
 			{
-				ACE_InputCDR in(pPacket->buff);
 				in >> msglen1;
 				pPacket->buff->rd_ptr(in.rd_ptr());
 				temppacket->os << msglen1;
@@ -861,7 +880,6 @@ void Bundle::dumpMsgs()
 					temppacket->os.write_char_array(pPacket->buff->rd_ptr(), pPacket->length());
 					pPacket->on_read_packet_done();
 				}
-
 
 				if( temppacket->length() - NETWORK_MESSAGE_ID_SIZE - NETWORK_MESSAGE_LENGTH_SIZE == totallen )
 				{
@@ -882,6 +900,10 @@ void Bundle::dumpMsgs()
 
 		ACE_HEX_DUMP(( LM_DEBUG, temppacket->buff->base(), temppacket->buff->length() ));
 	}
+
+	const_cast<ACE_Message_Block*>( in.start() )->base(base,size);
+	const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(w);
+	const_cast<ACE_Message_Block*>( in.start() )->rd_ptr(r);
 
 	pool->Dtor(temppacket);
 

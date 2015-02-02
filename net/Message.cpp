@@ -47,6 +47,7 @@ Message*  Messages::add_msg(const std::string& ihName, MessageArgs* args,
 	msg->pMsgArgs_ = args;
 	msg->msgType_ = msgType;
 	msg->exposed_ = false;
+	msg->pMsgs_ = this;
 	msg->onAdded2Msgs();
 
 	///将该msg添加到msgs中去

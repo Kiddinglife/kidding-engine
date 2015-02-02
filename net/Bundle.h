@@ -137,7 +137,7 @@ struct Bundle
 	void init_instream(void)
 	{
 		const_cast<ACE_Message_Block*>( in.start() )->base(packets_[0]->buff->base(),
-			packets_[0]->buff->length());
+			packets_[0]->buff->size());
 		const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(packets_[0]->buff->wr_ptr());
 	}
 

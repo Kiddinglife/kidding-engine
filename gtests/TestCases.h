@@ -874,7 +874,9 @@ TEST(BundleTest, write_variable_msg)
 
 	Message* currhandler = new Message;
 	currhandler->msgID_ = 1;
-	currhandler->msgType_ = NETWORK_VARIABLE_MESSAGE;
+
+	Messages msgs;
+	msgs.add_msg("currhandler", NULL, NETWORK_VARIABLE_MESSAGE, currhandler);
 
 	p->start_new_curr_message(currhandler);
 
@@ -1034,7 +1036,6 @@ TEST(BundleTest, write_variable_msg)
 		"PACKET_OUT_VALUE::Result: \n" ));
 	cout << "arg.n5  = " << arg.n5 << endl;
 
-	delete currhandler;
 	p->clear();
 	pool->Dtor(p);
 }
