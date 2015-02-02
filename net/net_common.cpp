@@ -29,6 +29,7 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 
 	if( g_trace_packet_use_logfile )
 	{
+		return;
 		ACE_DEBUG(( LM_DEBUG,
 			"%M::TRACE_MESSAGE_PACKET::@1::g_trace_packet_use_logfile != NULL\n" ));
 		ACE_LOG_MSG->msg_ostream(&packetlogos);
