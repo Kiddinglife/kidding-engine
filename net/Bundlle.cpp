@@ -841,8 +841,6 @@ void Bundle::dumpMsgs()
 					continue;
 				}
 
-				break;
-
 				if( pCurrMsgHandler->msgType_ == NETWORK_VARIABLE_MESSAGE || g_packetAlwaysContainLength )
 				{
 					in >> msglen;
@@ -859,7 +857,6 @@ void Bundle::dumpMsgs()
 					temppacket->os << msglen;
 					state = 3;
 				}
-				break;
 
 			} else if( state == len1 )
 			{
@@ -898,7 +895,10 @@ void Bundle::dumpMsgs()
 		pPacket->buff->rd_ptr(rpos);
 		pPacket->buff->wr_ptr(wpos);
 
-		ACE_HEX_DUMP(( LM_DEBUG, temppacket->buff->base(), temppacket->buff->length() ));
+		ACE_HEX_DUMP(( LM_DEBUG, 
+		temppacket->buff->base(), 
+		temppacket->buff->length(),
+		"dump msg result:\n"));
 	}
 
 	const_cast<ACE_Message_Block*>( in.start() )->base(base,size);
