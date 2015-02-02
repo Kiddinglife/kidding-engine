@@ -906,7 +906,8 @@ void Bundle::dumpMsgs()
 				ACE_DEBUG(( LM_DEBUG, "cal = %d\n",
 					temppacket->length() - headlen ));
 
-				if( temppacket->length() - headlen == totallen )
+				size_t msgpayload = temppacket->length() - headlen;
+				if( msgpayload == totallen )
 				{
 					ACE_DEBUG(( LM_DEBUG, " @7::write done\n" ));
 
@@ -918,8 +919,7 @@ void Bundle::dumpMsgs()
 					this->pChnnel_->c_str();
 
 					TRACE_MESSAGE_PACKET(false, temppacket, pCurrMsgHandler,
-						temppacket->length(),
-						this->pChnnel_ != NULL ? this->pChnnel_->c_str() : "none");
+						msgpayload, pChnnel_ != NULL ? pChnnel_->c_str() : "none");
 
 					//ACE_HEX_DUMP(( LM_DEBUG,
 					//	temppacket->buff->base(),
