@@ -17,8 +17,9 @@ bool g_appPublish = 1;
 
 bool g_packetAlwaysContainLength = false;
 int g_trace_packet = 1;
-bool g_trace_packet_use_logfile = false;
+bool g_trace_packet_use_logfile = true;
 std::vector<std::string> g_trace_packet_disables;
+static  std::ofstream packetlogos("packetlogs.log");
 
 void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 	Message* pCurrMsgHandler, size_t length, const char* addr)
@@ -29,10 +30,9 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 	if( g_trace_packet_use_logfile )
 	{
 		ACE_DEBUG(( LM_DEBUG,
-			"TRACE_MESSAGE_PACKET::@1::g_trace_packet_use_logfile != NULL\n" ));
-		std::ofstream os("packetlogs.log");
-		ACE_LOG_MSG->msg_ostream(&os, 1);
-		ACE_LOG_MSG->set_flags(ACE_Log_Msg::OSTREAM);
+			"%M::TRACE_MESSAGE_PACKET::@1::g_trace_packet_use_logfile != NULL\n" ));
+		ACE_LOG_MSG->msg_ostream(&packetlogos);
+		return;
 	}
 
 	bool isprint = true;
@@ -60,19 +60,21 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 
 	if( isprint )
 	{
-		ACE_DEBUG(( LM_DEBUG,
-			"TRACE_MESSAGE_PACKET::@5::isprint == true\n" ));
+		ACE_DEBUG(( LM_DEBUG, "%M::TRACE_MESSAGE_PACKET::@5::isprint == true\n" ));
+		ACE_DEBUG(( LM_INFO, "%M::The curr packet rd pos = %lu, wr pos = %lu\n",
+			pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
+		ACE_HEX_DUMP(( LM_INFO, pPacket->buff->base(), pPacket->length() ));
 	}
 
 	if( g_trace_packet_use_logfile )
 	{
+		//const char* name = GET_KBE_SRV_COMPONENT_TYPE_NAME(g_componentType);
+		//std::string n(name);
+		//std::ofstream os(( n + ".log" ).c_str());
+		std::ofstream os;
+		ACE_LOG_MSG->msg_ostream(&os);
 		ACE_DEBUG(( LM_DEBUG,
-			"TRACE_MESSAGE_PACKET::@6::g_trace_packet_use_logfile != NULL\n" ));
-		const char* name = GET_KBE_SRV_COMPONENT_TYPE_NAME(g_componentType);
-		std::string n(name);
-		std::ofstream os(( n + ".log" ).c_str());
-		ACE_LOG_MSG->msg_ostream(&os, 1);
-		ACE_LOG_MSG->set_flags(ACE_Log_Msg::OSTREAM);
+			"%M::TRACE_MESSAGE_PACKET::@6::g_trace_packet_use_logfile != NULL\n" ));
 	}
 
 	TRACE_RETURN_VOID();
