@@ -852,6 +852,11 @@ void Bundle::dumpMsgs()
 					else
 						state = body;
 
+					MessageLength len = 0;
+					memcpy(&len, temppacket->buff->base() + NETWORK_MESSAGE_ID_SIZE,
+						sizeof(MessageLength));
+					ACE_DEBUG(( LM_DEBUG, "msglen = %d\n", len ));
+
 				} else
 				{
 					ACE_DEBUG(( LM_DEBUG, " @4::NETWORK_FIXED_MESSAGE\n" ));
@@ -859,12 +864,9 @@ void Bundle::dumpMsgs()
 					//headlen += sizeof(MessageLength);
 					//temppacket->os << msglen;
 					state = body;
-				}
 
-				MessageLength len = 0;
-				memcpy(&len, temppacket->buff->base() + NETWORK_MESSAGE_ID_SIZE,
-					sizeof(MessageLength));
-				ACE_DEBUG(( LM_DEBUG, "msglen = %d\n", len ));
+					ACE_DEBUG(( LM_DEBUG, "msglen = %d\n", msglen ));
+				}
 				continue;
 
 			} else if( state == len1 )
