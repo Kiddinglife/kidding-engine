@@ -16,13 +16,14 @@ bool g_debugEntity = false;
 bool g_appPublish = 1;
 
 bool g_packetAlwaysContainLength = false;
-int g_trace_packet = 0;
+int g_trace_packet = 1;
 bool g_trace_packet_use_logfile = false;
 std::vector<std::string> g_trace_packet_disables;
 
 void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 	Message* pCurrMsgHandler, size_t length, const char* addr)
 {
+	TRACE("TRACE_MESSAGE_PACKET");
 	if( !g_trace_packet )	return;
 
 	if( g_trace_packet_use_logfile )
@@ -44,11 +45,11 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 
 		if( iter != g_trace_packet_disables.end() )
 		{
-			ACE_DEBUG(( LM_DEBUG, "TRACE_MESSAGE_PACKET::@3:: iter == NULL\n" ));
+			ACE_DEBUG(( LM_DEBUG, "TRACE_MESSAGE_PACKET::@3:: iter != NULL\n" ));
 			isprint = false;
 		} else
 		{
-			ACE_DEBUG(( LM_DEBUG, "TRACE_MESSAGE_PACKET::@4:: iter \!= NULL\n" ));
+			ACE_DEBUG(( LM_DEBUG, "TRACE_MESSAGE_PACKET::@4:: iter == NULL\n" ));
 
 			ACE_DEBUG(( LM_DEBUG,
 				"{%s} msgname:{%s}, msgID:{%d}, currMsgLength:{%d}, addr:{%s}\n",
@@ -73,6 +74,8 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 		ACE_LOG_MSG->msg_ostream(&os, 1);
 		ACE_LOG_MSG->set_flags(ACE_Log_Msg::OSTREAM);
 	}
+
+	TRACE_RETURN_VOID();
 }
 
 float g_channelInternalTimeout = 60.f;
