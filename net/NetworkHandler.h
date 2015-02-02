@@ -113,18 +113,21 @@ struct TCP_Acceptor_Handler : public ACE_Event_Handler
 };
 
 /** 此类接口用于接收一个网络通道超时消息*/
-struct ChannelTimeOutHandler : public ACE_Event_Handler
-{
-	virtual int handle_timeout(const ACE_Time_Value &current_time, const void * = 0);
-};
+typedef void(*ChannelTimeOutHandler)( Channel* pChannel );
+//struct ChannelTimeOutHandler/* : public ACE_Event_Handler*/
+//{
+//	///virtual int handle_timeout(const ACE_Time_Value &current_time, 
+//	/// const void * = 0);
+//	virtual void onChannelTimeOut(Channel * pChannel) = 0;
+//};
+
 
 /** 此类接口用于接收一个内部网络通道取消注册*/
-struct ChannelDeregisterHandler
-{
-	virtual void onChannelDeregister(Channel * pChannel) = 0;
-};
-typedef void(*OnChannelDeregister)( Channel * pChannel );
-extern OnChannelDeregister g_onChannelDeregister;
+typedef void(*ChannelDeregisterHandler)( Channel * pChannel );
+//struct ChannelDeregisterHandler
+//{
+//	virtual void onChannelDeregister(Channel * pChannel) = 0;
+//};
 
 /* 此类接口用于监听消息跟踪事件 */
 struct MsgTraceHandler

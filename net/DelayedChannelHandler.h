@@ -2,13 +2,31 @@
 #define DelayedChannelHandler_H_
 
 #include "ace\pre.h"
+#include "common\task.h"
 #include "net_common.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-class DelayedChannelHandlers
+struct NetworkInterface;
+struct Channel;
+struct Nub;
+struct DelayedChannelHandlers : public Task
 {
-	public:
+	void init(Nub* dispatcher, NetworkInterface* pNetworkInterface);
+	void fini(Nub* dispatcher);
+
+	void add(Channel* channel);
+
+	void sendIfDelayed(Channel* channel);
+
+	virtual bool process();
+
+	typedef std::set<ACE_INET_Addr> ChannelAddrs;
+	ChannelAddrs channeladdrs_;
+
+	NetworkInterface* pNetworkInterface_;
+
 	DelayedChannelHandlers();
 	~DelayedChannelHandlers();
 };

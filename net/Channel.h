@@ -1,4 +1,4 @@
-#ifndef Channel_H_
+ï»¿#ifndef Channel_H_
 #define Channel_H_
 
 #include "ace\pre.h"
@@ -9,8 +9,10 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
+struct TimerHandle { };
 struct PacketReader;
 struct PacketReceiver;
+struct PacketSender;
 struct PacketFilter;
 typedef ACE_Refcounted_Auto_Ptr<PacketFilter, ACE_Null_Mutex> PacketFilterPtr;
 
@@ -20,8 +22,8 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	/// EXTERNAL describes the properties of a channel from client to server.
 	enum ChannelScope { INTERNAL, EXTERNAL };
 
-	/// CHANNEL_NORMAL = ÆÕÍ¨Í¨µÀ
-	// CHANNEL_WEB = ä¯ÀÀÆ÷webÍ¨µÀ
+	/// CHANNEL_NORMAL = æ™®é€šé€šé“
+	// CHANNEL_WEB = æµè§ˆå™¨webé€šé“
 	enum ChannelType { CHANNEL_NORMAL, CHANNEL_WEB };
 
 	enum ChannelRecvWinStatus
@@ -31,32 +33,32 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 		PACKET_IS_CORRUPT
 	};
 
-	//@TO-DO ¿ÉÄÜĞèÒª²é¿´apg timerÄÇ¸öÀı×Ó
-	//TimerHandle					inactivityTimerHandle_;
+	//@TO-DO å¯èƒ½éœ€è¦æŸ¥çœ‹apg timeré‚£ä¸ªä¾‹å­
+	TimerHandle					          inactivityTimerHandle_;
 
-	/// ¸ÃÍ¨µÀËùĞèµÄÍøÂç½Ó¿Ú
+	/// è¯¥é€šé“æ‰€éœ€çš„ç½‘ç»œæ¥å£
 	NetworkInterface*                  pNetworkInterface_;
 
-	/// ¸ÃÍ¨µÀĞèÒªÊ¹ÓÃbundleÀ´»º´æ½ÓÊÕºÍ·¢ËÍµÄÏûÏ¢
+	/// è¯¥é€šé“éœ€è¦ä½¿ç”¨bundleæ¥ç¼“å­˜æ¥æ”¶å’Œå‘é€çš„æ¶ˆæ¯
 	Bundle						              bundle_;
 
 	//@TO-DO need create struct PacketReader
 	PacketReader*				          pPacketReader_; //bufferedReceives_ 
 
 	//@TO-DO maybe can use ace_handle 
-	ACE_SOCK_IO*					      pEndPoint_;
+	ACE_SOCK*					          pEndPoint_;
 
 	//@TO-DO need create struct PacketReceiver
 	PacketReceiver*				      pPacketReceiver_;
-
+	PacketSender*				          pPacketSender_;
 	//@TO-DO need create struct PacketFilter
 	PacketFilterPtr				          pFilter_;
 
-	/// ¿ÉÒÔÖ¸¶¨Í¨µÀÊ¹ÓÃÄ³Ğ©ÌØ¶¨µÄÏûÏ¢
+	/// å¯ä»¥æŒ‡å®šé€šé“ä½¿ç”¨æŸäº›ç‰¹å®šçš„æ¶ˆæ¯
 	/// can designate the channel to use some specific msgs
 	Messages*                              pMsgs_;
 
-	/// ½ÓÊÕµ½µÄËùÓĞ°üµÄ¼¯ºÏ£ºthe container for the received packets
+	/// æ¥æ”¶åˆ°çš„æ‰€æœ‰åŒ…çš„é›†åˆï¼šthe container for the received packets
 	typedef std::vector<Packet*> RecvPackets;
 	RecvPackets                           recvPackets[2];
 
@@ -65,19 +67,20 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	ProtocolType				          protocolType_;
 	ChannelID					          channelId_;
 	bool						                  isDestroyed_;
+	bool						                  sending_;
 
-	/// Èç¹ûÎªtrue£¬Ôò¸ÃÆµµÀÒÑ¾­±äµÃ²»ºÏ·¨
+	/// å¦‚æœä¸ºtrueï¼Œåˆ™è¯¥é¢‘é“å·²ç»å˜å¾—ä¸åˆæ³•
 	/// if true, this channel has become unusable
 	bool						                  isCondemn_;
 
-	/// Èç¹ûÊÇÍâ²¿Í¨µÀÇÒ´úÀíÁËÒ»¸öÇ°¶ËÔò»á°ó¶¨Ç°¶Ë´úÀíID
+	/// å¦‚æœæ˜¯å¤–éƒ¨é€šé“ä¸”ä»£ç†äº†ä¸€ä¸ªå‰ç«¯åˆ™ä¼šç»‘å®šå‰ç«¯ä»£ç†ID
 	/// if this channel is external and proxy the client, it will  binds the client id
 	ENTITY_ID					              proxyID_;
 
-	/// ¸ÃchannelËùÔÚµÄ·şÎñÆ÷×é¼şµÄid
+	/// è¯¥channelæ‰€åœ¨çš„æœåŠ¡å™¨ç»„ä»¶çš„id
 	KBE_SRV_COMPONENT_ID	  componentID_;
 
-	/// À©Õ¹ÓÃ, for extension
+	/// æ‰©å±•ç”¨, for extension
 	std::string					              strextra_;
 
 	ACE_UINT64						      inactivityExceptionPeriod_;
@@ -91,15 +94,39 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	ACE_UINT32						      numBytesSent_;
 	ACE_UINT32						      numBytesReceived_;
 	ACE_UINT32						      lastTickBytesReceived_;
+	ACE_UINT32                           lastTickBytesSent_;
+
+	/// Reference count.
+	int ref_count_;
+
+	static void intrusive_add_ref(Channel* channel)
+	{
+		++channel->ref_count_;
+	}
+
+	static void intrusive_remove_ref(Channel* channel)
+	{
+		--channel->ref_count_;
+		ACE_ASSERT(channel->ref_count_ >= 0 && "RefCountable:ref_count_ maybe a error!");
+		if( !channel->ref_count_ ) delete channel;
+	}
 
 	Channel(NetworkInterface* networkInterface = NULL,
-		ACE_SOCK_IO* endpoint = NULL,
+		ACE_SOCK* endpoint = NULL,
 		ChannelScope traits = EXTERNAL,
 		ProtocolType pt = PROTOCOL_TCP,
 		PacketFilterPtr pFilter = PacketFilterPtr(NULL),
 		ChannelID id = CHANNEL_ID_NULL);
 
 	virtual ~Channel() { }
+
+	const char*  c_str(void) const;
+
+	void clearBundle(void);
+	bool initialize(void);
+	void destroy(void);
+
+	void process_packets(Messages* pMsgHandlers);
 };
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

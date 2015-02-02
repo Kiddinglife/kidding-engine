@@ -3,13 +3,13 @@
 
 #include "ace\pre.h"
 #include "ace\Null_Mutex.h"
-#include "net_common.h"
+#include "common\ace_object_pool.h"
 #include "FixedMessages.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
-class KBE_MD5;
 NETWORK_NAMESPACE_BEGIN_DECL
 
+class KBE_MD5;
 struct Messages;
 extern std::vector<Messages*>* gPtrMsgsPtrContainer;
 extern FixedMessages* gPtrFixedMsgs;
@@ -57,10 +57,11 @@ struct Message
 	std::string        name_;
 	MessageID      msgID_;
 	MessageArgs* pMsgArgs_;
-	/* -1则为非固定长度消息 : -1 = variable-len msg */
+	/*-1 = variable-len msg */
 	ACE_INT8        msgType_;
 	ACE_UINT8      msgArgsBytesCount_;
 	bool                exposed_;
+	Messages*      pMsgs_;
 
 	// stats
 	ACE_UINT32 send_size_;
@@ -78,13 +79,16 @@ struct Message
 		send_size_(0),
 		send_count_(0),
 		recv_size_(0),
-		recv_count_(0)
+		recv_count_(0),
+		pMsgs_(NULL)
 	{
 	}
 
 	virtual ~Message()
 	{
-		SAFE_RELEASE(pMsgArgs_);
+		//SAFE_RELEASE(pMsgArgs_);
+		ACE_PoolPtr_Getter(pool, MessageArgs, ACE_Null_Mutex);
+		pool->Dtor(pMsgArgs_);
 	}
 
 	ACE_UINT32 sendavgsize()const { return ( send_count_ <= 0 ) ? 0 : send_size_ / send_count_; }
@@ -108,7 +112,7 @@ struct Message
 		return buf;
 	}
 
-	/// 当这个handler被正是安装到MessageHandlers后被调用
+	/// 当该消息被加入到msgs集合中后被调用
 	virtual void onAdded2Msgs() { }
 
 
@@ -151,7 +155,11 @@ struct Messages
 		for( ; iter != msgs_.end(); ++iter )
 		{
 			if( iter->second )
-				delete iter->second;
+			{
+				ACE_PoolPtr_Getter(pool, Message, ACE_Null_Mutex);
+				pool->Dtor(iter->second);
+				//delete iter->second;
+			}
 		};
 	}
 
@@ -170,6 +178,7 @@ struct Messages
 
 	static std::string getDigestStr();
 };
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include "ace\post.h"

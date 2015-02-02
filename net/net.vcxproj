@@ -108,6 +108,9 @@
     <ClInclude Include="net_common.h" />
     <ClInclude Include="Nub.h" />
     <ClInclude Include="Packet.h" />
+    <ClInclude Include="PacketReader.h" />
+    <ClInclude Include="PacketReceiver.h" />
+    <ClInclude Include="PacketSender.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Address.cpp" />
@@ -122,6 +125,9 @@
     <ClCompile Include="NetworkInterface.cpp" />
     <ClCompile Include="net_common.cpp" />
     <ClCompile Include="Nub.cpp" />
+    <ClCompile Include="PacketReader.cpp" />
+    <ClCompile Include="PacketReceiver.cpp" />
+    <ClCompile Include="PacketSender.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

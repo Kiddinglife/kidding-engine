@@ -8,7 +8,7 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-class Bundle;
+struct Bundle;
 struct Packet
 {
 	ACE_OutputCDR os;
@@ -52,6 +52,13 @@ struct Packet
 		sentSize = 0;
 		msgID_ = 0;
 		pBundle_ = NULL;
+	}
+
+	/* Make the read ptr = write ptr to show the read is done */
+	void on_read_packet_done()
+	{
+		/// advance the rd position in this packet
+		this->buff->rd_ptr(length());
 	}
 
 	const size_t length() const { return buff->length(); }

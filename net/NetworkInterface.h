@@ -4,6 +4,11 @@
 #include "ace\pre.h"
 #include "ace/SOCK_Acceptor.h"
 #include "net_common.h"
+#include "net\Channel.h"
+#include "net\NetworkHandler.h"
+#include "net\DelayedChannelHandler.h"
+#include "net\Bundle.h"
+#include "net\Nub.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -14,8 +19,8 @@ const char* const USE_KBEMACHINED = "kbemachine";
 struct Bundle;
 struct Channel;
 struct DelayedChannels;
-struct ChannelTimeOutHandler;
-struct ChannelDeregisterHandler;
+//struct ChannelTimeOutHandler;
+//struct ChannelDeregisterHandler;
 struct Packet;
 struct Nub;
 struct Messages;
@@ -23,8 +28,17 @@ struct TCP_Acceptor_Handler;
 struct UDP_SOCK_Handler;
 struct DelayedChannelHandlers;
 
-struct NetworkInterface
+/**
+ * struct NetworkInterface
+ * @Brief
+ * This class is the abstraction of the network interface in the host machina.
+ * It is listenning on the external and internal socket to wait the connection request.
+ * When a connection comes, the nub create new socket handler to handle it and will call back 
+ * register function to register a new channel
+ */
+struct NetworkInterface : public ACE_Event_Handler
 {
+	/* it stores external and internal channel */
 	typedef std::map<ACE_INET_Addr, Channel*>	ChannelMap;
 	ChannelMap                                                    channelMap_;
 
@@ -34,24 +48,31 @@ struct NetworkInterface
 	/// UDP SOCK
 	//ACE_SOCK_DGRAM                                          intEndpoint_;
 
-	///事件分发
+	/* nub pointer it is actually the event dispatcher */
 	Nub*                                                                nub_;
 
-	/// 数据指针
+	/*extention data pointer*/
 	void*                                                                pExtensionData_;
 
-	/// 
+	/*listenning acceptor for external and internal interfaces*/
 	TCP_Acceptor_Handler*                                    pExtListenerReceiver_;
-	UDP_SOCK_Handler*                                        pIntListenerReceiver_;
+	TCP_Acceptor_Handler*                                    pIntListenerReceiver_;
 
 	DelayedChannelHandlers* 						        pDelayedChannels_;
-	/// 超时的通道可被这个句柄捕捉， 例如告知上层client断开
-	ChannelTimeOutHandler*					                pChannelTimeOutHandler_;
-	ChannelDeregisterHandler*				                pChannelDeregisterHandler_;
 
+	/*this handler is run when some channel delays, telling the cup layer client to disconnect*/
+	ChannelTimeOutHandler					                pChannelTimeOutHandler_;
+
+	/*this handler is run when some channel is deredistered*/
+	ChannelDeregisterHandler				                pChannelDeregisterHandler_;
+
+	/*mark to indicate if this network interface has external interface*/
 	const bool								                        isExternal_;
+
+	/*the number of external channels stored in this network interface*/
 	ACE_INT32									                    numExtChannels_;
 
+	/*ctor creates external and internal listenning socket both are tcp*/
 	NetworkInterface(
 		Nub*              pDispatcher = NULL,
 		ACE_INT16     extlisteningPort_min = 0,
@@ -64,6 +85,7 @@ struct NetworkInterface
 		ACE_UINT32   intrbuffer = 0,
 		ACE_UINT32   intwbuffer = 0);
 
+	/*release all resouces and clear the map*/
 	~NetworkInterface();
 
 	/**
@@ -86,6 +108,31 @@ struct NetworkInterface
 	* 得到本机主机名或者域名.有两个参数,一个是用来存放主机名或者域名的变量,一个是缓冲区的大小.
 	*/
 	bool is_ip_addr_valid(const char* spec, char* name);
+
+	void delayed_channels_send(Channel* channel);
+	void send_on_delayed(Channel* channel);
+
+	/*These three methods are used to register and deregister the channel*/
+	bool register_channel(Channel* pChannel);
+	bool deregister_channel(Channel* pChannel);
+	bool deregister_all_channels();
+
+	/*These twp methods are used to find the channel */
+	Channel* channel(const ACE_INET_Addr& addr);
+	Channel* channel(ACE_HANDLE  handle);
+
+	/// call back functon when the specific channel goes away
+	void on_channel_left(Channel * pChannel);
+	void NetworkInterface::on_channel_timeout(Channel * pChannel);
+
+	/**
+	* This method is used to handle the timout event in network interface
+	* It just simply print the internal and external interface infos
+	*/
+	virtual int handle_timeout(const ACE_Time_Value &tv, const void *arg);
+
+	/*this method will go through all the channels and process its packets*/
+	void process_all_channels_packets(Messages* pMsgHandlers);
 };
 
 NETWORK_NAMESPACE_END_DECL

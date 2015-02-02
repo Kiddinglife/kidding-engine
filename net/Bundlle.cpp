@@ -1,4 +1,6 @@
 ﻿#include "Bundle.h"
+#include "net\Channel.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
@@ -413,7 +415,7 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 //void Bundle::fill_curr_msg_len_field(bool issend)
 void Bundle::end_new_curr_message(void)
 {
-	//TRACE("@1 :: void Bundle::end_new_curr_message(void)\n");
+	TRACE("Bundle::end_new_curr_message()");
 
 	// 对消息进行跟踪 trace the msg
 	if( numMessages_ >= 1 )
@@ -440,24 +442,28 @@ void Bundle::end_new_curr_message(void)
 	Packets::iterator iter = packets_.begin();
 	for( ; iter != packets_.end(); iter++ )
 	{
-		ACE_HEX_DUMP(( LM_DEBUG, ( *iter )->buff->base(), ( *iter )->buff->size(), "end_new_curr_message(void):: dump result: \n\n" ));
+		ACE_HEX_DUMP(( LM_DEBUG,
+			( *iter )->buff->base(),
+			( *iter )->buff->length(),
+			"end_new_curr_message(void):: dump result: \n" ));
 	}
+
 	ACE_DEBUG(( LM_DEBUG,
-		"end_new_curr_message::\ncurrMsgHandlerLength_= %d, pCurrPacket_ = %@\n"
-		"currMsgID_= %d, currMsgLengthPos_ = %@,\n"
-		"currMsgPacketCount_ = %d, currMsgLength_ = %d\n\n",
+		"end_new_curr_message::pCurrMsg_ = %d, currMsgHandlerLength_= %d"
+		"pCurrPacket_ = %@, currMsgID_= %d, currMsgLengthPos_ = %@,\n"
+		"currMsgPacketCount_ = %d, currMsgLength_ = %d\n",
+		pCurrMsg_,
 		currMsgType_, pCurrPacket_,
 		currMsgID_, currMsgLengthPos_,
 		currMsgPacketCount_, currMsgLength_ ));
 
+	////清理该msg的相关变量值
+	//currMsgType_ = currMsgID_ =
+	//	currMsgPacketCount_ = currMsgLength_ = 0;
+	//currMsgLengthPos_ = NULL;
+	//pCurrMsg_ = NULL;
 
-	//清理该msg的相关变量值
-	currMsgType_ = currMsgID_ =
-		currMsgPacketCount_ = currMsgLength_ = 0;
-	currMsgLengthPos_ = NULL;
-	pCurrMsg_ = NULL;
-
-	//TRACE_RETURN_VOID();
+	TRACE_RETURN_VOID();
 }
 
 /**
@@ -481,16 +487,10 @@ void Bundle::start_new_curr_message(Message* msg)
 	ACE_DEBUG(( LM_DEBUG,
 		"@1 void Bundle::start_new_curr_message(const MessageHandler* msg)\n" ));
 
-	//ACE_DEBUG(( LM_DEBUG,
-	//	"Bundle::start_new_curr_message()::@1"
-	//	"\ncurrMsgHandlerLength_ = %d, numMessages_ = %d,\n"
-	//	"currMsgID_= %d, currMsgLengthPos_ = %@,\n"
-	//	"currMsgPacketCount_ = %d, currMsgLength_ = %d\n"
-	//	" packets_.size = %d\n",
-	//	currMsgType_, numMessages_,
-	//	currMsgID_, currMsgLengthPos_,
-	//	currMsgPacketCount_, currMsgLength_,
-	//	packets_.size() ));
+	//清理上一个msg的相关变量值
+	currMsgType_ = currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
+	currMsgLengthPos_ = NULL;
+	pCurrMsg_ = NULL;
 
 	/// 若当前包为空，则构造一个新的包
 	if( pCurrPacket_ == NULL ) this->create_new_curr_packet();
@@ -758,6 +758,193 @@ void  Bundle::udp_send(const ACE_SOCK_Dgram* ep, const ACE_INET_Addr* remoteaddr
 			}
 		}
 	}
+}
+
+void Bundle::dumpMsgs()
+{
+	TRACE("Bundle::dumpMsgs()");
+
+	if( !pCurrMsg_ ) return;
+
+	Packets packets;
+	packets.insert(packets.end(), packets_.begin(), packets_.end());
+
+	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
+	Packet* temppacket = pool->Ctor();
+	temppacket->buff->size(512);
+
+	char* base = in.start()->base();
+	size_t size = in.start()->size();
+	char* w = in.start()->wr_ptr();
+	char* r = in.start()->rd_ptr();
+
+	MessageID msgid = 0;
+	MessageLength msglen = 0;
+	MessageLength1 msglen1 = 0;
+	Message* pCurrMsgHandler = NULL;
+
+	// 0:读取消息ID， 1：读取消息长度， 2：读取消息扩展长度, 3:读取内容
+	enum { id = 0, len, len1, body };
+	int state = id;
+	for( Packets::iterator iter = packets.begin(); iter != packets.end(); iter++ )
+	{
+		Packet* pPacket = ( *iter );
+		if( pPacket->length() == 0 ) continue;
+
+		char* rpos = pPacket->buff->rd_ptr();
+		char* wpos = pPacket->buff->wr_ptr();
+
+		const_cast<ACE_Message_Block*>( in.start() )->base(pPacket->buff->base(),
+			pPacket->buff->size());
+		const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(wpos);
+
+		ACE_DEBUG(( LM_DEBUG, "pPacket->length() = %d\n", pPacket->length() ));
+
+		size_t headlen = 0;
+
+		while( pPacket->length() > 0 )
+		{
+			if( state == id )
+			{
+				ACE_DEBUG(( LM_DEBUG, " @1::state == id\n" ));
+
+				// 一些sendto操作的包导致, 这类包也不需要追踪
+				if( pPacket->length() < NETWORK_MESSAGE_ID_SIZE )
+				{
+					ACE_DEBUG(( LM_DEBUG,
+						"@2::pPacket->length() < NETWORK_MESSAGE_ID_SIZE\n" ));
+					pPacket->on_read_packet_done();
+					continue;
+				}
+
+				headlen += NETWORK_MESSAGE_ID_SIZE;
+
+				in >> msgid;
+				pPacket->buff->rd_ptr(in.rd_ptr());
+				temppacket->os << msgid;
+				ACE_DEBUG(( LM_DEBUG, "msgid = %d\n", msgid ));
+				state = len;
+				continue;
+
+			} else if( state == len )
+			{
+				ACE_DEBUG(( LM_DEBUG, " @2::state == len\n" ));
+
+				pCurrMsgHandler = pCurrMsg_->pMsgs_->find(msgid);
+
+				// 一些sendto操作的包导致找不到MsgHandler, 这类包也不需要追踪
+				if( !pCurrMsgHandler )
+				{
+					ACE_DEBUG(( LM_DEBUG, " @3::!pCurrMsgHandler\n" ));
+					pPacket->on_read_packet_done();
+					continue;
+				}
+
+				if( pCurrMsgHandler->msgType_ == NETWORK_VARIABLE_MESSAGE || g_packetAlwaysContainLength )
+				{
+					ACE_DEBUG(( LM_DEBUG, " @4::NETWORK_VARIABLE_MESSAGE\n" ));
+					headlen += sizeof(MessageLength);
+					in >> msglen;
+					pPacket->buff->rd_ptr(in.rd_ptr());
+					temppacket->os << msglen;
+					if( msglen == NETWORK_MESSAGE_MAX_SIZE )
+						state = len1;
+					else
+						state = body;
+
+					MessageLength len = 0;
+					memcpy(&len, temppacket->buff->base() + NETWORK_MESSAGE_ID_SIZE,
+						sizeof(MessageLength));
+					ACE_DEBUG(( LM_DEBUG, "msglen = %d\n", len ));
+
+				} else
+				{
+					ACE_DEBUG(( LM_DEBUG, " @4::NETWORK_FIXED_MESSAGE\n" ));
+					msglen = pCurrMsgHandler->msgArgsBytesCount_;
+					//headlen += sizeof(MessageLength);
+					//temppacket->os << msglen;
+					state = body;
+
+					ACE_DEBUG(( LM_DEBUG, "msglen = %d\n", msglen ));
+				}
+				continue;
+
+			} else if( state == len1 )
+			{
+				ACE_DEBUG(( LM_DEBUG, " @5::state == len1\n" ));
+
+				headlen += sizeof(MessageLength1);
+
+				in >> msglen1;
+				pPacket->buff->rd_ptr(in.rd_ptr());
+				temppacket->os << msglen1;
+				state = body;
+
+				MessageLength1 len1 = 0;
+				memcpy(&len1, temppacket->buff->base() + +NETWORK_MESSAGE_ID_SIZE + sizeof(MessageLength), sizeof(MessageLength1));
+				ACE_DEBUG(( LM_DEBUG, "msglen1 = %d\n", len1 ));
+
+				continue;
+
+			} else if( state == body )
+			{
+				ACE_DEBUG(( LM_DEBUG, " @6::state == body\n" ));
+
+				MessageLength1 totallen = msglen1 > 0 ? msglen1 : msglen;
+
+				ACE_DEBUG(( LM_DEBUG, "  totallen = %d\n", totallen ));
+
+				if( pPacket->length() >= totallen)
+				{
+					temppacket->os.write_char_array(pPacket->buff->rd_ptr(), totallen);
+					pPacket->buff->rd_ptr(totallen);
+				} else
+				{
+					temppacket->os.write_char_array(pPacket->buff->rd_ptr(), pPacket->length());
+					pPacket->on_read_packet_done();
+				}
+
+				ACE_DEBUG(( LM_DEBUG, "totallen = %d\n", totallen ));
+				ACE_DEBUG(( LM_DEBUG, "cal = %d\n",
+					temppacket->length() - headlen ));
+
+				size_t msgpayload = temppacket->length() - headlen;
+				if( msgpayload == totallen )
+				{
+					ACE_DEBUG(( LM_DEBUG, " @7::write done\n" ));
+
+					state = 0;
+					msglen1 = 0;
+					msglen = 0;
+					msgid = 0;
+
+					this->pChnnel_->c_str();
+
+					TRACE_MESSAGE_PACKET(false, temppacket, pCurrMsgHandler,
+						msgpayload, pChnnel_ != NULL ? pChnnel_->c_str() : "none");
+
+					ACE_HEX_DUMP(( LM_DEBUG,
+						temppacket->buff->base(),
+						temppacket->buff->length(),
+						"dump msg result:\n" ));
+
+					temppacket->reset();
+					continue;
+				}
+			}
+		};
+
+		pPacket->buff->rd_ptr(rpos);
+		pPacket->buff->wr_ptr(wpos);
+	}
+
+	const_cast<ACE_Message_Block*>( in.start() )->base(base, size);
+	const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(w);
+	const_cast<ACE_Message_Block*>( in.start() )->rd_ptr(r);
+
+	pool->Dtor(temppacket);
+
+	TRACE_RETURN_VOID();
 }
 
 NETWORK_NAMESPACE_END_DECL

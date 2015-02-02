@@ -1,5 +1,6 @@
 ﻿#include "net\NetworkHandler.h"
 #include "common\ace_object_pool.h"
+#include "net\NetworkInterface.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -11,8 +12,7 @@ int TCP_Acceptor_Handler::open(const ACE_INET_Addr &listen_addr)
 		ACE_TEXT("%p\n"),
 		ACE_TEXT("acceptor.open") ),
 		-1);
-	return this->reactor()->register_handler
-		(this, ACE_Event_Handler::ACCEPT_MASK);
+	return this->reactor()->register_handler(this, ACE_Event_Handler::ACCEPT_MASK);
 }
 
 //@TO-DO
@@ -20,6 +20,7 @@ int TCP_Acceptor_Handler::handle_input(ACE_HANDLE fd)
 {
 	ACE_PoolPtr_Getter(pool, TCP_SOCK_Handler, ACE_Null_Mutex);
 	TCP_SOCK_Handler* client = pool->Ctor();
+
 	if( this->acceptor_.accept(client->sock_) == -1 )
 	{
 		pool->Dtor(client);
@@ -29,15 +30,21 @@ int TCP_Acceptor_Handler::handle_input(ACE_HANDLE fd)
 			ACE_TEXT("client connection") ),
 			-1);
 	}
-	client->reactor(this->reactor());
-	if( client->open() == -1 ) client->handle_close(ACE_INVALID_HANDLE, 0);
 
-	Channel* pchannel = new Channel(networkInterface_, &client->sock_,
-		channelScope_, PROTOCOL_TCP);
-	//if( !networkInterface_.registerChannel(pchannel) )
-	//{
-	//	ERROR_MSG(fmt::format("ListenerReceiver::handleInputNotification:registerChannel({}) is failed!\n",pchannel->c_str()));
-	//}
+	client->reactor(this->reactor());
+
+	if( client->open() == -1 )
+		client->handle_close(ACE_INVALID_HANDLE, 0);
+
+	Channel* pchannel = new Channel(networkInterface_, &client->sock_, channelScope_);
+
+	if( !networkInterface_->register_channel(pchannel) )
+	{
+		ACE_ERROR(( LM_ERROR,
+			"TCP_Acceptor_Handler::handle_input {%s} is failed!\n",
+			pchannel->c_str() ));
+	}
+
 	return 0;
 }
 

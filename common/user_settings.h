@@ -6,4 +6,7 @@
 #include "ace/Log_Record.h"
 #include <fstream>
 
+#define ACE_NTRACE 0
+#include "ace/mytrace.h"
+
 #endif

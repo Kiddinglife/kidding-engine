@@ -1,6 +1,10 @@
 ﻿#include "net_common.h"
+#include "Message.h"
+#include "Packet.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
+
 namespace UDP /*ÒÔºóÀ©Õ¹ÓÃ*/
 {
 }
@@ -12,9 +16,67 @@ bool g_debugEntity = false;
 bool g_appPublish = 1;
 
 bool g_packetAlwaysContainLength = false;
-int g_trace_packet = 0;
+int g_trace_packet = 1;
 bool g_trace_packet_use_logfile = false;
 std::vector<std::string> g_trace_packet_disables;
+
+void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
+	Message* pCurrMsgHandler, size_t length, const char* addr)
+{
+	TRACE("TRACE_MESSAGE_PACKET");
+	if( !g_trace_packet )	return;
+
+	if( g_trace_packet_use_logfile )
+	{
+		ACE_DEBUG(( LM_DEBUG,
+			"TRACE_MESSAGE_PACKET::@1::g_trace_packet_use_logfile != NULL\n" ));
+		std::ofstream os("packetlogs.log");
+		ACE_LOG_MSG->msg_ostream(&os, 1);
+		ACE_LOG_MSG->set_flags(ACE_Log_Msg::OSTREAM);
+	}
+
+	bool isprint = true;
+	if( pCurrMsgHandler )
+	{
+		ACE_DEBUG(( LM_DEBUG, "TRACE_MESSAGE_PACKET::@2::pCurrMsgHandler != NULL\n" ));
+
+		std::vector<std::string>::iterator iter = std::find(g_trace_packet_disables.begin(),
+			g_trace_packet_disables.end(), pCurrMsgHandler->name_);
+
+		if( iter != g_trace_packet_disables.end() )
+		{
+			ACE_DEBUG(( LM_DEBUG, "TRACE_MESSAGE_PACKET::@3:: iter != NULL\n" ));
+			isprint = false;
+		} else
+		{
+			ACE_DEBUG(( LM_DEBUG, "TRACE_MESSAGE_PACKET::@4:: iter == NULL\n" ));
+
+			ACE_DEBUG(( LM_DEBUG,
+				"{%s} msgname:{%s}, msgID:{%d}, currMsgLength:{%d}, addr:{%s}\n",
+				( isrecv == true ) ? "====>" : "<====",
+				pCurrMsgHandler->name_.c_str(), pCurrMsgHandler->msgID_, length, addr ));
+		}
+	}
+
+	if( isprint )
+	{
+		ACE_DEBUG(( LM_DEBUG,
+			"TRACE_MESSAGE_PACKET::@5::isprint == true\n" ));
+	}
+
+	if( g_trace_packet_use_logfile )
+	{
+		ACE_DEBUG(( LM_DEBUG,
+			"TRACE_MESSAGE_PACKET::@6::g_trace_packet_use_logfile != NULL\n" ));
+		const char* name = GET_KBE_SRV_COMPONENT_TYPE_NAME(g_componentType);
+		std::string n(name);
+		std::ofstream os(( n + ".log" ).c_str());
+		ACE_LOG_MSG->msg_ostream(&os, 1);
+		ACE_LOG_MSG->set_flags(ACE_Log_Msg::OSTREAM);
+	}
+
+	TRACE_RETURN_VOID();
+}
 
 float g_channelInternalTimeout = 60.f;
 float g_channelExternalTimeout = 60.f;
@@ -40,5 +102,6 @@ ACE_UINT32						g_intReSendInterval = 10;
 ACE_UINT32						g_intReSendRetries = 0;
 ACE_UINT32						g_extReSendInterval = 10;
 ACE_UINT32						g_extReSendRetries = 3;
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

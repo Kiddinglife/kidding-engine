@@ -2,9 +2,11 @@
 #define NET_COMMON_H_
 
 #include "ace\pre.h"
-#include "common\common.h"
 #include "ace/SOCK_Stream.h"
 #include "ace\SOCK_Dgram.h"
+#include "common\common.h"
+
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
@@ -66,6 +68,11 @@ apps发布状态, 可在脚本中获取该值
 1 : release
 */
 extern bool g_appPublish;
+
+struct Message;
+struct Packet;
+extern void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
+	Message* pCurrMsgHandler, size_t length, const char* addr);
 //========================================================
 
 // listen监听队列最大值
@@ -264,6 +271,7 @@ inline int setnonblocking(bool nonblocking, ACE_SOCK& mSockIO)
 	ACE_OS::fcntl(mSockIO.get_handle(), F_SETFL, val);
 #endif
 }
+
 
 inline int setbroadcast(bool broadcast, ACE_SOCK& mSockIO)
 {
