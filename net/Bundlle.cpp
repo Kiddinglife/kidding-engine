@@ -455,13 +455,15 @@ void Bundle::end_new_curr_message(void)
 		currMsgID_, currMsgLengthPos_,
 		currMsgPacketCount_, currMsgLength_ ));
 
+#if defined (_DEBUG)
 	dumpMsgs();
+#endif
 
-	//清理该msg的相关变量值
-	currMsgType_ = currMsgID_ =
-		currMsgPacketCount_ = currMsgLength_ = 0;
-	currMsgLengthPos_ = NULL;
-	pCurrMsg_ = NULL;
+	////清理该msg的相关变量值
+	//currMsgType_ = currMsgID_ =
+	//	currMsgPacketCount_ = currMsgLength_ = 0;
+	//currMsgLengthPos_ = NULL;
+	//pCurrMsg_ = NULL;
 
 	TRACE_RETURN_VOID();
 }
@@ -487,16 +489,10 @@ void Bundle::start_new_curr_message(Message* msg)
 	ACE_DEBUG(( LM_DEBUG,
 		"@1 void Bundle::start_new_curr_message(const MessageHandler* msg)\n" ));
 
-	//ACE_DEBUG(( LM_DEBUG,
-	//	"Bundle::start_new_curr_message()::@1"
-	//	"\ncurrMsgHandlerLength_ = %d, numMessages_ = %d,\n"
-	//	"currMsgID_= %d, currMsgLengthPos_ = %@,\n"
-	//	"currMsgPacketCount_ = %d, currMsgLength_ = %d\n"
-	//	" packets_.size = %d\n",
-	//	currMsgType_, numMessages_,
-	//	currMsgID_, currMsgLengthPos_,
-	//	currMsgPacketCount_, currMsgLength_,
-	//	packets_.size() ));
+	//清理上一个msg的相关变量值
+	currMsgType_ = currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
+	currMsgLengthPos_ = NULL;
+	pCurrMsg_ = NULL;
 
 	/// 若当前包为空，则构造一个新的包
 	if( pCurrPacket_ == NULL ) this->create_new_curr_packet();
