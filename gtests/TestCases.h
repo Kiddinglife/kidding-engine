@@ -691,7 +691,7 @@ TEST(BundleTest, write_fixed_msg)
 	{
 		virtual ACE_INT32 args_bytes_count(void)
 		{
-			return 10;
+			return 77;
 		}
 		virtual void fetch_args_from(Packet* p)
 		{
@@ -712,7 +712,7 @@ TEST(BundleTest, write_fixed_msg)
 
 	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
 	Message* currhandler = poolmsg->Ctor();
-	currhandler->msgArgsBytesCount_ = 10;
+	currhandler->msgArgsBytesCount_ = 77;
 	currhandler->msgID_ = 1;
 
 	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
@@ -760,9 +760,7 @@ TEST(BundleTest, write_fixed_msg)
 
 	p->end_new_curr_message();
 
-
-	size_t len = p->get_packets_length();
-	cout << "total length of packets:  " << len << endl;
+	p->dumpMsgs();
 
 	//#pragma pack (push, 1)
 	struct Arg
@@ -960,6 +958,7 @@ TEST(BundleTest, write_variable_msg)
 
 	p->end_new_curr_message();
 
+	p->dumpMsgs();
 
 	//#pragma pack (push, 1)
 	struct Arg
@@ -1084,85 +1083,85 @@ TEST(BundleTest, write_variable_msg)
 	pool->Dtor(p);
 }
 
-#include "net\NetworkInterface.h"
-#include "net\Channel.h"
-TEST(NetworkInterfaceTest, get_ip_addr_str)
-{
-	Nub              pDispatcher;
-	ACE_INT32     extlisteningPort_min = 20001;
-	ACE_INT32     extlisteningPort_max = 20005;
-	const char *    extlisteningInterface = "192.168.2.47";
-	//const char *    extlisteningInterface = "";
-	//const char *    extlisteningInterface = "127.0.0.1";
-	//const char *    extlisteningInterface = USE_KBEMACHINED;
-	ACE_UINT32   extrbuffer = 512;
-	ACE_UINT32   extwbuffer = 512;
-	ACE_INT32      intlisteningPort = 20006;
-	const char *    intlisteningInterface = "192.168.2.47";
-	ACE_UINT32   intrbuffer = 512;
-	ACE_UINT32   intwbuffer = 512;
-
-	NetworkInterface in(&pDispatcher,
-		extlisteningPort_min,
-		extlisteningPort_max,
-		extlisteningInterface,
-		extrbuffer,
-		extwbuffer,
-		intlisteningPort,
-		intlisteningInterface,
-		intrbuffer,
-		intwbuffer);
-
-	ACE_Time_Value tv;
-	in.handle_timeout(tv, 0);
-
-	ACE_INET_Addr addr(20006, "192.168.2.47");
-	ACE_SOCK_Dgram dg(addr);
-	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
-	Messages msgs;
-
-	in.register_channel(&tcpchannel);
-	in.channel(addr);
-	in.channel(dg.get_handle());
-	in.process_all_channels_packets(&msgs);
-	in.deregister_channel(&tcpchannel);
-	in.deregister_all_channels();
-
-}
-
-#include "net\PacketReader.h"
-TEST(PacketReaderTests, ctor_dtor_test)
-{
-	Nub              pDispatcher;
-	ACE_INT32     extlisteningPort_min = 20001;
-	ACE_INT32     extlisteningPort_max = 20005;
-	const char *    extlisteningInterface = "192.168.2.47";
-	//const char *    extlisteningInterface = "";
-	//const char *    extlisteningInterface = "127.0.0.1";
-	//const char *    extlisteningInterface = USE_KBEMACHINED;
-	ACE_UINT32   extrbuffer = 512;
-	ACE_UINT32   extwbuffer = 512;
-	ACE_INT32      intlisteningPort = 20006;
-	const char *    intlisteningInterface = "192.168.2.47";
-	ACE_UINT32   intrbuffer = 512;
-	ACE_UINT32   intwbuffer = 512;
-
-	NetworkInterface in(&pDispatcher,
-		extlisteningPort_min,
-		extlisteningPort_max,
-		extlisteningInterface,
-		extrbuffer,
-		extwbuffer,
-		intlisteningPort,
-		intlisteningInterface,
-		intrbuffer,
-		intwbuffer);
-
-	ACE_INET_Addr addr(20006, "192.168.2.47");
-	ACE_SOCK_Dgram dg(addr);
-	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
-	Messages msgs;
-
-	PacketReader r(&tcpchannel);
-
-}
+//#include "net\NetworkInterface.h"
+//#include "net\Channel.h"
+//TEST(NetworkInterfaceTest, get_ip_addr_str)
+//{
+//	Nub              pDispatcher;
+//	ACE_INT32     extlisteningPort_min = 20001;
+//	ACE_INT32     extlisteningPort_max = 20005;
+//	const char *    extlisteningInterface = "192.168.2.47";
+//	//const char *    extlisteningInterface = "";
+//	//const char *    extlisteningInterface = "127.0.0.1";
+//	//const char *    extlisteningInterface = USE_KBEMACHINED;
+//	ACE_UINT32   extrbuffer = 512;
+//	ACE_UINT32   extwbuffer = 512;
+//	ACE_INT32      intlisteningPort = 20006;
+//	const char *    intlisteningInterface = "192.168.2.47";
+//	ACE_UINT32   intrbuffer = 512;
+//	ACE_UINT32   intwbuffer = 512;
+//
+//	NetworkInterface in(&pDispatcher,
+//		extlisteningPort_min,
+//		extlisteningPort_max,
+//		extlisteningInterface,
+//		extrbuffer,
+//		extwbuffer,
+//		intlisteningPort,
+//		intlisteningInterface,
+//		intrbuffer,
+//		intwbuffer);
+//
+//	ACE_Time_Value tv;
+//	in.handle_timeout(tv, 0);
+//
+//	ACE_INET_Addr addr(20006, "192.168.2.47");
+//	ACE_SOCK_Dgram dg(addr);
+//	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
+//	Messages msgs;
+//
+//	in.register_channel(&tcpchannel);
+//	in.channel(addr);
+//	in.channel(dg.get_handle());
+//	in.process_all_channels_packets(&msgs);
+//	in.deregister_channel(&tcpchannel);
+//	in.deregister_all_channels();
+//
+//}
+//
+//#include "net\PacketReader.h"
+//TEST(PacketReaderTests, ctor_dtor_test)
+//{
+//	Nub              pDispatcher;
+//	ACE_INT32     extlisteningPort_min = 20001;
+//	ACE_INT32     extlisteningPort_max = 20005;
+//	const char *    extlisteningInterface = "192.168.2.47";
+//	//const char *    extlisteningInterface = "";
+//	//const char *    extlisteningInterface = "127.0.0.1";
+//	//const char *    extlisteningInterface = USE_KBEMACHINED;
+//	ACE_UINT32   extrbuffer = 512;
+//	ACE_UINT32   extwbuffer = 512;
+//	ACE_INT32      intlisteningPort = 20006;
+//	const char *    intlisteningInterface = "192.168.2.47";
+//	ACE_UINT32   intrbuffer = 512;
+//	ACE_UINT32   intwbuffer = 512;
+//
+//	NetworkInterface in(&pDispatcher,
+//		extlisteningPort_min,
+//		extlisteningPort_max,
+//		extlisteningInterface,
+//		extrbuffer,
+//		extwbuffer,
+//		intlisteningPort,
+//		intlisteningInterface,
+//		intrbuffer,
+//		intwbuffer);
+//
+//	ACE_INET_Addr addr(20006, "192.168.2.47");
+//	ACE_SOCK_Dgram dg(addr);
+//	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
+//	Messages msgs;
+//
+//	PacketReader r(&tcpchannel);
+//
+//}

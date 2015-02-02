@@ -15,9 +15,9 @@ int main(int argc, char* argv[ ])
 	logger_key);
 	*/
 
-	std::ofstream os("kbe.log");
-	ACE_LOG_MSG->msg_ostream(&os, 0);
-	ACE_LOG_MSG->open("kbengine tests", ACE_Log_Msg::STDERR | ACE_Log_Msg::OSTREAM);
+	//std::ofstream os("kbe.log");
+	//ACE_LOG_MSG->msg_ostream(&os, 0);
+	//ACE_LOG_MSG->open("kbengine tests", ACE_Log_Msg::STDERR | ACE_Log_Msg::OSTREAM);
 	TRACE("main");
 	testing::InitGoogleTest(&argc, argv);
 	TRACE_RETURN(RUN_ALL_TESTS());
