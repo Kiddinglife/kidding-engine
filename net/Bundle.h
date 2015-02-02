@@ -13,7 +13,7 @@ NETWORK_NAMESPACE_BEGIN_DECL
 
 struct NetworkInterface;
 struct Channel;
-//struct Message;
+struct Message;
 
 #define TCP_PACKET_MAX_CHUNK_SIZE  PACKET_MAX_SIZE_TCP - ENCRYPTTION_WASTAGE_SIZE
 #define UDP_PACKET_MAX_CHUNK_SIZE PACKET_MAX_SIZE_UDP - ENCRYPTTION_WASTAGE_SIZE
@@ -89,13 +89,8 @@ struct Bundle
 	/*是否重用该bundle : whether to reuse this bundle */
 	bool reuse_;
 
+	/*用于读取包中的序列化数据 : used to read the data from the packets*/
 	ACE_InputCDR in;
-
-	/**
-	 * @warnning
-	 * this may not need it
-	 */
-	ACE_OutputCDR out;
 
 	Bundle(Channel * pChannel = NULL, ProtocolType pt = PROTOCOL_TCP) :
 		pChnnel_(pChannel),
@@ -110,9 +105,8 @@ struct Bundle
 		pt_(PROTOCOL_TCP),
 		pCurrMsg_(NULL),
 		reuse_(false),
-		currPacketMaxSize(pt == PROTOCOL_TCP ? TCP_PACKET_MAX_CHUNK_SIZE : UDP_PACKET_MAX_CHUNK_SIZE)
-		, in((char*) NULL, 0)
-		, out((char*) NULL, 0)
+		currPacketMaxSize(pt == PROTOCOL_TCP ? TCP_PACKET_MAX_CHUNK_SIZE : UDP_PACKET_MAX_CHUNK_SIZE),
+		in((char*) NULL, 0)
 	{
 		// 如果使用了openssl加密通讯则我们保证一个包最大能被Blowfish::BLOCK_SIZE除尽
 		// 这样我们在加密一个满载包时不需要额外填充字节

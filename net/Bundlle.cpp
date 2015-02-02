@@ -1,4 +1,6 @@
 ﻿#include "Bundle.h"
+#include "net\Channel.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
@@ -913,9 +915,11 @@ void Bundle::dumpMsgs()
 					msglen = 0;
 					msgid = 0;
 
-				
-					//TRACE_MESSAGE_PACKET(false, temppacket, pCurrMsgHandler,
-					//	temppacket->length(), );
+					this->pChnnel_->c_str();
+
+					TRACE_MESSAGE_PACKET(false, temppacket, pCurrMsgHandler,
+						temppacket->length(),
+						this->pChnnel_ != NULL ? this->pChnnel_->c_str() : "none");
 
 					//ACE_HEX_DUMP(( LM_DEBUG,
 					//	temppacket->buff->base(),
