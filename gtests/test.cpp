@@ -16,7 +16,7 @@ int main(int argc, char* argv[ ])
 	logger_key);
 	*/
 
-	ACE_LOG_MSG->msg_ostream(&os, 1);
+	ACE_LOG_MSG->msg_ostream(&os, 0);
 	ACE_LOG_MSG->open("kbengine tests", ACE_Log_Msg::STDERR | ACE_Log_Msg::OSTREAM);
 	TRACE("main");
 	testing::InitGoogleTest(&argc, argv);
