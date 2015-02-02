@@ -34,29 +34,27 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 
 	if( g_trace_packet_use_logfile )
 	{
-		ACE_DEBUG(( LM_DEBUG,
-			"%M::TRACE_MESSAGE_PACKET::@1::g_trace_packet_use_logfile != NULL\n" ));
+		ACE_DEBUG(( LM_INFO,
+			"%M::TRACE_MESSAGE_PACKET::Log file is setup to packetlogs.log, "
+			"Please see packetlogs.log for the packet dump results.\n" ));
 		ACE_LOG_MSG->msg_ostream(&packetlogos);
 	}
 
 	bool isprint = true;
 	if( pCurrMsgHandler )
 	{
-		ACE_DEBUG(( LM_DEBUG, "TRACE_MESSAGE_PACKET::@2::pCurrMsgHandler != NULL\n" ));
-
 		std::vector<std::string>::iterator iter = std::find(g_trace_packet_disables.begin(),
 			g_trace_packet_disables.end(), pCurrMsgHandler->name_);
 
 		if( iter != g_trace_packet_disables.end() )
 		{
-			ACE_DEBUG(( LM_DEBUG, "TRACE_MESSAGE_PACKET::@3:: iter != NULL\n" ));
+			ACE_DEBUG(( LM_INFO,
+				"%M::TRACE_MESSAGE_PACKET::This packet is setup untrackable\n" ));
 			isprint = false;
 		} else
 		{
-			ACE_DEBUG(( LM_DEBUG, "TRACE_MESSAGE_PACKET::@4:: iter == NULL\n" ));
-
-			ACE_DEBUG(( LM_DEBUG,
-				"{%s} msgname:{%s}, msgID:{%d}, currMsgLength:{%d}, addr:{%s}\n",
+			ACE_DEBUG(( LM_INFO,
+				"%M::{%s} msgname:{%s}, msgID:{%d}, currMsgLength:{%d}, addr:{%s}\n",
 				( isrecv == true ) ? "====>" : "<====",
 				pCurrMsgHandler->name_.c_str(), pCurrMsgHandler->msgID_, length, addr ));
 		}
@@ -64,17 +62,18 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 
 	if( isprint )
 	{
-		ACE_DEBUG(( LM_DEBUG, "%M::TRACE_MESSAGE_PACKET::@5::isprint == true\n" ));
-		ACE_DEBUG(( LM_INFO, "%M::The curr packet rd pos = %lu, wr pos = %lu\n",
+		ACE_DEBUG(( LM_INFO,
+			"%M::The curr packet rd pos = %d, wr pos = %d\n",
 			pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
-		ACE_HEX_DUMP(( LM_INFO, pPacket->buff->base(), pPacket->length() ));
+		ACE_HEX_DUMP(( LM_INFO, pPacket->buff->base(), pPacket->length(), "\n"));
 	}
 
 	if( g_trace_packet_use_logfile )
 	{
 		ACE_LOG_MSG->msg_ostream(&normal);
-		ACE_DEBUG(( LM_DEBUG,
-			"%M::TRACE_MESSAGE_PACKET::@6::g_trace_packet_use_logfile != NULL\n" ));
+		ACE_DEBUG(( LM_INFO,
+			"%M::TRACE_MESSAGE_PACKET::Log file is set back to %s\n",
+			( n + ".log" ).c_str() ));
 	}
 
 	TRACE_RETURN_VOID();
