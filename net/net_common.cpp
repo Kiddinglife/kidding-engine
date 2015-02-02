@@ -70,7 +70,7 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 		//const char* name = GET_KBE_SRV_COMPONENT_TYPE_NAME(g_componentType);
 		//std::string n(name);
 		//std::ofstream os(( n + ".log" ).c_str());
-		std::ofstream os;
+		extern std::ofstream os;
 		ACE_LOG_MSG->msg_ostream(&os);
 		ACE_DEBUG(( LM_DEBUG,
 			"%M::TRACE_MESSAGE_PACKET::@6::g_trace_packet_use_logfile != NULL\n" ));
