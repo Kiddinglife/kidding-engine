@@ -32,6 +32,7 @@ Message*  Messages::add_msg(const std::string& ihName, MessageArgs* args,
 
 	if( msgInfo == NULL )
 	{
+		ACE_DEBUG(( LM_DEBUG, "Messages::@1::msgInfo == NULL\n" ));
 		while( ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->isFixed(msgID_) )
 		{
 			msgID_++;
@@ -39,6 +40,7 @@ Message*  Messages::add_msg(const std::string& ihName, MessageArgs* args,
 		msg->msgID_ = msgID_++;
 	} else
 	{
+		ACE_DEBUG(( LM_DEBUG, "Messages::@2::msgInfo != NULL\n" ));
 		msg->msgID_ = msgInfo->msgid;
 	}
 

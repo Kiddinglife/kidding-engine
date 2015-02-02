@@ -687,16 +687,40 @@ TEST(PacketTest, all_tests)
 #include  "net\Bundle.h"
 TEST(BundleTest, write_fixed_msg)
 {
+	struct msgarg : public MessageArgs
+	{
+		virtual ACE_INT32 args_bytes_count(void)
+		{
+			return 10;
+		}
+		virtual void fetch_args_from(Packet* p)
+		{
+
+		}
+		virtual void add_args_to(Packet* p)
+		{
+
+		}
+	};
+
 	Bundle* p;
 	ACE_PoolPtr_Getter(pool, Bundle, ACE_Null_Mutex);
 	p = pool->Ctor();
 
-	Message* currhandler = new Message;
+	FixedMessages::MSGInfo info = {1};
+	ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler", info));
+
+	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
+	Message* currhandler = poolmsg->Ctor();
 	currhandler->msgArgsBytesCount_ = 10;
 	currhandler->msgID_ = 1;
 
+	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
+	msgarg* ag = poolmsgarg->Ctor();
+
 	Messages msgs;
-	msgs.add_msg("currhandler", NULL, NETWORK_FIXED_MESSAGE, currhandler);
+	msgs.add_msg("currhandler", ag, NETWORK_FIXED_MESSAGE, currhandler);
+
 	p->start_new_curr_message(currhandler);
 
 	*p << (KBE_SRV_COMPONENT_TYPE) 5;
@@ -865,6 +889,21 @@ TEST(BundleTest, write_fixed_msg)
 
 TEST(BundleTest, write_variable_msg)
 {
+	struct msgarg : public MessageArgs
+	{
+		virtual ACE_INT32 args_bytes_count(void)
+		{
+			return 20;
+		}
+		virtual void fetch_args_from(Packet* p)
+		{
+
+		}
+		virtual void add_args_to(Packet* p)
+		{
+
+		}
+	};
 	//g_channelExternalEncryptType = 1;
 	g_channelExternalEncryptType = 0;
 
@@ -874,12 +913,16 @@ TEST(BundleTest, write_variable_msg)
 
 	cout << "curr packet max size = " << p->currPacketMaxSize << endl;
 
-	Message* currhandler = new Message;
+	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
+	Message* currhandler = poolmsg->Ctor();
 	currhandler->msgArgsBytesCount_ = 10;
 	currhandler->msgID_ = 1;
 
+	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
+	msgarg* ag = poolmsgarg->Ctor();
+
 	Messages msgs;
-	msgs.add_msg("currhandler", NULL, NETWORK_VARIABLE_MESSAGE, currhandler);
+	msgs.add_msg("currhandler", ag, NETWORK_VARIABLE_MESSAGE, currhandler);
 
 	p->start_new_curr_message(currhandler);
 

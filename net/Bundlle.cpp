@@ -440,7 +440,10 @@ void Bundle::end_new_curr_message(void)
 	Packets::iterator iter = packets_.begin();
 	for( ; iter != packets_.end(); iter++ )
 	{
-		ACE_HEX_DUMP(( LM_DEBUG, ( *iter )->buff->base(), ( *iter )->buff->size(), "end_new_curr_message(void):: dump result: \n\n" ));
+		ACE_HEX_DUMP(( LM_DEBUG,
+			( *iter )->buff->base(),
+			( *iter )->buff->length(),
+			"end_new_curr_message(void):: dump result: \n" ));
 	}
 
 	ACE_DEBUG(( LM_DEBUG,
@@ -839,6 +842,7 @@ void Bundle::dumpMsgs()
 
 				if( pCurrMsgHandler->msgType_ == NETWORK_VARIABLE_MESSAGE || g_packetAlwaysContainLength )
 				{
+					ACE_DEBUG(( LM_DEBUG, " @4::NETWORK_VARIABLE_MESSAGE\n" ));
 					in >> msglen;
 					pPacket->buff->rd_ptr(in.rd_ptr());
 					temppacket->os << msglen;
@@ -850,6 +854,7 @@ void Bundle::dumpMsgs()
 
 				} else
 				{
+					ACE_DEBUG(( LM_DEBUG, " @4::NETWORK_FIXED_MESSAGE\n" ));
 					msglen = pCurrMsgHandler->msgArgsBytesCount_;
 					temppacket->os << msglen;
 					state = 3;
@@ -858,9 +863,11 @@ void Bundle::dumpMsgs()
 				MessageLength len = 0;
 				memcpy(&len, temppacket->buff->base(), sizeof(MessageLength));
 				ACE_DEBUG(( LM_DEBUG, "msglen = %d\n", len ));
+				continue;
 
 			} else if( state == len1 )
 			{
+				ACE_DEBUG(( LM_DEBUG, " @5::state == len1\n" ));
 				in >> msglen1;
 				pPacket->buff->rd_ptr(in.rd_ptr());
 				temppacket->os << msglen1;
@@ -869,10 +876,12 @@ void Bundle::dumpMsgs()
 				MessageLength1 len1 = 0;
 				memcpy(&len1, temppacket->buff->base() + sizeof(MessageLength), sizeof(MessageLength1));
 				ACE_DEBUG(( LM_DEBUG, "msglen1 = %d\n", len1 ));
+
 				continue;
 
 			} else if( state == body )
 			{
+				ACE_DEBUG(( LM_DEBUG, " @6::state == body\n" ));
 				MessageLength1 totallen = msglen1 > 0 ? msglen1 : msglen;
 				if( pPacket->length() >= totallen - temppacket->length() )
 				{

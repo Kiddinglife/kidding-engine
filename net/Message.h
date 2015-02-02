@@ -3,7 +3,7 @@
 
 #include "ace\pre.h"
 #include "ace\Null_Mutex.h"
-#include "net_common.h"
+#include "common\ace_object_pool.h"
 #include "FixedMessages.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
@@ -86,7 +86,9 @@ struct Message
 
 	virtual ~Message()
 	{
-		SAFE_RELEASE(pMsgArgs_);
+		//SAFE_RELEASE(pMsgArgs_);
+		ACE_PoolPtr_Getter(pool, MessageArgs, ACE_Null_Mutex);
+		pool->Dtor(pMsgArgs_);
 	}
 
 	ACE_UINT32 sendavgsize()const { return ( send_count_ <= 0 ) ? 0 : send_size_ / send_count_; }
@@ -153,7 +155,11 @@ struct Messages
 		for( ; iter != msgs_.end(); ++iter )
 		{
 			if( iter->second )
-				delete iter->second;
+			{
+				ACE_PoolPtr_Getter(pool, Message, ACE_Null_Mutex);
+				pool->Dtor(iter->second);
+				//delete iter->second;
+			}
 		};
 	}
 
