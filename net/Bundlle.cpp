@@ -814,16 +814,9 @@ void Bundle::dumpMsgs()
 					continue;
 				}
 
-				ACE_DEBUG(( LM_DEBUG, "pPacket.rdpos = %d\n", pPacket->buff->rd_ptr() ));
-				ACE_DEBUG(( LM_DEBUG, "in.rdpos = %d\n", in.rd_ptr() ));
-
 				in >> msgid;
 				pPacket->buff->rd_ptr(in.rd_ptr());
-
-				ACE_DEBUG(( LM_DEBUG, "pPacket.rdpos = %d\n", pPacket->buff->rd_ptr() ));
-				ACE_DEBUG(( LM_DEBUG, "in.rdpos = %d\n", in.rd_ptr() ));
 				ACE_DEBUG(( LM_DEBUG, "msgid = %d\n", msgid ));
-
 				state = len;
 				continue;
 
@@ -858,12 +851,20 @@ void Bundle::dumpMsgs()
 					state = 3;
 				}
 
+				MessageLength len=0;
+				memcpy(&len, temppacket->buff->base(), sizeof(MessageLength));
+				ACE_DEBUG(( LM_DEBUG, "msglen = %d\n", len));
+
 			} else if( state == len1 )
 			{
 				in >> msglen1;
 				pPacket->buff->rd_ptr(in.rd_ptr());
 				temppacket->os << msglen1;
 				state = body;
+
+				MessageLength1 len1 = 0;
+				memcpy(&len1, temppacket->buff->base() + sizeof(MessageLength), sizeof(MessageLength1));
+				ACE_DEBUG(( LM_DEBUG, "msglen1 = %d\n", len1 ));
 				continue;
 			} else if( state == body )
 			{

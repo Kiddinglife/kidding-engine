@@ -873,6 +873,7 @@ TEST(BundleTest, write_variable_msg)
 	cout << "curr packet max size = " << p->currPacketMaxSize << endl;
 
 	Message* currhandler = new Message;
+	currhandler->msgArgsBytesCount_ = 10;
 	currhandler->msgID_ = 1;
 
 	Messages msgs;
