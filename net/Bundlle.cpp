@@ -923,10 +923,10 @@ void Bundle::dumpMsgs()
 					TRACE_MESSAGE_PACKET(false, temppacket, pCurrMsgHandler,
 						msgpayload, pChnnel_ != NULL ? pChnnel_->c_str() : "none");
 
-					//ACE_HEX_DUMP(( LM_DEBUG,
-					//	temppacket->buff->base(),
-					//	temppacket->buff->length(),
-					//	"dump msg result:\n" ));
+					ACE_HEX_DUMP(( LM_DEBUG,
+						temppacket->buff->base(),
+						temppacket->buff->length(),
+						"dump msg result:\n" ));
 
 					temppacket->reset();
 					continue;
