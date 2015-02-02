@@ -413,7 +413,7 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 //void Bundle::fill_curr_msg_len_field(bool issend)
 void Bundle::end_new_curr_message(void)
 {
-	//TRACE("@1 :: void Bundle::end_new_curr_message(void)\n");
+	TRACE("Bundle::end_new_curr_message()");
 
 	// 对消息进行跟踪 trace the msg
 	if( numMessages_ >= 1 )
@@ -442,10 +442,12 @@ void Bundle::end_new_curr_message(void)
 	{
 		ACE_HEX_DUMP(( LM_DEBUG, ( *iter )->buff->base(), ( *iter )->buff->size(), "end_new_curr_message(void):: dump result: \n\n" ));
 	}
+
 	ACE_DEBUG(( LM_DEBUG,
-		"end_new_curr_message::\ncurrMsgHandlerLength_= %d, pCurrPacket_ = %@\n"
-		"currMsgID_= %d, currMsgLengthPos_ = %@,\n"
-		"currMsgPacketCount_ = %d, currMsgLength_ = %d\n\n",
+		"end_new_curr_message::pCurrMsg_ = %d, currMsgHandlerLength_= %d"
+		"pCurrPacket_ = %@, currMsgID_= %d, currMsgLengthPos_ = %@,\n"
+		"currMsgPacketCount_ = %d, currMsgLength_ = %d\n",
+		pCurrMsg_,
 		currMsgType_, pCurrPacket_,
 		currMsgID_, currMsgLengthPos_,
 		currMsgPacketCount_, currMsgLength_ ));
@@ -458,7 +460,7 @@ void Bundle::end_new_curr_message(void)
 	currMsgLengthPos_ = NULL;
 	pCurrMsg_ = NULL;
 
-	//TRACE_RETURN_VOID();
+	TRACE_RETURN_VOID();
 }
 
 /**
@@ -845,6 +847,7 @@ void Bundle::dumpMsgs()
 						state = len1;
 					else
 						state = body;
+
 				} else
 				{
 					msglen = pCurrMsgHandler->msgArgsBytesCount_;
@@ -852,9 +855,9 @@ void Bundle::dumpMsgs()
 					state = 3;
 				}
 
-				MessageLength len=0;
+				MessageLength len = 0;
 				memcpy(&len, temppacket->buff->base(), sizeof(MessageLength));
-				ACE_DEBUG(( LM_DEBUG, "msglen = %d\n", len));
+				ACE_DEBUG(( LM_DEBUG, "msglen = %d\n", len ));
 
 			} else if( state == len1 )
 			{
@@ -867,6 +870,7 @@ void Bundle::dumpMsgs()
 				memcpy(&len1, temppacket->buff->base() + sizeof(MessageLength), sizeof(MessageLength1));
 				ACE_DEBUG(( LM_DEBUG, "msglen1 = %d\n", len1 ));
 				continue;
+
 			} else if( state == body )
 			{
 				MessageLength1 totallen = msglen1 > 0 ? msglen1 : msglen;
@@ -897,13 +901,13 @@ void Bundle::dumpMsgs()
 		pPacket->buff->rd_ptr(rpos);
 		pPacket->buff->wr_ptr(wpos);
 
-		ACE_HEX_DUMP(( LM_DEBUG, 
-		temppacket->buff->base(), 
-		temppacket->buff->length(),
-		"dump msg result:\n"));
+		ACE_HEX_DUMP(( LM_DEBUG,
+			temppacket->buff->base(),
+			temppacket->buff->length(),
+			"dump msg result:\n" ));
 	}
 
-	const_cast<ACE_Message_Block*>( in.start() )->base(base,size);
+	const_cast<ACE_Message_Block*>( in.start() )->base(base, size);
 	const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(w);
 	const_cast<ACE_Message_Block*>( in.start() )->rd_ptr(r);
 

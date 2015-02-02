@@ -692,9 +692,11 @@ TEST(BundleTest, write_fixed_msg)
 	p = pool->Ctor();
 
 	Message* currhandler = new Message;
+	currhandler->msgArgsBytesCount_ = 10;
 	currhandler->msgID_ = 1;
-	currhandler->msgType_ = NETWORK_FIXED_MESSAGE /*NETWORK_VARIABLE_MESSAGE*/;
 
+	Messages msgs;
+	msgs.add_msg("currhandler", NULL, NETWORK_FIXED_MESSAGE, currhandler);
 	p->start_new_curr_message(currhandler);
 
 	*p << (KBE_SRV_COMPONENT_TYPE) 5;
