@@ -54,7 +54,7 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 		} else
 		{
 			ACE_DEBUG(( LM_INFO,
-				"\n%M::{%s} msgname:{%s}, msgID:{%d}, currMsgLength:{%d}, addr:{%s}\n",
+				"\n%M::{%s} msgname:{%s}, msgID:{%d}, currMsgPayloadLength:{%d}, addr:{%s}\n",
 				( isrecv == true ) ? "====>" : "<====",
 				pCurrMsgHandler->name_.c_str(), pCurrMsgHandler->msgID_, length, addr ));
 		}
