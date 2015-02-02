@@ -913,8 +913,6 @@ TEST(BundleTest, write_variable_msg)
 	std::string n5 = "name5";
 	*p << n5;
 
-	p->dumpMsgs();
-
 	p->end_new_curr_message();
 
 

@@ -450,6 +450,7 @@ void Bundle::end_new_curr_message(void)
 		currMsgID_, currMsgLengthPos_,
 		currMsgPacketCount_, currMsgLength_ ));
 
+	dumpMsgs();
 
 	//清理该msg的相关变量值
 	currMsgType_ = currMsgID_ =
