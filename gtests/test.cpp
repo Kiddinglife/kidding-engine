@@ -1,5 +1,5 @@
 ﻿#include "TestCases.h"
-std::ofstream os("kbe.log");
+extern std::ofstream os;	
 int main(int argc, char* argv[ ])
 {
 	/*
@@ -15,7 +15,7 @@ int main(int argc, char* argv[ ])
 	| ACE_Log_Msg::MSG_CALLBACK | ACE_Log_Msg::CUSTOM,
 	logger_key);
 	*/
-
+	std::ofstream os("kbe.log");
 	ACE_LOG_MSG->msg_ostream(&os, 0);
 	ACE_LOG_MSG->open("kbengine tests", ACE_Log_Msg::STDERR | ACE_Log_Msg::OSTREAM);
 	TRACE("main");

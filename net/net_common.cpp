@@ -19,6 +19,10 @@ bool g_packetAlwaysContainLength = false;
 int g_trace_packet = 1;
 bool g_trace_packet_use_logfile = true;
 std::vector<std::string> g_trace_packet_disables;
+
+static const char* name = GET_KBE_SRV_COMPONENT_TYPE_NAME(g_componentType);
+static std::string n(name);
+static std::ofstream normal(( n + ".log" ).c_str());
 static  std::ofstream packetlogos("packetlogs.log");
 
 void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
@@ -67,11 +71,7 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 
 	if( g_trace_packet_use_logfile )
 	{
-		//const char* name = GET_KBE_SRV_COMPONENT_TYPE_NAME(g_componentType);
-		//std::string n(name);
-		//std::ofstream os(( n + ".log" ).c_str());
-		extern std::ofstream os;
-		ACE_LOG_MSG->msg_ostream(&os);
+		ACE_LOG_MSG->msg_ostream(&normal);
 		ACE_DEBUG(( LM_DEBUG,
 			"%M::TRACE_MESSAGE_PACKET::@6::g_trace_packet_use_logfile != NULL\n" ));
 	}
