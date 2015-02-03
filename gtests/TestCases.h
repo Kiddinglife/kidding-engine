@@ -762,7 +762,7 @@
 //
 //	p->dumpMsgs();
 //
-//	//#pragma pack (push, 1)
+//	#pragma pack (push, 1)
 //	struct Arg
 //	{
 //		KBE_SRV_COMPONENT_TYPE ctype;
@@ -781,22 +781,22 @@
 //		UINT32 blobsize;
 //		char* blob;
 //
-//		//UINT32 n0_size;
+//		UINT32 n0_size;
 //		char* n0;
 //
-//		//UINT32 n1_size;
+//		UINT32 n1_size;
 //		char* n1;
 //
 //		std::string n2;
 //
-//		//UINT32 n1_size;
+//		UINT32 n1_size;
 //		char* n3;
 //
 //		std::string n4;
 //
 //		std::string n5;
 //	};
-//	//#pragma pack (pop)
+//	#pragma pack (pop)
 //	Arg arg;
 //	MessageID id = 0;
 //
@@ -902,7 +902,7 @@
 //
 //		}
 //	};
-//	//g_channelExternalEncryptType = 1;
+//	g_channelExternalEncryptType = 1;
 //	g_channelExternalEncryptType = 0;
 //
 //	Bundle* p;
@@ -960,7 +960,7 @@
 //
 //	p->dumpMsgs();
 //
-//	//#pragma pack (push, 1)
+//	#pragma pack (push, 1)
 //	struct Arg
 //	{
 //		KBE_SRV_COMPONENT_TYPE ctype;
@@ -976,22 +976,22 @@
 //		UINT32 blobsize;
 //		char* blob;
 //
-//		//UINT32 n0_size;
+//		UINT32 n0_size;
 //		char* n0;
 //
-//		//UINT32 n1_size;
+//		UINT32 n1_size;
 //		char* n1;
 //
 //		std::string n2;
 //
-//		//UINT32 n1_size;
+//		UINT32 n1_size;
 //		char* n3;
 //
 //		std::string n4;
 //
 //		std::string n5;
 //	};
-//	//#pragma pack (pop)
+//	#pragma pack (pop)
 //
 //	Arg arg;
 //	MessageID id = 0;
@@ -1082,7 +1082,7 @@
 //	p->clear();
 //	pool->Dtor(p);
 //}
-//
+
 //#include "net\NetworkInterface.h"
 //#include "net\Channel.h"
 //TEST(NetworkInterfaceTest, get_ip_addr_str)
@@ -1128,40 +1128,40 @@
 //	in.deregister_all_channels();
 //
 //}
-//
-//#include "net\PacketReader.h"
-//TEST(PacketReaderTests, ctor_dtor_test)
-//{
-//	Nub              pDispatcher;
-//	ACE_INT32     extlisteningPort_min = 20001;
-//	ACE_INT32     extlisteningPort_max = 20005;
-//	const char *    extlisteningInterface = "192.168.2.47";
-//	//const char *    extlisteningInterface = "";
-//	//const char *    extlisteningInterface = "127.0.0.1";
-//	//const char *    extlisteningInterface = USE_KBEMACHINED;
-//	ACE_UINT32   extrbuffer = 512;
-//	ACE_UINT32   extwbuffer = 512;
-//	ACE_INT32      intlisteningPort = 20006;
-//	const char *    intlisteningInterface = "192.168.2.47";
-//	ACE_UINT32   intrbuffer = 512;
-//	ACE_UINT32   intwbuffer = 512;
-//
-//	NetworkInterface in(&pDispatcher,
-//		extlisteningPort_min,
-//		extlisteningPort_max,
-//		extlisteningInterface,
-//		extrbuffer,
-//		extwbuffer,
-//		intlisteningPort,
-//		intlisteningInterface,
-//		intrbuffer,
-//		intwbuffer);
-//
-//	ACE_INET_Addr addr(20006, "192.168.2.47");
-//	ACE_SOCK_Dgram dg(addr);
-//	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
-//	Messages msgs;
-//
-//	PacketReader r(&tcpchannel);
-//
-//}
+
+#include "net\PacketReader.h"
+#include "net\NetworkInterface.h"
+TEST(PacketReaderTests, ctor_dtor_test)
+{
+	Nub              pDispatcher;
+	ACE_INT32     extlisteningPort_min = 20001;
+	ACE_INT32     extlisteningPort_max = 20005;
+	const char *    extlisteningInterface = "192.168.2.47";
+	//const char *    extlisteningInterface = "";
+	//const char *    extlisteningInterface = "127.0.0.1";
+	//const char *    extlisteningInterface = USE_KBEMACHINED;
+	ACE_UINT32   extrbuffer = 512;
+	ACE_UINT32   extwbuffer = 512;
+	ACE_INT32      intlisteningPort = 20006;
+	const char *    intlisteningInterface = "192.168.2.47";
+	ACE_UINT32   intrbuffer = 512;
+	ACE_UINT32   intwbuffer = 512;
+
+	NetworkInterface in(&pDispatcher,
+		extlisteningPort_min,
+		extlisteningPort_max,
+		extlisteningInterface,
+		extrbuffer,
+		extwbuffer,
+		intlisteningPort,
+		intlisteningInterface,
+		intrbuffer,
+		intwbuffer);
+
+	ACE_INET_Addr addr(20006, "192.168.2.47");
+	ACE_SOCK_Dgram dg(addr);
+	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
+
+	PacketReader r(&tcpchannel);
+
+}

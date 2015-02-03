@@ -30,14 +30,14 @@ struct PacketReader
 	MessageID			currMsgID_;
 	MessageLength1  currMsgLen_;
 
-//	ACE_InputCDR      in;
+	//	ACE_InputCDR      in;
 
 	PacketReader(Channel* pChannel = NULL);
 	virtual ~PacketReader();
 	void reset();
 
-	void writeFragmentMessage(FragmentType fragmentFlag, Packet* pPacket, 
-	ACE_UINT32 datasize);
+	void writeFragmentMessage(FragmentType fragmentFlag, Packet* pPacket,
+		ACE_UINT32 datasize);
 
 	void mergeFragmentMessage(Packet* pPacket);
 

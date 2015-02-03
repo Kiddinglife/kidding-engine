@@ -4,8 +4,7 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-PacketReader::PacketReader(Channel* pChannel)
-:
+PacketReader::PacketReader(Channel* pChannel):
 pFragments_(NULL), //pFragmentDatas_
 pFragmentsWpos_(0), //pFragmentDatasWpos_;
 pFragmentsRemainning(0), //pFragmentDatasRemain_;
