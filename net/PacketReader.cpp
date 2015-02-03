@@ -25,7 +25,6 @@ PacketReader::~PacketReader()
 {
 	TRACE("PacketReader::dtor()");
 	reset();
-	pChannel_ = NULL;
 	TRACE_RETURN_VOID();
 }
 
@@ -44,6 +43,8 @@ void PacketReader::reset()
 		pool->Dtor(pFragmentPacket_);
 		pFragmentPacket_ = NULL;
 	}
+
+	pChannel_ = NULL;
 
 	TRACE_RETURN_VOID();
 }
@@ -105,7 +106,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				ACE_DEBUG(( LM_DEBUG,
 					"%M::%T::PacketReader::processMessages()"
 					"pPacket->length(%d), pFragmentPacket_(%d),"
-					"wr_pos(%d), rd_pos(%d)\n",
+					"rd_pos(%d), wr_pos(%d)\n",
 					pPacket->length(), pFragmentPacket_,
 					pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 
@@ -120,7 +121,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				ACE_DEBUG(( LM_DEBUG,
 					"%M::%T::PacketReader::processMessages()"
 					"pPacket->length(%d), pFragmentPacket_(%d),"
-					"wr_pos(%d), rd_pos(%d)\n",
+					"rd_pos(%d), wr_pos(%d)\n",
 					pPacket->length(), pFragmentPacket_,
 					pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 			}
@@ -131,32 +132,35 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 			/// it must be something wrong if pMsg == NULL. user will be told this situation
 			if( pMsg == NULL )
 			{
-				ACE_DEBUG(( LM_ERROR,
+				ACE_DEBUG(( LM_DEBUG,
 					"%M::%T::PacketReader::processMessages()::@if(pMsg == NULL)\n" ));
 
+				/**
+				* change the read position to the begainning of the packet
+				* for the convience of trace of this packet, when trace is done,
+				* read position will be changed back to the original value.
+				*/
 				Packet* pPacket1 = pFragmentPacket_ != NULL ? pFragmentPacket_ : pPacket;
 				TRACE_MESSAGE_PACKET(true, pPacket1, pMsg, pPacket1->length(), pChannel_->c_str());
 
-				/**
-				 * change the read position to the begainning of the packet
-				 * for the convience of trace of this packet, when trace is done,
-				 * read position will be changed back to the original value.
-				 */
 				char* rpos = pPacket1->buff->rd_ptr();
 				pPacket1->buff->rd_ptr(pPacket1->buff->base());
+
 				TRACE_MESSAGE_PACKET(true, pPacket1, pMsg, pPacket1->length(), pChannel_->c_str());
+
 				pPacket1->buff->rd_ptr(rpos);
 
-				ACE_ERROR(( LM_ERROR,
-					"%M::%T::PacketReader::processMessages::"
-					"not found msg with ID(%d), msglen(%d), from(%s).\n",
-					currMsgID_, pPacket1->length(), pChannel_->c_str() ));
-
+				/// reset related values
 				currMsgID_ = 0;
 				currMsgLen_ = 0;
-				pChannel_->set_condemn();
-
+				pChannel_->isCondemn_ = true;
 				break;
+
+				ACE_ERROR_BREAK(( LM_ERROR,
+					"%M::%T::PacketReader::processMessages::"
+					"not found msg with ID(%d), msglen(%d), from(%s),\n"
+					"set this channel to condem",
+					currMsgID_, pPacket1->length(), pChannel_->c_str() ));
 			}
 		}
 	}

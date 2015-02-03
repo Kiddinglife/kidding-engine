@@ -1149,16 +1149,16 @@ TEST(PacketReaderTests, ctor_dtor_test)
 		}
 	};
 
-	Bundle* p;
+	Channel channel;
+
 	ACE_PoolPtr_Getter(pool, Bundle, ACE_Null_Mutex);
-	p = pool->Ctor();
-
-	Messages msgs;
-
 	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
+	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
+
+	Bundle* p = pool->Ctor();
+	Messages msgs;
 	msgarg* ag = poolmsgarg->Ctor();
 
-	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
 	/// first msg is fixed msg
 	Message* currhandler = poolmsg->Ctor();
 	currhandler->msgArgsBytesCount_ = 77;
@@ -1171,12 +1171,12 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler", info));
 
 	/// second msg is variable msg
-	Message* currhandler1 = poolmsg->Ctor();
-	currhandler1->msgArgsBytesCount_ = 77;
-	currhandler1->msgID_ = 2;
+	//Message* currhandler1 = poolmsg->Ctor();
+	//currhandler1->msgArgsBytesCount_ = 77;
+	//currhandler1->msgID_ = 2;
 
 	//msgs.add_msg("currhandler", ag, NETWORK_FIXED_MESSAGE, currhandler);
-	msgs.add_msg("currhandler1", ag, NETWORK_VARIABLE_MESSAGE, currhandler1);
+	//msgs.add_msg("currhandler1", ag, NETWORK_VARIABLE_MESSAGE, currhandler1);
 
 	p->start_new_curr_message(currhandler);
 	*p << (KBE_SRV_COMPONENT_TYPE) 5;
@@ -1204,10 +1204,12 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	std::string n5 = "name5";
 	*p << n5;
 	p->end_new_curr_message();
-
 	p->dumpMsgs();
 
-	PacketReader pr;
+	PacketReader pr(&channel);
 	Packet* p0 = p->packets_[0];
 	pr.processMessages(&msgs, p0);
+
+	pool->Dtor(p);
+
 }

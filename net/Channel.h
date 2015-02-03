@@ -118,7 +118,7 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 		PacketFilterPtr pFilter = PacketFilterPtr(NULL),
 		ChannelID id = CHANNEL_ID_NULL);
 
-	virtual ~Channel() { }
+	virtual ~Channel(void) { }
 
 	const char*  c_str(void) const;
 
@@ -127,8 +127,6 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	void destroy(void);
 
 	void process_packets(Messages* pMsgHandlers);
-
-	void Channel::set_condemn();
 };
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
