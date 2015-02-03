@@ -75,5 +75,12 @@ void Channel::process_packets(Messages* pMsgHandlers)
 	TRACE_RETURN_VOID();
 }
 
+void Channel::set_condemn()
+{
+	TRACE("Channel::set_condemn()");
+	isCondemn_ = true;
+	ACE_DEBUG(( LM_ERROR, "%M::%T::Channel::set channel_ptr(%d, %s)\n", this, this->c_str() ));
+	TRACE_RETURN_VOID();
+}
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

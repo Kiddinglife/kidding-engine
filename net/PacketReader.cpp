@@ -123,18 +123,40 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 					"wr_pos(%d), rd_pos(%d)\n",
 					pPacket->length(), pFragmentPacket_,
 					pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
-
-					break;
 			}
 
 			// find the msg based on currMsgID_
 			Message* pMsg = pMsgs->find(currMsgID_);
+
+			/// it must be something wrong if pMsg == NULL. user will be told this situation
 			if( pMsg == NULL )
 			{
-				ACE_DEBUG(( LM_DEBUG,
+				ACE_DEBUG(( LM_ERROR,
 					"%M::%T::PacketReader::processMessages()::@if(pMsg == NULL)\n" ));
-				Packet* pPacket1 = pFragmentPacket_ != NULL ? pFragmentPacket_ : pPacket;
 
+				Packet* pPacket1 = pFragmentPacket_ != NULL ? pFragmentPacket_ : pPacket;
+				TRACE_MESSAGE_PACKET(true, pPacket1, pMsg, pPacket1->length(), pChannel_->c_str());
+
+				/**
+				 * change the read position to the begainning of the packet
+				 * for the convience of trace of this packet, when trace is done,
+				 * read position will be changed back to the original value.
+				 */
+				char* rpos = pPacket1->buff->rd_ptr();
+				pPacket1->buff->rd_ptr(pPacket1->buff->base());
+				TRACE_MESSAGE_PACKET(true, pPacket1, pMsg, pPacket1->length(), pChannel_->c_str());
+				pPacket1->buff->rd_ptr(rpos);
+
+				ACE_ERROR(( LM_ERROR,
+					"%M::%T::PacketReader::processMessages::"
+					"not found msg with ID(%d), msglen(%d), from(%s).\n",
+					currMsgID_, pPacket1->length(), pChannel_->c_str() ));
+
+				currMsgID_ = 0;
+				currMsgLen_ = 0;
+				pChannel_->set_condemn();
+
+				break;
 			}
 		}
 	}
