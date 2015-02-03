@@ -684,484 +684,484 @@
 //	pool->Dtor(p);
 //}
 
-#include  "net\Bundle.h"
-TEST(BundleTest, write_fixed_msg)
-{
-	struct msgarg : public MessageArgs
-	{
-		virtual ACE_INT32 args_bytes_count(void)
-		{
-			return 77;
-		}
-		virtual void fetch_args_from(Packet* p)
-		{
-
-		}
-		virtual void add_args_to(Packet* p)
-		{
-
-		}
-	};
-
-	Bundle* p;
-	ACE_PoolPtr_Getter(pool, Bundle, ACE_Null_Mutex);
-	p = pool->Ctor();
-
-	FixedMessages::MSGInfo info = {1};
-	ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler", info));
-
-	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
-	Message* currhandler = poolmsg->Ctor();
-	currhandler->msgArgsBytesCount_ = 77;
-	currhandler->msgID_ = 1;
-
-	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
-	msgarg* ag = poolmsgarg->Ctor();
-
-	Messages msgs;
-	msgs.add_msg("currhandler", ag, NETWORK_FIXED_MESSAGE, currhandler);
-
-	p->start_new_curr_message(currhandler);
-
-	*p << (KBE_SRV_COMPONENT_TYPE) 5;
-	*p << (ENTITY_MAILBOX_TYPE) 5;
-
-	*p << (UCHAR) 1;
-	*p << (UINT16) 2;
-	*p << (UINT32) 3;
-	*p << (UINT64) 4;
-
-	*p << (CHAR) -5;
-	*p << (INT16) -6;
-	*p << (INT32) -7;
-	*p << (INT64) 8;
-
-	char *blob = "blob";
-	p->write_blob(blob, strlen(blob) + 1);
-
-	char *name0 = "name0";
-	*p << name0;
-
-	char *name1 = "name1";
-	*p << name1;
-
-	std::string n2 = "name2";
-	*p << n2;
-
-
-	char *n3 = "name3";
-	*p << n3;
-
-	std::string n4 = "name4";
-	*p << n4;
-
-	std::string n5 = "name5";
-	*p << n5;
-
-	p->end_new_curr_message();
-
-	p->dumpMsgs();
-
-	//#pragma pack (push, 1)
-	struct Arg
-	{
-		KBE_SRV_COMPONENT_TYPE ctype;
-		ENTITY_MAILBOX_TYPE mailbox;
-
-		UCHAR uchar;
-		UINT16 us;
-		UINT32 u32;
-		UINT64 u64;
-
-		CHAR ch;
-		INT16 s;
-		INT32 int32;
-		INT64 int64;
-
-		UINT32 blobsize;
-		char* blob;
-
-		//UINT32 n0_size;
-		char* n0;
-
-		//UINT32 n1_size;
-		char* n1;
-
-		std::string n2;
-
-		//UINT32 n1_size;
-		char* n3;
-
-		std::string n4;
-
-		std::string n5;
-	};
-	//#pragma pack (pop)
-	Arg arg;
-	MessageID id = 0;
-
-	p->init_instream();
-
-	*p >> id;
-	cout << "id = " << id << endl;
-
-	*p >> arg.ctype;
-	cout << "arg.ctype = " << arg.ctype << endl;
-
-	*p >> arg.mailbox;
-	cout << "arg.mailbox = " << arg.mailbox << endl;
-
-	*p >> arg.uchar;
-	cout << "arg.uchar = " << (int) arg.uchar << endl;
-
-	*p >> arg.us;
-	cout << "arg.us = " << arg.us << endl;
-
-	*p >> arg.u32;
-	cout << "arg.u32 = " << arg.u32 << endl;
-
-	*p >> arg.u64;
-	cout << "arg.u64 = " << arg.u64 << endl;
-
-	*p >> arg.ch;
-	cout << "arg.ch = " << (int) arg.ch << endl;
-
-	*p >> arg.s;
-	cout << "arg.s = " << arg.s << endl;
-
-	*p >> arg.int32;
-	cout << "arg.int32 = " << arg.int32 << endl;
-
-	*p >> arg.int64;
-	cout << "arg.int64 = " << arg.int64 << endl;
-
-	*p >> arg.blobsize;
-	cout << "arg.blobsize = " << arg.blobsize << endl;
-
-	arg.blob = new char[arg.blobsize];
-	p->read_blob(arg.blob, arg.blobsize);
-	ACE_HEX_DUMP(( LM_DEBUG, arg.blob, arg.blobsize,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	delete arg.blob;
-
-	arg.n0 = new char[256];
-	*p >> arg.n0;
-	ACE_HEX_DUMP(( LM_DEBUG, arg.n0, strlen(arg.n0) + 1,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	cout << "arg.no  = " << arg.n0 << endl;
-	delete arg.n0;
-
-	arg.n1 = new char[256];
-	*p >> arg.n1;
-	ACE_HEX_DUMP(( LM_DEBUG, arg.n1, strlen(arg.n1) + 1,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	cout << "arg.n1 = " << arg.n1 << endl;
-	delete arg.n1;
-
-
-	*p >> arg.n2;
-	ACE_HEX_DUMP(( LM_DEBUG, arg.n2.c_str(), arg.n2.size() + 1,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	cout << "arg.n2  = " << arg.n2 << endl;
-
-	arg.n3 = new char[256];
-	*p >> arg.n3;
-	ACE_HEX_DUMP(( LM_DEBUG, arg.n3, strlen(arg.n3) + 1,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	cout << "arg.n3 = " << arg.n3 << endl;
-	delete arg.n3;
-
-	*p >> arg.n4;
-	ACE_HEX_DUMP(( LM_DEBUG, arg.n4.c_str(), arg.n4.size() + 1,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	cout << "arg.n4  = " << arg.n4 << endl;
-
-	*p >> arg.n5;
-	ACE_HEX_DUMP(( LM_DEBUG, arg.n5.c_str(), arg.n5.size() + 1,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	cout << "arg.n5  = " << arg.n5 << endl;
-
-	p->clear();
-	pool->Dtor(p);
-}
-
-TEST(BundleTest, write_variable_msg)
-{
-	struct msgarg : public MessageArgs
-	{
-		virtual ACE_INT32 args_bytes_count(void)
-		{
-			return 20;
-		}
-		virtual void fetch_args_from(Packet* p)
-		{
-
-		}
-		virtual void add_args_to(Packet* p)
-		{
-
-		}
-	};
-	//g_channelExternalEncryptType = 1;
-	g_channelExternalEncryptType = 0;
-
-	Bundle* p;
-	ACE_PoolPtr_Getter(pool, Bundle, ACE_Null_Mutex);
-	p = pool->Ctor();
-
-	cout << "curr packet max size = " << p->currPacketMaxSize << endl;
-
-	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
-	Message* currhandler = poolmsg->Ctor();
-	currhandler->msgArgsBytesCount_ = 10;
-	currhandler->msgID_ = 1;
-
-	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
-	msgarg* ag = poolmsgarg->Ctor();
-
-	Messages msgs;
-	msgs.add_msg("currhandler", ag, NETWORK_VARIABLE_MESSAGE, currhandler);
-
-	p->start_new_curr_message(currhandler);
-
-	*p << (KBE_SRV_COMPONENT_TYPE) 5;
-	*p << (ENTITY_MAILBOX_TYPE) 5;
-
-	*p << (UINT64) 64;
-
-	*p << (CHAR) -5;
-	*p << (INT16) -6;
-	*p << (INT32) -7;
-	*p << (INT64) 8;
-
-	char *blob = "blob";
-	p->write_blob(blob, strlen(blob) + 1);
-
-	char *name0 = "name0";
-	*p << name0;
-
-	char *name1 = "name1";
-	*p << name1;
-
-	std::string n2 = "name2";
-	*p << n2;
-
-
-	char *n3 = "name3";
-	*p << n3;
-
-	std::string n4 = "name4";
-	*p << n4;
-
-	std::string n5 = "name5";
-	*p << n5;
-
-	p->end_new_curr_message();
-
-	p->dumpMsgs();
-
-	//#pragma pack (push, 1)
-	struct Arg
-	{
-		KBE_SRV_COMPONENT_TYPE ctype;
-		ENTITY_MAILBOX_TYPE mailbox;
-
-		UINT64 u64;
-
-		CHAR ch;
-		INT16 s;
-		INT32 int32;
-		INT64 int64;
-
-		UINT32 blobsize;
-		char* blob;
-
-		//UINT32 n0_size;
-		char* n0;
-
-		//UINT32 n1_size;
-		char* n1;
-
-		std::string n2;
-
-		//UINT32 n1_size;
-		char* n3;
-
-		std::string n4;
-
-		std::string n5;
-	};
-	//#pragma pack (pop)
-
-	Arg arg;
-	MessageID id = 0;
-	MessageLength len;
-
-	p->init_instream();
-
-	*p >> id;
-	cout << "id = " << id << endl;
-
-	*p >> len;
-	cout << "len = " << len << endl;
-
-	if( len == NETWORK_MESSAGE_MAX_SIZE )
-	{
-		MessageLength1 ex_len;
-		*p >> ex_len;
-		cout << "ex_len = " << ex_len << endl;
-	}
-
-	*p >> arg.ctype;
-	cout << "arg.ctype = " << arg.ctype << endl;
-
-	*p >> arg.mailbox;
-	cout << "arg.mailbox = " << arg.mailbox << endl;
-
-	*p >> arg.u64;
-	cout << "arg.u64 = " << arg.u64 << endl;
-
-	*p >> arg.ch;
-	cout << "arg.ch = " << (int) arg.ch << endl;
-
-	*p >> arg.s;
-	cout << "arg.s = " << arg.s << endl;
-
-	*p >> arg.int32;
-	cout << "arg.int32 = " << arg.int32 << endl;
-
-	*p >> arg.int64;
-	cout << "arg.int64 = " << arg.int64 << endl;
-
-	*p >> arg.blobsize;
-	cout << "arg.blobsize = " << arg.blobsize << endl;
-
-	arg.blob = new char[arg.blobsize];
-	p->read_blob(arg.blob, arg.blobsize);
-	ACE_HEX_DUMP(( LM_DEBUG, arg.blob, arg.blobsize,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	delete arg.blob;
-
-	arg.n0 = new char[256];
-	*p >> arg.n0;
-	ACE_HEX_DUMP(( LM_DEBUG, arg.n0, strlen(arg.n0) + 1,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	cout << "arg.no  = " << arg.n0 << endl;
-	delete arg.n0;
-
-	arg.n1 = new char[256];
-	*p >> arg.n1;
-	ACE_HEX_DUMP(( LM_DEBUG, arg.n1, strlen(arg.n1) + 1,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	cout << "arg.n1 = " << arg.n1 << endl;
-	delete arg.n1;
-
-
-	*p >> arg.n2;
-	ACE_HEX_DUMP(( LM_DEBUG, arg.n2.c_str(), arg.n2.size() + 1,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	cout << "arg.n2  = " << arg.n2 << endl;
-
-	arg.n3 = new char[256];
-	*p >> arg.n3;
-	ACE_HEX_DUMP(( LM_DEBUG, arg.n3, strlen(arg.n3) + 1,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	cout << "arg.n3 = " << arg.n3 << endl;
-	delete arg.n3;
-
-	*p >> arg.n4;
-	ACE_HEX_DUMP(( LM_DEBUG, arg.n4.c_str(), arg.n4.size() + 1,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	cout << "arg.n4  = " << arg.n4 << endl;
-
-	*p >> arg.n5;
-	ACE_HEX_DUMP(( LM_DEBUG, arg.n5.c_str(), arg.n5.size() + 1,
-		"PACKET_OUT_VALUE::Result: \n" ));
-	cout << "arg.n5  = " << arg.n5 << endl;
-
-	p->clear();
-	pool->Dtor(p);
-}
-
-#include "net\NetworkInterface.h"
-#include "net\Channel.h"
-TEST(NetworkInterfaceTest, get_ip_addr_str)
-{
-	Nub              pDispatcher;
-	ACE_INT32     extlisteningPort_min = 20001;
-	ACE_INT32     extlisteningPort_max = 20005;
-	const char *    extlisteningInterface = "192.168.2.47";
-	//const char *    extlisteningInterface = "";
-	//const char *    extlisteningInterface = "127.0.0.1";
-	//const char *    extlisteningInterface = USE_KBEMACHINED;
-	ACE_UINT32   extrbuffer = 512;
-	ACE_UINT32   extwbuffer = 512;
-	ACE_INT32      intlisteningPort = 20006;
-	const char *    intlisteningInterface = "192.168.2.47";
-	ACE_UINT32   intrbuffer = 512;
-	ACE_UINT32   intwbuffer = 512;
-
-	NetworkInterface in(&pDispatcher,
-		extlisteningPort_min,
-		extlisteningPort_max,
-		extlisteningInterface,
-		extrbuffer,
-		extwbuffer,
-		intlisteningPort,
-		intlisteningInterface,
-		intrbuffer,
-		intwbuffer);
-
-	ACE_Time_Value tv;
-	in.handle_timeout(tv, 0);
-
-	ACE_INET_Addr addr(20006, "192.168.2.47");
-	ACE_SOCK_Dgram dg(addr);
-	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
-	Messages msgs;
-
-	in.register_channel(&tcpchannel);
-	in.channel(addr);
-	in.channel(dg.get_handle());
-	in.process_all_channels_packets(&msgs);
-	in.deregister_channel(&tcpchannel);
-	in.deregister_all_channels();
-
-}
-
-#include "net\PacketReader.h"
-TEST(PacketReaderTests, ctor_dtor_test)
-{
-	Nub              pDispatcher;
-	ACE_INT32     extlisteningPort_min = 20001;
-	ACE_INT32     extlisteningPort_max = 20005;
-	const char *    extlisteningInterface = "192.168.2.47";
-	//const char *    extlisteningInterface = "";
-	//const char *    extlisteningInterface = "127.0.0.1";
-	//const char *    extlisteningInterface = USE_KBEMACHINED;
-	ACE_UINT32   extrbuffer = 512;
-	ACE_UINT32   extwbuffer = 512;
-	ACE_INT32      intlisteningPort = 20006;
-	const char *    intlisteningInterface = "192.168.2.47";
-	ACE_UINT32   intrbuffer = 512;
-	ACE_UINT32   intwbuffer = 512;
-
-	NetworkInterface in(&pDispatcher,
-		extlisteningPort_min,
-		extlisteningPort_max,
-		extlisteningInterface,
-		extrbuffer,
-		extwbuffer,
-		intlisteningPort,
-		intlisteningInterface,
-		intrbuffer,
-		intwbuffer);
-
-	ACE_INET_Addr addr(20006, "192.168.2.47");
-	ACE_SOCK_Dgram dg(addr);
-	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
-	Messages msgs;
-
-	PacketReader r(&tcpchannel);
-
-}
+//#include  "net\Bundle.h"
+//TEST(BundleTest, write_fixed_msg)
+//{
+//	struct msgarg : public MessageArgs
+//	{
+//		virtual ACE_INT32 args_bytes_count(void)
+//		{
+//			return 77;
+//		}
+//		virtual void fetch_args_from(Packet* p)
+//		{
+//
+//		}
+//		virtual void add_args_to(Packet* p)
+//		{
+//
+//		}
+//	};
+//
+//	Bundle* p;
+//	ACE_PoolPtr_Getter(pool, Bundle, ACE_Null_Mutex);
+//	p = pool->Ctor();
+//
+//	FixedMessages::MSGInfo info = {1};
+//	ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler", info));
+//
+//	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
+//	Message* currhandler = poolmsg->Ctor();
+//	currhandler->msgArgsBytesCount_ = 77;
+//	currhandler->msgID_ = 1;
+//
+//	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
+//	msgarg* ag = poolmsgarg->Ctor();
+//
+//	Messages msgs;
+//	msgs.add_msg("currhandler", ag, NETWORK_FIXED_MESSAGE, currhandler);
+//
+//	p->start_new_curr_message(currhandler);
+//
+//	*p << (KBE_SRV_COMPONENT_TYPE) 5;
+//	*p << (ENTITY_MAILBOX_TYPE) 5;
+//
+//	*p << (UCHAR) 1;
+//	*p << (UINT16) 2;
+//	*p << (UINT32) 3;
+//	*p << (UINT64) 4;
+//
+//	*p << (CHAR) -5;
+//	*p << (INT16) -6;
+//	*p << (INT32) -7;
+//	*p << (INT64) 8;
+//
+//	char *blob = "blob";
+//	p->write_blob(blob, strlen(blob) + 1);
+//
+//	char *name0 = "name0";
+//	*p << name0;
+//
+//	char *name1 = "name1";
+//	*p << name1;
+//
+//	std::string n2 = "name2";
+//	*p << n2;
+//
+//
+//	char *n3 = "name3";
+//	*p << n3;
+//
+//	std::string n4 = "name4";
+//	*p << n4;
+//
+//	std::string n5 = "name5";
+//	*p << n5;
+//
+//	p->end_new_curr_message();
+//
+//	p->dumpMsgs();
+//
+//	//#pragma pack (push, 1)
+//	struct Arg
+//	{
+//		KBE_SRV_COMPONENT_TYPE ctype;
+//		ENTITY_MAILBOX_TYPE mailbox;
+//
+//		UCHAR uchar;
+//		UINT16 us;
+//		UINT32 u32;
+//		UINT64 u64;
+//
+//		CHAR ch;
+//		INT16 s;
+//		INT32 int32;
+//		INT64 int64;
+//
+//		UINT32 blobsize;
+//		char* blob;
+//
+//		//UINT32 n0_size;
+//		char* n0;
+//
+//		//UINT32 n1_size;
+//		char* n1;
+//
+//		std::string n2;
+//
+//		//UINT32 n1_size;
+//		char* n3;
+//
+//		std::string n4;
+//
+//		std::string n5;
+//	};
+//	//#pragma pack (pop)
+//	Arg arg;
+//	MessageID id = 0;
+//
+//	p->init_instream();
+//
+//	*p >> id;
+//	cout << "id = " << id << endl;
+//
+//	*p >> arg.ctype;
+//	cout << "arg.ctype = " << arg.ctype << endl;
+//
+//	*p >> arg.mailbox;
+//	cout << "arg.mailbox = " << arg.mailbox << endl;
+//
+//	*p >> arg.uchar;
+//	cout << "arg.uchar = " << (int) arg.uchar << endl;
+//
+//	*p >> arg.us;
+//	cout << "arg.us = " << arg.us << endl;
+//
+//	*p >> arg.u32;
+//	cout << "arg.u32 = " << arg.u32 << endl;
+//
+//	*p >> arg.u64;
+//	cout << "arg.u64 = " << arg.u64 << endl;
+//
+//	*p >> arg.ch;
+//	cout << "arg.ch = " << (int) arg.ch << endl;
+//
+//	*p >> arg.s;
+//	cout << "arg.s = " << arg.s << endl;
+//
+//	*p >> arg.int32;
+//	cout << "arg.int32 = " << arg.int32 << endl;
+//
+//	*p >> arg.int64;
+//	cout << "arg.int64 = " << arg.int64 << endl;
+//
+//	*p >> arg.blobsize;
+//	cout << "arg.blobsize = " << arg.blobsize << endl;
+//
+//	arg.blob = new char[arg.blobsize];
+//	p->read_blob(arg.blob, arg.blobsize);
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.blob, arg.blobsize,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	delete arg.blob;
+//
+//	arg.n0 = new char[256];
+//	*p >> arg.n0;
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.n0, strlen(arg.n0) + 1,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	cout << "arg.no  = " << arg.n0 << endl;
+//	delete arg.n0;
+//
+//	arg.n1 = new char[256];
+//	*p >> arg.n1;
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.n1, strlen(arg.n1) + 1,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	cout << "arg.n1 = " << arg.n1 << endl;
+//	delete arg.n1;
+//
+//
+//	*p >> arg.n2;
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.n2.c_str(), arg.n2.size() + 1,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	cout << "arg.n2  = " << arg.n2 << endl;
+//
+//	arg.n3 = new char[256];
+//	*p >> arg.n3;
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.n3, strlen(arg.n3) + 1,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	cout << "arg.n3 = " << arg.n3 << endl;
+//	delete arg.n3;
+//
+//	*p >> arg.n4;
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.n4.c_str(), arg.n4.size() + 1,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	cout << "arg.n4  = " << arg.n4 << endl;
+//
+//	*p >> arg.n5;
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.n5.c_str(), arg.n5.size() + 1,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	cout << "arg.n5  = " << arg.n5 << endl;
+//
+//	p->clear();
+//	pool->Dtor(p);
+//}
+//
+//TEST(BundleTest, write_variable_msg)
+//{
+//	struct msgarg : public MessageArgs
+//	{
+//		virtual ACE_INT32 args_bytes_count(void)
+//		{
+//			return 20;
+//		}
+//		virtual void fetch_args_from(Packet* p)
+//		{
+//
+//		}
+//		virtual void add_args_to(Packet* p)
+//		{
+//
+//		}
+//	};
+//	//g_channelExternalEncryptType = 1;
+//	g_channelExternalEncryptType = 0;
+//
+//	Bundle* p;
+//	ACE_PoolPtr_Getter(pool, Bundle, ACE_Null_Mutex);
+//	p = pool->Ctor();
+//
+//	cout << "curr packet max size = " << p->currPacketMaxSize << endl;
+//
+//	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
+//	Message* currhandler = poolmsg->Ctor();
+//	currhandler->msgArgsBytesCount_ = 10;
+//	currhandler->msgID_ = 1;
+//
+//	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
+//	msgarg* ag = poolmsgarg->Ctor();
+//
+//	Messages msgs;
+//	msgs.add_msg("currhandler", ag, NETWORK_VARIABLE_MESSAGE, currhandler);
+//
+//	p->start_new_curr_message(currhandler);
+//
+//	*p << (KBE_SRV_COMPONENT_TYPE) 5;
+//	*p << (ENTITY_MAILBOX_TYPE) 5;
+//
+//	*p << (UINT64) 64;
+//
+//	*p << (CHAR) -5;
+//	*p << (INT16) -6;
+//	*p << (INT32) -7;
+//	*p << (INT64) 8;
+//
+//	char *blob = "blob";
+//	p->write_blob(blob, strlen(blob) + 1);
+//
+//	char *name0 = "name0";
+//	*p << name0;
+//
+//	char *name1 = "name1";
+//	*p << name1;
+//
+//	std::string n2 = "name2";
+//	*p << n2;
+//
+//
+//	char *n3 = "name3";
+//	*p << n3;
+//
+//	std::string n4 = "name4";
+//	*p << n4;
+//
+//	std::string n5 = "name5";
+//	*p << n5;
+//
+//	p->end_new_curr_message();
+//
+//	p->dumpMsgs();
+//
+//	//#pragma pack (push, 1)
+//	struct Arg
+//	{
+//		KBE_SRV_COMPONENT_TYPE ctype;
+//		ENTITY_MAILBOX_TYPE mailbox;
+//
+//		UINT64 u64;
+//
+//		CHAR ch;
+//		INT16 s;
+//		INT32 int32;
+//		INT64 int64;
+//
+//		UINT32 blobsize;
+//		char* blob;
+//
+//		//UINT32 n0_size;
+//		char* n0;
+//
+//		//UINT32 n1_size;
+//		char* n1;
+//
+//		std::string n2;
+//
+//		//UINT32 n1_size;
+//		char* n3;
+//
+//		std::string n4;
+//
+//		std::string n5;
+//	};
+//	//#pragma pack (pop)
+//
+//	Arg arg;
+//	MessageID id = 0;
+//	MessageLength len;
+//
+//	p->init_instream();
+//
+//	*p >> id;
+//	cout << "id = " << id << endl;
+//
+//	*p >> len;
+//	cout << "len = " << len << endl;
+//
+//	if( len == NETWORK_MESSAGE_MAX_SIZE )
+//	{
+//		MessageLength1 ex_len;
+//		*p >> ex_len;
+//		cout << "ex_len = " << ex_len << endl;
+//	}
+//
+//	*p >> arg.ctype;
+//	cout << "arg.ctype = " << arg.ctype << endl;
+//
+//	*p >> arg.mailbox;
+//	cout << "arg.mailbox = " << arg.mailbox << endl;
+//
+//	*p >> arg.u64;
+//	cout << "arg.u64 = " << arg.u64 << endl;
+//
+//	*p >> arg.ch;
+//	cout << "arg.ch = " << (int) arg.ch << endl;
+//
+//	*p >> arg.s;
+//	cout << "arg.s = " << arg.s << endl;
+//
+//	*p >> arg.int32;
+//	cout << "arg.int32 = " << arg.int32 << endl;
+//
+//	*p >> arg.int64;
+//	cout << "arg.int64 = " << arg.int64 << endl;
+//
+//	*p >> arg.blobsize;
+//	cout << "arg.blobsize = " << arg.blobsize << endl;
+//
+//	arg.blob = new char[arg.blobsize];
+//	p->read_blob(arg.blob, arg.blobsize);
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.blob, arg.blobsize,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	delete arg.blob;
+//
+//	arg.n0 = new char[256];
+//	*p >> arg.n0;
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.n0, strlen(arg.n0) + 1,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	cout << "arg.no  = " << arg.n0 << endl;
+//	delete arg.n0;
+//
+//	arg.n1 = new char[256];
+//	*p >> arg.n1;
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.n1, strlen(arg.n1) + 1,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	cout << "arg.n1 = " << arg.n1 << endl;
+//	delete arg.n1;
+//
+//
+//	*p >> arg.n2;
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.n2.c_str(), arg.n2.size() + 1,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	cout << "arg.n2  = " << arg.n2 << endl;
+//
+//	arg.n3 = new char[256];
+//	*p >> arg.n3;
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.n3, strlen(arg.n3) + 1,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	cout << "arg.n3 = " << arg.n3 << endl;
+//	delete arg.n3;
+//
+//	*p >> arg.n4;
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.n4.c_str(), arg.n4.size() + 1,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	cout << "arg.n4  = " << arg.n4 << endl;
+//
+//	*p >> arg.n5;
+//	ACE_HEX_DUMP(( LM_DEBUG, arg.n5.c_str(), arg.n5.size() + 1,
+//		"PACKET_OUT_VALUE::Result: \n" ));
+//	cout << "arg.n5  = " << arg.n5 << endl;
+//
+//	p->clear();
+//	pool->Dtor(p);
+//}
+//
+//#include "net\NetworkInterface.h"
+//#include "net\Channel.h"
+//TEST(NetworkInterfaceTest, get_ip_addr_str)
+//{
+//	Nub              pDispatcher;
+//	ACE_INT32     extlisteningPort_min = 20001;
+//	ACE_INT32     extlisteningPort_max = 20005;
+//	const char *    extlisteningInterface = "192.168.2.47";
+//	//const char *    extlisteningInterface = "";
+//	//const char *    extlisteningInterface = "127.0.0.1";
+//	//const char *    extlisteningInterface = USE_KBEMACHINED;
+//	ACE_UINT32   extrbuffer = 512;
+//	ACE_UINT32   extwbuffer = 512;
+//	ACE_INT32      intlisteningPort = 20006;
+//	const char *    intlisteningInterface = "192.168.2.47";
+//	ACE_UINT32   intrbuffer = 512;
+//	ACE_UINT32   intwbuffer = 512;
+//
+//	NetworkInterface in(&pDispatcher,
+//		extlisteningPort_min,
+//		extlisteningPort_max,
+//		extlisteningInterface,
+//		extrbuffer,
+//		extwbuffer,
+//		intlisteningPort,
+//		intlisteningInterface,
+//		intrbuffer,
+//		intwbuffer);
+//
+//	ACE_Time_Value tv;
+//	in.handle_timeout(tv, 0);
+//
+//	ACE_INET_Addr addr(20006, "192.168.2.47");
+//	ACE_SOCK_Dgram dg(addr);
+//	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
+//	Messages msgs;
+//
+//	in.register_channel(&tcpchannel);
+//	in.channel(addr);
+//	in.channel(dg.get_handle());
+//	in.process_all_channels_packets(&msgs);
+//	in.deregister_channel(&tcpchannel);
+//	in.deregister_all_channels();
+//
+//}
+//
+//#include "net\PacketReader.h"
+//TEST(PacketReaderTests, ctor_dtor_test)
+//{
+//	Nub              pDispatcher;
+//	ACE_INT32     extlisteningPort_min = 20001;
+//	ACE_INT32     extlisteningPort_max = 20005;
+//	const char *    extlisteningInterface = "192.168.2.47";
+//	//const char *    extlisteningInterface = "";
+//	//const char *    extlisteningInterface = "127.0.0.1";
+//	//const char *    extlisteningInterface = USE_KBEMACHINED;
+//	ACE_UINT32   extrbuffer = 512;
+//	ACE_UINT32   extwbuffer = 512;
+//	ACE_INT32      intlisteningPort = 20006;
+//	const char *    intlisteningInterface = "192.168.2.47";
+//	ACE_UINT32   intrbuffer = 512;
+//	ACE_UINT32   intwbuffer = 512;
+//
+//	NetworkInterface in(&pDispatcher,
+//		extlisteningPort_min,
+//		extlisteningPort_max,
+//		extlisteningInterface,
+//		extrbuffer,
+//		extwbuffer,
+//		intlisteningPort,
+//		intlisteningInterface,
+//		intrbuffer,
+//		intwbuffer);
+//
+//	ACE_INET_Addr addr(20006, "192.168.2.47");
+//	ACE_SOCK_Dgram dg(addr);
+//	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
+//	Messages msgs;
+//
+//	PacketReader r(&tcpchannel);
+//
+//}
