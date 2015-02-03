@@ -30,7 +30,8 @@ struct PacketReader
 	MessageID			currMsgID_;
 	MessageLength1  currMsgLen_;
 
-	//	ACE_InputCDR      in;
+	ACE_InputCDR      in_;
+	ACE_Message_Block* block_;
 
 	PacketReader(Channel* pChannel = NULL);
 	virtual ~PacketReader();
