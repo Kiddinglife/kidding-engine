@@ -292,35 +292,43 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 					pPacket->length(), pFragmentPacket_,
 					pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 
-				// 临时设置有效读取位， 防止接口中溢出操作
-				packet_end_pos_ = pPacket->buff->wr_ptr();
-				packet_payload_end_pos_ = pPacket->buff->rd_ptr() + currMsgLen_;
-				pPacket->buff->wr_ptr(packet_payload_end_pos_);
+				/// because there maybe more than one msg in this packet
+				/// we need setup the wr and rd position to pick it out and then trace it
+				curr_packet_end_pos_ = pPacket->buff->wr_ptr();
+				curr_msg_end_pos_in_curr_packet = pPacket->buff->rd_ptr() + currMsgLen_;
+				pPacket->buff->wr_ptr(curr_msg_end_pos_in_curr_packet);
 
 				TRACE_MESSAGE_PACKET(true, pPacket, pCurrMsg_, currMsgLen_, pChannel_->c_str());
 				pCurrMsg_->handle(pChannel_, pPacket);
 
-				ACE_DEBUG(( LM_DEBUG, "%M::%T::frpos(%d)\n", packet_payload_end_pos_ ));
+				ACE_DEBUG(( LM_DEBUG, "%M::%T::frpos(%d)\n", curr_msg_end_pos_in_curr_packet ));
 
 				/// the remote function this message stands for could have no parameters
 				/// if so, we do not need to check it.
 				if( currMsgLen_ > 0 )
 				{
 					///if handler does not process all the data in this packet
-					if( packet_payload_end_pos_ != pPacket->buff->rd_ptr() )
+					if( curr_msg_end_pos_in_curr_packet != pPacket->buff->rd_ptr() )
 					{
 						ACE_DEBUG(( LM_ERROR,
 							"PacketReader::processMessages(%s): rpos(%d) invalid, expect(%d). msgID(%d), msglen(%d).\n",
 							pCurrMsg_->name_.c_str(),
-							pPacket->buff->rd_ptr(), packet_payload_end_pos_,
+							pPacket->buff->rd_ptr(), curr_msg_end_pos_in_curr_packet,
 							currMsgID_, currMsgLen_ ));
 
-						pPacket->buff->rd_ptr(packet_payload_end_pos_);
+						pPacket->buff->rd_ptr(curr_msg_end_pos_in_curr_packet);
 					}
 				}
 
 				/// set the wr position back to the orifinal
-				pPacket->buff->wr_ptr(packet_end_pos_); 
+				pPacket->buff->wr_ptr(curr_packet_end_pos_);
+
+				ACE_DEBUG(( LM_DEBUG,
+					"%M::%T::PacketReader::processMessages()"
+					"pPacket->length(%d), pFragmentPacket_(%d),"
+					"pPacket rd_pos(%d), pPacket wr_pos(%d)\n",
+					pPacket->length(), pFragmentPacket_,
+					pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 			}
 
 			/// this message is processed completely at this point and so reset msgid and msglen to 0

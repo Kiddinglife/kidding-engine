@@ -1141,8 +1141,9 @@ TEST(PacketReaderTests, ctor_dtor_test)
 		}
 		virtual void fetch_args_from(Packet* p)
 		{
-
+			p->on_read_packet_done();
 		}
+
 		virtual void add_args_to(Packet* p)
 		{
 
@@ -1216,8 +1217,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	*p << n41;
 	p->end_new_curr_message();
 
-	p->dumpMsgs();
-
+	//p->dumpMsgs();
 
 	PacketReader pr(&channel);
 
