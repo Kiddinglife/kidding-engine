@@ -120,12 +120,12 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 			}
 
 			// find the msg based on currMsgID_
-			Message* pMsg = pMsgs->find(currMsgID_);
+			pCurrMsg_ = pMsgs->find(currMsgID_);
 
-			/// it must be something wrong if pMsg == NULL. user will be told this situation
-			if( pMsg == NULL )
+			/// it must be something wrong if pCurrMsg_ == NULL. user will be told this situation
+			if( pCurrMsg_ == NULL )
 			{
-				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pMsg == NULL)\n" ));
+				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pCurrMsg_ == NULL)\n" ));
 
 				/**
 				* change the read position to the begainning of the packet
@@ -133,12 +133,12 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				* read position will be changed back to the original value.
 				*/
 				Packet* pPacket1 = pFragmentPacket_ != NULL ? pFragmentPacket_ : pPacket;
-				TRACE_MESSAGE_PACKET(true, pPacket1, pMsg, pPacket1->length(), pChannel_->c_str());
+				TRACE_MESSAGE_PACKET(true, pPacket1, pCurrMsg_, pPacket1->length(), pChannel_->c_str());
 
 				char* rpos = pPacket1->buff->rd_ptr();
 				pPacket1->buff->rd_ptr(pPacket1->buff->base());
 
-				TRACE_MESSAGE_PACKET(true, pPacket1, pMsg, pPacket1->length(), pChannel_->c_str());
+				TRACE_MESSAGE_PACKET(true, pPacket1, pCurrMsg_, pPacket1->length(), pChannel_->c_str());
 
 				pPacket1->buff->rd_ptr(rpos);
 
@@ -159,13 +159,13 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 			 * get the message length. there are two branches
 			 * @1::Extract the msg length from the packet if the msg is variable msg
 			 * or g_packetAlwaysContainLength is setup
-			 * @2::for fixed message, currMsgLen_ = pMsg->msgArgsBytesCount_
+			 * @2::for fixed message, currMsgLen_ = pCurrMsg_->msgArgsBytesCount_
 			 */
 			if( !currMsgLen_ )
 			{
 				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(!currMsgLen_)\n" ));
 
-				if( pMsg->msgType_ == NETWORK_VARIABLE_MESSAGE || g_packetAlwaysContainLength )
+				if( pCurrMsg_->msgType_ == NETWORK_VARIABLE_MESSAGE || g_packetAlwaysContainLength )
 				{
 					ACE_DEBUG(( LM_DEBUG, "%M::%T::::@if(variable msg)\n" ));
 
@@ -184,14 +184,14 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				{
 					ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(fixed msg)\n" ));
 
-					currMsgLen_ = pMsg->msgArgsBytesCount_;
+					currMsgLen_ = pCurrMsg_->msgArgsBytesCount_;
 
 					ACE_DEBUG(( LM_DEBUG, "%M::%T::currMsgLen_(%d)\n", currMsgLen_ ));
 
 					/// 更新该消息stats并回调跟踪函数
 					/// update this msg's stats and call its callback method
 					ACE_Singleton<NetStats, ACE_Null_Mutex>::instance()->
-						trackMessage(NetStats::RECV, pMsg, currMsgLen_);
+						trackMessage(NetStats::RECV, pCurrMsg_, currMsgLen_);
 				}
 
 				break;

@@ -27,6 +27,8 @@ struct PacketReader
 
 	Channel*			    pChannel_;
 	Packet*				    pFragmentPacket_; //pFragmentStream_
+
+	Message*             pCurrMsg_;
 	MessageID			currMsgID_;
 	MessageLength1  currMsgLen_;
 	ACE_INT8             currMsgType_;
