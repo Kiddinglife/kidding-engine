@@ -178,6 +178,18 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 					} else
 					{
 						ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen complate, start to read msg len\n" ));
+
+						/// read msg length from the packet
+						in_ >> currMsgLen_;
+						pPacket->buff->rd_ptr(in_.rd_ptr());
+						ACE_DEBUG(( LM_DEBUG, "%M::%T::currMsgLen_(%d)\n", currMsgLen_ ));
+
+						/// update this msg's stats and call its callback method
+						ACE_Singleton<NetStats, ACE_Null_Mutex>::instance()->
+							trackMessage(NetStats::RECV, pCurrMsg_,
+							currMsgLen_ + NETWORK_MESSAGE_ID_SIZE + NETWORK_MESSAGE_LENGTH_SIZE);
+
+
 					}
 
 				} else /// NETWORK_FIXED_MESSAGE
