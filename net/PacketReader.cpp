@@ -227,7 +227,8 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				}
 			}
 
-			/// This situation is not error but we need remind the user this happened
+			/// This situation is like an error but we need remind the user this happened
+			/// and will discard the rest of bytes in this packet
 			if( pChannel_->channelScope_&&
 				g_componentType != KBE_BOTS_TYPE &&
 				g_componentType != CLIENT_TYPE &&
@@ -259,13 +260,24 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				break;
 			}
 
-			if(! pFragmentPacket_)
+			if( pFragmentPacket_ != NULL )
 			{
-				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pFragmentPacket_ != NULL)\n"));
+				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pFragmentPacket_ != NULL)\n" ));
+
+				TRACE_MESSAGE_PACKET(true, pFragmentPacket_, pCurrMsg_, currMsgLen_, pChannel_->c_str());
+
+				pCurrMsg_->handle(pChannel_, pFragmentPacket_);
+
+				/// recycle this pFragmentPacket_
+				ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
+				pool->Dtor(pFragmentPacket_);
+				pFragmentPacket_ = NULL;
+
 			} else
 			{
 				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pFragmentPacket_ == NULL)\n" ));
 			}
+			break;
 		}
 	}
 	TRACE_RETURN_VOID();

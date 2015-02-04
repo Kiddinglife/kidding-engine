@@ -365,16 +365,16 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 
 		///// anti-advance rd pos to the base()
 		//pPacket->buff->rd_ptr(NETWORK_MESSAGE_LENGTH1_SIZE);
-		ACE_HEX_DUMP(( LM_DEBUG,
-			pPacket->buff->base(), pPacket->buff->size(),
-			"after  memmove::Result: \n" ));
+		//ACE_HEX_DUMP(( LM_DEBUG,
+		//	pPacket->buff->base(), pPacket->buff->size(),
+		//	"after  memmove::Result: \n" ));
 
 		/// 写入ex msg len
 		*( (MessageLength1*) currMsgLengthPos_ ) = ex_msg_length;
 
-		ACE_HEX_DUMP(( LM_DEBUG,
-			pPacket->buff->base(), pPacket->buff->size(),
-			"after  write to ex len::Result: \n" ));
+		//ACE_HEX_DUMP(( LM_DEBUG,
+		//	pPacket->buff->base(), pPacket->buff->size(),
+		//	"after  write to ex len::Result: \n" ));
 
 	} else
 	{
@@ -517,9 +517,6 @@ void Bundle::start_new_curr_message(Message* msg)
 		currMsgLengthPos_ = pCurrPacket_->os.write_short_placeholder();
 
 	}
-
-	ACE_HEX_DUMP(( LM_DEBUG, pCurrPacket_->buff->base(), pCurrPacket_->buff->size(),
-		"write variable len placeholder \n" ));
 
 	++numMessages_;
 	currMsgID_ = msg->msgID_;
