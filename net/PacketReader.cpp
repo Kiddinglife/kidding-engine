@@ -11,6 +11,7 @@ pFragmentsRemainning(0), //pFragmentDatasRemain_;
 fragmentsFlag_(FRAGMENT_DATA_UNKNOW), //fragmentDatasFlag_
 pChannel_(pChannel),
 pFragmentPacket_(NULL), //pFragmentStream_
+pCurrMsg_(NULL),
 currMsgID_(0),
 currMsgLen_(0),
 currMsgType_(NETWORK_FIXED_MESSAGE),
@@ -175,22 +176,19 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 						ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen incomplate, wait next packet\n" ));
 						writeFragmentMessage(FRAGMENT_DATA_MESSAGE_LENGTH, pPacket, NETWORK_MESSAGE_LENGTH_SIZE);
 						break;
-					} else
-					{
-						ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen complate, start to read msg len\n" ));
-
-						/// read msg length from the packet
-						in_ >> currMsgLen_;
-						pPacket->buff->rd_ptr(in_.rd_ptr());
-						ACE_DEBUG(( LM_DEBUG, "%M::%T::currMsgLen_(%d)\n", currMsgLen_ ));
-
-						/// update this msg's stats and call its callback method
-						ACE_Singleton<NetStats, ACE_Null_Mutex>::instance()->
-							trackMessage(NetStats::RECV, pCurrMsg_,
-							currMsgLen_ + NETWORK_MESSAGE_ID_SIZE + NETWORK_MESSAGE_LENGTH_SIZE);
-
-
 					}
+
+					ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen complate, start to read msg len\n" ));
+
+					/// read msg length from the packet
+					in_ >> currMsgLen_;
+					pPacket->buff->rd_ptr(in_.rd_ptr());
+					ACE_DEBUG(( LM_DEBUG, "%M::%T::currMsgLen_(%d)\n", currMsgLen_ ));
+
+					/// update this msg's stats and call its callback method
+					ACE_Singleton<NetStats, ACE_Null_Mutex>::instance()->
+						trackMessage(NetStats::RECV, pCurrMsg_,
+						currMsgLen_ + NETWORK_MESSAGE_ID_SIZE + NETWORK_MESSAGE_LENGTH_SIZE);
 
 				} else /// NETWORK_FIXED_MESSAGE
 				{
