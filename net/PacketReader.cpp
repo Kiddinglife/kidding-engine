@@ -54,13 +54,14 @@ void PacketReader::reset()
 void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 {
 	TRACE("PacketReader::processMessages()");
+
+	/// reset the related values in the block based on the current packet
+	block_->base(pPacket->buff->base(), pPacket->buff->size());
+	block_->wr_ptr(pPacket->buff->wr_ptr());
+	block_->rd_ptr(pPacket->buff->rd_ptr());
+
 	while( pPacket->length() > 0 || pFragmentPacket_ != NULL )
 	{
-		/// reset the related values in the block based on the current packet
-		block_->base(pPacket->buff->base(), pPacket->buff->size());
-		block_->wr_ptr(pPacket->buff->wr_ptr());
-		block_->rd_ptr(pPacket->buff->rd_ptr());
-
 		ACE_DEBUG(( LM_DEBUG,
 			"%M::%T::loop starts,"
 			"pPacket->length(%d), pFragmentPacket_(%d),"
@@ -276,10 +277,66 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 			} else
 			{
 				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pFragmentPacket_ == NULL)\n" ));
+
+				if( pPacket->length() < currMsgLen_ )
+				{
+					ACE_DEBUG(( LM_DEBUG, "%M::%T::@if( pPacket->length() < currMsgLen_)\n" ));
+					writeFragmentMessage(FRAGMENT_DATA_MESSAGE_BODY, pPacket, currMsgLen_);
+					break;
+				}
+
+				ACE_DEBUG(( LM_DEBUG,
+					"%M::%T::PacketReader::processMessages()"
+					"pPacket->length(%d), pFragmentPacket_(%d),"
+					"pPacket rd_pos(%d), pPacket wr_pos(%d)\n",
+					pPacket->length(), pFragmentPacket_,
+					pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
+
+				// 临时设置有效读取位， 防止接口中溢出操作
+				packet_end_pos_ = pPacket->buff->wr_ptr();
+				packet_payload_end_pos_ = pPacket->buff->rd_ptr() + currMsgLen_;
+				pPacket->buff->wr_ptr(packet_payload_end_pos_);
+
+				TRACE_MESSAGE_PACKET(true, pPacket, pCurrMsg_, currMsgLen_, pChannel_->c_str());
+				pCurrMsg_->handle(pChannel_, pPacket);
+
+				ACE_DEBUG(( LM_DEBUG, "%M::%T::frpos(%d)\n", packet_payload_end_pos_ ));
+
+				/// the remote function this message stands for could have no parameters
+				/// if so, we do not need to check it.
+				if( currMsgLen_ > 0 )
+				{
+					///if handler does not process all the data in this packet
+					if( packet_payload_end_pos_ != pPacket->buff->rd_ptr() )
+					{
+						ACE_DEBUG(( LM_ERROR,
+							"PacketReader::processMessages(%s): rpos(%d) invalid, expect(%d). msgID(%d), msglen(%d).\n",
+							pCurrMsg_->name_.c_str(),
+							pPacket->buff->rd_ptr(), packet_payload_end_pos_,
+							currMsgID_, currMsgLen_ ));
+
+						pPacket->buff->rd_ptr(packet_payload_end_pos_);
+					}
+				}
+
+				/// set the wr position back to the orifinal
+				pPacket->buff->wr_ptr(packet_end_pos_);
+
+				ACE_DEBUG(( LM_DEBUG,
+					"%M::%T::PacketReader::processMessages()"
+					"pPacket->length(%d), pFragmentPacket_(%d),"
+					"pPacket rd_pos(%d), pPacket wr_pos(%d)\n",
+					pPacket->length(), pFragmentPacket_,
+					pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 			}
-			break;
+
+			/// this message is processed completely at this point and so reset msgid and msglen to 0
+			/// for the process of the next message
+			currMsgID_ = 0;
+			currMsgLen_ = 0;
 		}
 	}
+
 	TRACE_RETURN_VOID();
 }
 
