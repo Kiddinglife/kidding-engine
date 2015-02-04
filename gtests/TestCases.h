@@ -1162,40 +1162,40 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	msgarg* ag = poolmsgarg->Ctor();
 
 	/// first msg is fixed msg
-	//Message* currhandler = poolmsg->Ctor();
-	//currhandler->msgID_ = 1;
+	Message* currhandler = poolmsg->Ctor();
+	currhandler->msgID_ = 1;
 
-	//msgs.add_msg("currhandler", ag, NETWORK_FIXED_MESSAGE, currhandler);
+	msgs.add_msg("currhandler", ag, NETWORK_FIXED_MESSAGE, currhandler);
 
-	//FixedMessages::MSGInfo info = { 1 };
-	//ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler", info));
+	FixedMessages::MSGInfo info = { 1 };
+	ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler", info));
 
-	//p->start_new_curr_message(currhandler);
-	//*p << (KBE_SRV_COMPONENT_TYPE) 5;
-	//*p << (ENTITY_MAILBOX_TYPE) 5;
-	//*p << (UCHAR) 1;
-	//*p << (UINT16) 2;
-	//*p << (UINT32) 3;
-	//*p << (UINT64) 4;
-	//*p << (CHAR) -5;
-	//*p << (INT16) -6;
-	//*p << (INT32) -7;
-	//*p << (INT64) 8;
-	//char *blob = "blob";
-	//p->write_blob(blob, strlen(blob) + 1);
-	//char *name0 = "name0";
-	//*p << name0;
-	//char *name1 = "name1";
-	//*p << name1;
-	//std::string n2 = "name2";
-	//*p << n2;
-	//char *n3 = "name3";
-	//*p << n3;
-	//std::string n4 = "name4";
-	//*p << n4;
-	//std::string n5 = "name5";
-	//*p << n5;
-	//p->end_new_curr_message();
+	p->start_new_curr_message(currhandler);
+	*p << (KBE_SRV_COMPONENT_TYPE) 5;
+	*p << (ENTITY_MAILBOX_TYPE) 5;
+	*p << (UCHAR) 1;
+	*p << (UINT16) 2;
+	*p << (UINT32) 3;
+	*p << (UINT64) 4;
+	*p << (CHAR) -5;
+	*p << (INT16) -6;
+	*p << (INT32) -7;
+	*p << (INT64) 8;
+	char *blob = "blob";
+	p->write_blob(blob, strlen(blob) + 1);
+	char *name0 = "name0";
+	*p << name0;
+	char *name1 = "name1";
+	*p << name1;
+	std::string n2 = "name2";
+	*p << n2;
+	char *n3 = "name3";
+	*p << n3;
+	std::string n4 = "name4";
+	*p << n4;
+	std::string n5 = "name5";
+	*p << n5;
+	p->end_new_curr_message();
 
 	/// second msg is variable msg
 	Message* currhandler1 = poolmsg->Ctor();
@@ -1207,20 +1207,25 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	*p << (ENTITY_MAILBOX_TYPE) 5;
 	*p << (UCHAR) 1;
 	*p << (UINT16) 2;
-	char *blob = "blob";
-	p->write_blob(blob, strlen(blob) + 1);
-	char *n3 = "name3";
-	*p << n3;
-	std::string n4 = "name4";
-	*p << n4;
+
+	char *blob1 = "blob1";
+	p->write_blob(blob1, strlen(blob1) + 1);
+	char *n31 = "name3";
+	*p << n31;
+	std::string n41 = "name4";
+	*p << n41;
 	p->end_new_curr_message();
 
 	p->dumpMsgs();
 
 
 	PacketReader pr(&channel);
-	Packet* p0 = p->packets_[0];
-	pr.processMessages(&msgs, p0);
+
+	Bundle::Packets::iterator iter = p->packets_.begin();
+	for( ; iter != p->packets_.end(); iter++ )
+	{
+		pr.processMessages(&msgs, *iter);
+	}
 
 	pool->Dtor(p);
 

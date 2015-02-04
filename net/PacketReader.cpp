@@ -320,14 +320,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				}
 
 				/// set the wr position back to the orifinal
-				pPacket->buff->wr_ptr(packet_end_pos_);
-
-				ACE_DEBUG(( LM_DEBUG,
-					"%M::%T::PacketReader::processMessages()"
-					"pPacket->length(%d), pFragmentPacket_(%d),"
-					"pPacket rd_pos(%d), pPacket wr_pos(%d)\n",
-					pPacket->length(), pFragmentPacket_,
-					pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
+				pPacket->buff->wr_ptr(packet_end_pos_); 
 			}
 
 			/// this message is processed completely at this point and so reset msgid and msglen to 0
