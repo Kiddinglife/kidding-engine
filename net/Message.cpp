@@ -59,7 +59,7 @@ Message*  Messages::add_msg(const std::string& ihName, MessageArgs* args,
 	if( msgType == NETWORK_VARIABLE_MESSAGE )
 	{
 		ACE_DEBUG(( LM_DEBUG,
-			"Messages :: add(%d) :: name = %s, msgID = %d, msgArgsCount_ = Variable.\n",
+			"Messages :: add(%d) :: name = %s, msgID = %d, msgType_ = Variable.\n",
 			msgs_.size(), ihName.c_str(), msg->msgID_ ));
 	} else
 	{
@@ -74,7 +74,7 @@ Message*  Messages::add_msg(const std::string& ihName, MessageArgs* args,
 	}
 
 	/// return the added msg
-	return msgs_[msg->msgID_];
+	return msg;
 }
 
 /**

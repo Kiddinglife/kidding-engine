@@ -1163,9 +1163,6 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	Message* currhandler = poolmsg->Ctor();
 	currhandler->msgArgsBytesCount_ = 77;
 	currhandler->msgID_ = 1;
-	currhandler->pMsgArgs_ = ag;
-	currhandler->name_ = "currhandler";
-	currhandler->pMsgs_ = &msgs;
 
 	FixedMessages::MSGInfo info = { 1 };
 	ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler", info));
@@ -1175,7 +1172,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	//currhandler1->msgArgsBytesCount_ = 77;
 	//currhandler1->msgID_ = 2;
 
-	//msgs.add_msg("currhandler", ag, NETWORK_FIXED_MESSAGE, currhandler);
+	msgs.add_msg("currhandler", ag, NETWORK_FIXED_MESSAGE, currhandler);
 	//msgs.add_msg("currhandler1", ag, NETWORK_VARIABLE_MESSAGE, currhandler1);
 
 	p->start_new_curr_message(currhandler);

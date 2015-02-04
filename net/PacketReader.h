@@ -29,6 +29,7 @@ struct PacketReader
 	Packet*				    pFragmentPacket_; //pFragmentStream_
 	MessageID			currMsgID_;
 	MessageLength1  currMsgLen_;
+	ACE_INT8             currMsgType_;
 
 	ACE_InputCDR      in_;
 	ACE_Message_Block* block_;

@@ -13,6 +13,7 @@ pChannel_(pChannel),
 pFragmentPacket_(NULL), //pFragmentStream_
 currMsgID_(0),
 currMsgLen_(0),
+currMsgType_(NETWORK_FIXED_MESSAGE),
 in_((char*) NULL, 0),
 block_(const_cast<ACE_Message_Block*>( in_.start() ))
 {
@@ -103,27 +104,26 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 					break;
 				}
 
-				ACE_DEBUG(( LM_DEBUG,
-					"%M::%T::PacketReader::processMessages()"
-					"pPacket->length(%d), pFragmentPacket_(%d),"
-					"rd_pos(%d), wr_pos(%d)\n",
-					pPacket->length(), pFragmentPacket_,
-					pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
+				//ACE_DEBUG(( LM_DEBUG,
+				//	"%M::%T::PacketReader::processMessages()"
+				//	"pPacket->length(%d), pFragmentPacket_(%d),"
+				//	"rd_pos(%d), wr_pos(%d)\n",
+				//	pPacket->length(), pFragmentPacket_,
+				//	pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 
 				/// read msg id from this packet to currMsgID_ and reset the msgID_
 				in_ >> currMsgID_;
 				pPacket->buff->rd_ptr(in_.rd_ptr());
 				pPacket->msgID_ = currMsgID_;
 
-				ACE_DEBUG(( LM_DEBUG, "%M::%T::PacketReader::processMessages()::"
-					"currMsgID_(%d)\n", currMsgID_ ));
-
-				ACE_DEBUG(( LM_DEBUG,
-					"%M::%T::PacketReader::processMessages()"
-					"pPacket->length(%d), pFragmentPacket_(%d),"
-					"rd_pos(%d), wr_pos(%d)\n",
-					pPacket->length(), pFragmentPacket_,
-					pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
+				//ACE_DEBUG(( LM_DEBUG, "%M::%T::PacketReader::processMessages()::"
+				//	"currMsgID_(%d)\n", currMsgID_ ));
+				//ACE_DEBUG(( LM_DEBUG,
+				//	"%M::%T::PacketReader::processMessages()"
+				//	"pPacket->length(%d), pFragmentPacket_(%d),"
+				//	"rd_pos(%d), wr_pos(%d)\n",
+				//	pPacket->length(), pFragmentPacket_,
+				//	pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 			}
 
 			// find the msg based on currMsgID_
@@ -161,6 +161,39 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 					"not found msg with ID(%d), msglen(%d), from(%s),\n"
 					"set this channel to condem",
 					currMsgID_, pPacket1->length(), pChannel_->c_str() ));
+			}
+
+			/**
+			 * get the message length. there are two branches
+			 * @1::Extract the msg length from the packet if the msg is variable msg
+			 * or g_packetAlwaysContainLength is setup
+			 * @2::for fixed message, currMsgLen_ = pMsg->msgArgsBytesCount_
+			 */
+			if( !currMsgLen_ )
+			{
+				ACE_DEBUG(( LM_DEBUG,
+					"%M::%T::PacketReader::processMessages()::@if(!currMsgLen_)\n" ));
+
+				if( pMsg->msgType_ == NETWORK_VARIABLE_MESSAGE || g_packetAlwaysContainLength )
+				{
+					ACE_DEBUG(( LM_DEBUG,
+						"%M::%T::::@if(variable msg)\n" ));
+
+				} else /// NETWORK_FIXED_MESSAGE
+				{
+					ACE_DEBUG(( LM_DEBUG,
+						"%I%I%M::%T::PacketReader::processMessages()::@if(fixed msg)\n" ));
+
+					currMsgLen_ = pMsg->msgArgsBytesCount_;
+
+					ACE_DEBUG(( LM_DEBUG, "%M::%T::currMsgLen_(%d)\n", currMsgLen_ ));
+
+					/// 更新该消息stats并回调跟踪函数
+					/// update this msg's stats and call its callback method
+					ACE_Singleton<NetStats, ACE_Null_Mutex>::instance()->
+						trackMessage(NetStats::RECV, pMsg, currMsgLen_);
+				}
+				break;
 			}
 		}
 	}
