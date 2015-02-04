@@ -118,7 +118,7 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 		PacketFilterPtr pFilter = PacketFilterPtr(NULL),
 		ChannelID id = CHANNEL_ID_NULL);
 
-	virtual ~Channel() { }
+	virtual ~Channel(void) { }
 
 	const char*  c_str(void) const;
 

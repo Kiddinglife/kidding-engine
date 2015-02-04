@@ -69,6 +69,9 @@ apps发布状态, 可在脚本中获取该值
 */
 extern bool g_appPublish;
 
+/*the normal log ofstream named with base.log ot callapp.log and so on*/
+extern std::ofstream normal;
+
 struct Message;
 struct Packet;
 extern void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,

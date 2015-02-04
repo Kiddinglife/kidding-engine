@@ -5,8 +5,10 @@
 #include "common\common.h"
 #include "net_common.h"
 #include "ace/INET_Addr.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
+
 class Address 
 {
 	public:

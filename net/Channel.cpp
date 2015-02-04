@@ -48,7 +48,7 @@ pMsgs_(NULL)
 const char * Channel::c_str() const
 {
 	TRACE("Channel::c_str()");
-	TRACE_RETURN("test");
+	TRACE_RETURN("Channel::c_str()");
 }
 
 void Channel::clearBundle()

@@ -27,17 +27,24 @@ struct PacketReader
 
 	Channel*			    pChannel_;
 	Packet*				    pFragmentPacket_; //pFragmentStream_
+
+	Message*             pCurrMsg_;
 	MessageID			currMsgID_;
 	MessageLength1  currMsgLen_;
+	ACE_INT8             currMsgType_;
 
-//	ACE_InputCDR      in;
+	ACE_InputCDR      in_;
+	ACE_Message_Block* block_;
+
+	char*                    packet_end_pos_;
+	char*                    packet_payload_end_pos_;
 
 	PacketReader(Channel* pChannel = NULL);
 	virtual ~PacketReader();
 	void reset();
 
-	void writeFragmentMessage(FragmentType fragmentFlag, Packet* pPacket, 
-	ACE_UINT32 datasize);
+	void writeFragmentMessage(FragmentType fragmentFlag, Packet* pPacket,
+		ACE_UINT32 datasize);
 
 	void mergeFragmentMessage(Packet* pPacket);
 

@@ -12,13 +12,20 @@ namespace UDP /*ÒÔºóÀ©Õ¹ÓÃ*/
 namespace TCP
 {
 }
+
 bool g_debugEntity = false;
 bool g_appPublish = 1;
 
 bool g_packetAlwaysContainLength = false;
 int g_trace_packet = 1;
-bool g_trace_packet_use_logfile = false;
+bool g_trace_packet_use_logfile = true;
 std::vector<std::string> g_trace_packet_disables;
+
+static const char* name = GET_KBE_SRV_COMPONENT_TYPE_NAME(g_componentType);
+static std::string n(name);
+std::ofstream normal(( n + ".log" ).c_str());
+
+static  std::ofstream packetlogos("packetlogs.log");
 
 void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 	Message* pCurrMsgHandler, size_t length, const char* addr)
@@ -28,31 +35,27 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 
 	if( g_trace_packet_use_logfile )
 	{
-		ACE_DEBUG(( LM_DEBUG,
-			"TRACE_MESSAGE_PACKET::@1::g_trace_packet_use_logfile != NULL\n" ));
-		std::ofstream os("packetlogs.log");
-		ACE_LOG_MSG->msg_ostream(&os, 1);
-		ACE_LOG_MSG->set_flags(ACE_Log_Msg::OSTREAM);
+		ACE_DEBUG(( LM_INFO,
+			"%M::TRACE_MESSAGE_PACKET::Log file is setup to packetlogs.log, "
+			"Please see packetlogs.log for the packet dump results.\n" ));
+		ACE_LOG_MSG->msg_ostream(&packetlogos);
 	}
 
 	bool isprint = true;
 	if( pCurrMsgHandler )
 	{
-		ACE_DEBUG(( LM_DEBUG, "TRACE_MESSAGE_PACKET::@2::pCurrMsgHandler != NULL\n" ));
-
 		std::vector<std::string>::iterator iter = std::find(g_trace_packet_disables.begin(),
 			g_trace_packet_disables.end(), pCurrMsgHandler->name_);
 
 		if( iter != g_trace_packet_disables.end() )
 		{
-			ACE_DEBUG(( LM_DEBUG, "TRACE_MESSAGE_PACKET::@3:: iter != NULL\n" ));
+			ACE_DEBUG(( LM_INFO,
+				"%M::TRACE_MESSAGE_PACKET::This packet is setup untrackable\n" ));
 			isprint = false;
 		} else
 		{
-			ACE_DEBUG(( LM_DEBUG, "TRACE_MESSAGE_PACKET::@4:: iter == NULL\n" ));
-
-			ACE_DEBUG(( LM_DEBUG,
-				"{%s} msgname:{%s}, msgID:{%d}, currMsgLength:{%d}, addr:{%s}\n",
+			ACE_DEBUG(( LM_INFO,
+				"\n%M::{%s} msgname:{%s}, msgID:{%d}, currMsgPayloadLength:{%d}, addr:{%s}\n",
 				( isrecv == true ) ? "====>" : "<====",
 				pCurrMsgHandler->name_.c_str(), pCurrMsgHandler->msgID_, length, addr ));
 		}
@@ -60,19 +63,18 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 
 	if( isprint )
 	{
-		ACE_DEBUG(( LM_DEBUG,
-			"TRACE_MESSAGE_PACKET::@5::isprint == true\n" ));
+		ACE_DEBUG(( LM_INFO,
+			"%M::The curr packet rd pos = %d, wr pos = %d\n",
+			pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
+		ACE_HEX_DUMP(( LM_INFO, pPacket->buff->rd_ptr(), pPacket->length() ));
 	}
 
 	if( g_trace_packet_use_logfile )
 	{
-		ACE_DEBUG(( LM_DEBUG,
-			"TRACE_MESSAGE_PACKET::@6::g_trace_packet_use_logfile != NULL\n" ));
-		const char* name = GET_KBE_SRV_COMPONENT_TYPE_NAME(g_componentType);
-		std::string n(name);
-		std::ofstream os(( n + ".log" ).c_str());
-		ACE_LOG_MSG->msg_ostream(&os, 1);
-		ACE_LOG_MSG->set_flags(ACE_Log_Msg::OSTREAM);
+		ACE_LOG_MSG->msg_ostream(&normal);
+		ACE_DEBUG(( LM_INFO,
+			"%M::TRACE_MESSAGE_PACKET::Log file is set back to %s\n",
+			( n + ".log" ).c_str() ));
 	}
 
 	TRACE_RETURN_VOID();

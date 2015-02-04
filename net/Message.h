@@ -118,8 +118,10 @@ struct Message
 
 	virtual void handle(Channel* pChannel, Packet* s)
 	{
+		TRACE("Message::handle()");
 		pMsgArgs_->fetch_args_from(s);
 		// 将参数传给最终的接口
+		TRACE_RETURN_VOID();
 	};
 };
 
