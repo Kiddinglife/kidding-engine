@@ -227,12 +227,13 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				}
 			}
 
-			/// 
+			/// This situation is not error but we need remind the user this happened
 			if( pChannel_->channelScope_&&
 				g_componentType != KBE_BOTS_TYPE &&
 				g_componentType != CLIENT_TYPE &&
 				currMsgLen_ > NETWORK_MESSAGE_MAX_SIZE )
 			{
+				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(currMsgLen_ > NETWORK_MESSAGE_MAX_SIZE)\n", currMsgLen_ ));
 				/**
 				* change the read position to the begainning of the packet
 				* for the convience of trace of this packet, when trace is done,
@@ -247,7 +248,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 
 				pPacket1->buff->rd_ptr(rpos);
 
-				ACE_ERROR(( LM_ERROR,
+				ACE_DEBUG(( LM_WARNING,
 					"%M::%T::PacketReader::processMessages::"
 					"not found msg with ID(%d), msg len(%d-%d), maxlen(%d)from(%s),"
 					"set this channel to condem\n",
@@ -256,6 +257,14 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				currMsgLen_ = 0;
 				pChannel_->isCondemn_ = true;
 				break;
+			}
+
+			if(! pFragmentPacket_)
+			{
+				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pFragmentPacket_ != NULL)\n"));
+			} else
+			{
+				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pFragmentPacket_ == NULL)\n" ));
 			}
 		}
 	}
