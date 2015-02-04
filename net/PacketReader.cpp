@@ -80,7 +80,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 		{
 			ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(fragmentsFlag_ == FRAGMENT_DATA_UNKNOW )\n" ));
 
-			// firsly read currMsgID_ if it is 0
+			/// start to reaqd msg id from the current packet
 			if( currMsgID_ == 0 )
 			{
 				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(currMsgID_ == 0)\n" ));
@@ -143,17 +143,17 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 
 				pPacket1->buff->rd_ptr(rpos);
 
+				ACE_ERROR(( LM_ERROR,
+					"%M::%T::PacketReader::processMessages::"
+					"not found msg with ID(%d), msglen(%d), from(%s),"
+					"set this channel to condem\n",
+					currMsgID_, pPacket1->length(), pChannel_->c_str() ));
+
 				/// reset related values
 				currMsgID_ = 0;
 				currMsgLen_ = 0;
 				pChannel_->isCondemn_ = true;
 				break;
-
-				ACE_ERROR_BREAK(( LM_ERROR,
-					"%M::%T::PacketReader::processMessages::"
-					"not found msg with ID(%d), msglen(%d), from(%s),\n"
-					"set this channel to condem",
-					currMsgID_, pPacket1->length(), pChannel_->c_str() ));
 			}
 
 			/**
@@ -180,7 +180,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 
 					ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen complate, start to read msg len\n" ));
 					/// read msg length from the packet
-					in_ >> currMsgLen_;
+					in_ >> *(MessageLength*) &currMsgLen_;
 					pPacket->buff->rd_ptr(in_.rd_ptr());
 					ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen(%d)\n", currMsgLen_ ));
 
@@ -200,7 +200,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 							break;
 						}
 
-						ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen1 complete, start to read msg len\n" ));
+						ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen1 complete, start to read msg len1\n" ));
 						/// read msg length1 from the packet
 						in_ >> currMsgLen_;
 						pPacket->buff->rd_ptr(in_.rd_ptr());
@@ -225,7 +225,36 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 					ACE_Singleton<NetStats, ACE_Null_Mutex>::instance()->
 						trackMessage(NetStats::RECV, pCurrMsg_, currMsgLen_);
 				}
+			}
 
+			/// 
+			if( pChannel_->channelScope_&&
+				g_componentType != KBE_BOTS_TYPE &&
+				g_componentType != CLIENT_TYPE &&
+				currMsgLen_ > NETWORK_MESSAGE_MAX_SIZE )
+			{
+				/**
+				* change the read position to the begainning of the packet
+				* for the convience of trace of this packet, when trace is done,
+				* read position will be changed back to the original value.
+				*/
+				Packet* pPacket1 = pFragmentPacket_ != NULL ? pFragmentPacket_ : pPacket;
+				TRACE_MESSAGE_PACKET(true, pPacket1, pCurrMsg_, pPacket1->length(), pChannel_->c_str());
+
+				char* rpos = pPacket1->buff->rd_ptr();
+				pPacket1->buff->rd_ptr(pPacket1->buff->base());
+				TRACE_MESSAGE_PACKET(true, pPacket1, pCurrMsg_, pPacket1->length(), pChannel_->c_str());
+
+				pPacket1->buff->rd_ptr(rpos);
+
+				ACE_ERROR(( LM_ERROR,
+					"%M::%T::PacketReader::processMessages::"
+					"not found msg with ID(%d), msg len(%d-%d), maxlen(%d)from(%s),"
+					"set this channel to condem\n",
+					currMsgID_, pPacket1->length(), currMsgLen_, NETWORK_MESSAGE_MAX_SIZE, pChannel_->c_str() ));
+
+				currMsgLen_ = 0;
+				pChannel_->isCondemn_ = true;
 				break;
 			}
 		}
