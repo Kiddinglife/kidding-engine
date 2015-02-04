@@ -250,7 +250,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 
 				ACE_DEBUG(( LM_WARNING,
 					"%M::%T::PacketReader::processMessages::"
-					"not found msg with ID(%d), msg len(%d-%d), maxlen(%d)from(%s),"
+					"msglen exceeds the limit with ID(%d), msg len(%d-%d), maxlen(%d) from(%s),"
 					"set this channel to condem\n",
 					currMsgID_, pPacket1->length(), currMsgLen_, NETWORK_MESSAGE_MAX_SIZE, pChannel_->c_str() ));
 
