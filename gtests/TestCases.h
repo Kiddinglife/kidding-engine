@@ -1149,6 +1149,8 @@ TEST(PacketReaderTests, ctor_dtor_test)
 		}
 	};
 
+	g_channelExternalEncryptType = 0;
+
 	Channel channel;
 
 	ACE_PoolPtr_Getter(pool, Bundle, ACE_Null_Mutex);
@@ -1160,48 +1162,61 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	msgarg* ag = poolmsgarg->Ctor();
 
 	/// first msg is fixed msg
-	Message* currhandler = poolmsg->Ctor();
-	currhandler->msgArgsBytesCount_ = 77;
-	currhandler->msgID_ = 1;
+	//Message* currhandler = poolmsg->Ctor();
+	//currhandler->msgID_ = 1;
 
-	FixedMessages::MSGInfo info = { 1 };
-	ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler", info));
+	//msgs.add_msg("currhandler", ag, NETWORK_FIXED_MESSAGE, currhandler);
+
+	//FixedMessages::MSGInfo info = { 1 };
+	//ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler", info));
+
+	//p->start_new_curr_message(currhandler);
+	//*p << (KBE_SRV_COMPONENT_TYPE) 5;
+	//*p << (ENTITY_MAILBOX_TYPE) 5;
+	//*p << (UCHAR) 1;
+	//*p << (UINT16) 2;
+	//*p << (UINT32) 3;
+	//*p << (UINT64) 4;
+	//*p << (CHAR) -5;
+	//*p << (INT16) -6;
+	//*p << (INT32) -7;
+	//*p << (INT64) 8;
+	//char *blob = "blob";
+	//p->write_blob(blob, strlen(blob) + 1);
+	//char *name0 = "name0";
+	//*p << name0;
+	//char *name1 = "name1";
+	//*p << name1;
+	//std::string n2 = "name2";
+	//*p << n2;
+	//char *n3 = "name3";
+	//*p << n3;
+	//std::string n4 = "name4";
+	//*p << n4;
+	//std::string n5 = "name5";
+	//*p << n5;
+	//p->end_new_curr_message();
 
 	/// second msg is variable msg
-	//Message* currhandler1 = poolmsg->Ctor();
-	//currhandler1->msgArgsBytesCount_ = 77;
-	//currhandler1->msgID_ = 2;
+	Message* currhandler1 = poolmsg->Ctor();
+	currhandler1->msgID_ = 2;
+	msgs.add_msg("currhandler1", ag, NETWORK_VARIABLE_MESSAGE, currhandler1);
 
-	msgs.add_msg("currhandler", ag, NETWORK_FIXED_MESSAGE, currhandler);
-	//msgs.add_msg("currhandler1", ag, NETWORK_VARIABLE_MESSAGE, currhandler1);
-
-	p->start_new_curr_message(currhandler);
+	p->start_new_curr_message(currhandler1);
 	*p << (KBE_SRV_COMPONENT_TYPE) 5;
 	*p << (ENTITY_MAILBOX_TYPE) 5;
 	*p << (UCHAR) 1;
 	*p << (UINT16) 2;
-	*p << (UINT32) 3;
-	*p << (UINT64) 4;
-	*p << (CHAR) -5;
-	*p << (INT16) -6;
-	*p << (INT32) -7;
-	*p << (INT64) 8;
 	char *blob = "blob";
 	p->write_blob(blob, strlen(blob) + 1);
-	char *name0 = "name0";
-	*p << name0;
-	char *name1 = "name1";
-	*p << name1;
-	std::string n2 = "name2";
-	*p << n2;
 	char *n3 = "name3";
 	*p << n3;
 	std::string n4 = "name4";
 	*p << n4;
-	std::string n5 = "name5";
-	*p << n5;
 	p->end_new_curr_message();
+
 	p->dumpMsgs();
+
 
 	PacketReader pr(&channel);
 	Packet* p0 = p->packets_[0];

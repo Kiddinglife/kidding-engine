@@ -61,7 +61,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 		block_->rd_ptr(pPacket->buff->rd_ptr());
 
 		ACE_DEBUG(( LM_DEBUG,
-			"%M::%T::PacketReader::processMessages()::loop starts,"
+			"%M::%T::loop starts,"
 			"pPacket->length(%d), pFragmentPacket_(%d),"
 			"wr_pos(%d), rd_pos(%d)\n",
 			pPacket->length(), pFragmentPacket_,
@@ -70,24 +70,19 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 		if( fragmentsFlag_ != FRAGMENT_DATA_UNKNOW )
 		{
 
-			ACE_DEBUG(( LM_DEBUG,
-				"%M::%T::PacketReader::processMessages()::@if"
-				"(fragmentsFlag_!=FRAGMENT_DATA_UNKNOW)\n" ));
+			ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(fragmentsFlag_!=FRAGMENT_DATA_UNKNOW)\n" ));
 
 			/// when this message's fragment type is determined, go this branch
 			mergeFragmentMessage(pPacket);
 
 		} else
 		{
-			ACE_DEBUG(( LM_DEBUG,
-				"%M::%T::PacketReader::processMessages()::@if"
-				"(fragmentsFlag_ == FRAGMENT_DATA_UNKNOW )\n" ));
+			ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(fragmentsFlag_ == FRAGMENT_DATA_UNKNOW )\n" ));
 
 			// firsly read currMsgID_ if it is 0
 			if( currMsgID_ == 0 )
 			{
-				ACE_DEBUG(( LM_DEBUG,
-					"%M::%T::PacketReader::processMessages()::@if(currMsgID_ == 0)\n" ));
+				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(currMsgID_ == 0)\n" ));
 
 				/**
 				 * If the length of current pakcket is less than the size of msg id
@@ -96,9 +91,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				 */
 				if( pPacket->length() < NETWORK_MESSAGE_ID_SIZE )
 				{
-					ACE_DEBUG(( LM_DEBUG,
-						"%M::%T::PacketReader::processMessages()::"
-						"@if(pPacket->length() < NETWORK_MESSAGE_ID_SIZE)" ));
+					ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pPacket->length() < NETWORK_MESSAGE_ID_SIZE)" ));
 
 					writeFragmentMessage(FRAGMENT_DATA_MESSAGE_ID, pPacket, NETWORK_MESSAGE_ID_SIZE);
 					break;
@@ -132,8 +125,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 			/// it must be something wrong if pMsg == NULL. user will be told this situation
 			if( pMsg == NULL )
 			{
-				ACE_DEBUG(( LM_DEBUG,
-					"%M::%T::PacketReader::processMessages()::@if(pMsg == NULL)\n" ));
+				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pMsg == NULL)\n" ));
 
 				/**
 				* change the read position to the begainning of the packet
@@ -171,18 +163,26 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 			 */
 			if( !currMsgLen_ )
 			{
-				ACE_DEBUG(( LM_DEBUG,
-					"%M::%T::PacketReader::processMessages()::@if(!currMsgLen_)\n" ));
+				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(!currMsgLen_)\n" ));
 
 				if( pMsg->msgType_ == NETWORK_VARIABLE_MESSAGE || g_packetAlwaysContainLength )
 				{
-					ACE_DEBUG(( LM_DEBUG,
-						"%M::%T::::@if(variable msg)\n" ));
+					ACE_DEBUG(( LM_DEBUG, "%M::%T::::@if(variable msg)\n" ));
+
+					/// if msg length field is incomplate, wait for the next packet 
+					if( pPacket->length() < NETWORK_MESSAGE_LENGTH_SIZE )
+					{
+						ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen incomplate, wait next packet\n" ));
+						writeFragmentMessage(FRAGMENT_DATA_MESSAGE_LENGTH, pPacket, NETWORK_MESSAGE_LENGTH_SIZE);
+						break;
+					} else
+					{
+						ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen complate, start to read msg len\n" ));
+					}
 
 				} else /// NETWORK_FIXED_MESSAGE
 				{
-					ACE_DEBUG(( LM_DEBUG,
-						"%I%I%M::%T::PacketReader::processMessages()::@if(fixed msg)\n" ));
+					ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(fixed msg)\n" ));
 
 					currMsgLen_ = pMsg->msgArgsBytesCount_;
 
@@ -193,6 +193,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 					ACE_Singleton<NetStats, ACE_Null_Mutex>::instance()->
 						trackMessage(NetStats::RECV, pMsg, currMsgLen_);
 				}
+
 				break;
 			}
 		}
