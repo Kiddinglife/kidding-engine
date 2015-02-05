@@ -69,6 +69,8 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 			pPacket->length(), pFragmentPacket_,
 			pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 
+		ACE_HEX_DUMP(( LM_DEBUG, pPacket ->buff->rd_ptr(), pPacket->length()));
+
 		if( fragmentsFlag_ != FRAGMENT_DATA_UNKNOW )
 		{
 

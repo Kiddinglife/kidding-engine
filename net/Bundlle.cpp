@@ -391,6 +391,9 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 		//写入msglen
 		ACE_ASSERT(pPacket->os.replace((MessageLength) currMsgLength_, currMsgLengthPos_));
 	}
+
+	currMsgLength_ += NETWORK_MESSAGE_ID_SIZE;
+	currMsgLength_ += NETWORK_MESSAGE_LENGTH_SIZE;
 }
 
 /**

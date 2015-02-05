@@ -76,7 +76,7 @@ struct Bundle
 	MessageID             currMsgID_;
 
 	/**
-	 * 当前packet中的msg的总长度，以byte为单位
+	 * 当前packet中的msg的payload长度(不包含id和len)，以byte为单位
 	 * 如果某个msg由多于一个packet装载，该数值会被重新从0开始计算
 	 * the current msg's length only in the current packet with the unit of byte
 	 * it will be recalculated if there are more than one packet to hold this msg
