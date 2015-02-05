@@ -48,7 +48,7 @@ struct MessageArgs
 	virtual ~MessageArgs() { };
 	virtual void fetch_args_from(Packet* p) = 0;
 	virtual void add_args_to(Packet* p) = 0;
-	virtual ACE_INT32 args_bytes_count(void) = 0;
+	virtual MessageLength1 args_bytes_count(void) = 0;
 	virtual MESSAGE_ARGS_TYPE type(void) { return MESSAGE_ARGS_TYPE_FIXED; }
 };
 
@@ -59,7 +59,7 @@ struct Message
 	MessageArgs* pMsgArgs_;
 	/*-1 = variable-len msg */
 	ACE_INT8        msgType_;
-	ACE_UINT8      msgArgsBytesCount_;
+	MessageLength1     msgArgsBytesCount_;
 	bool                exposed_;
 	Messages*      pMsgs_;
 

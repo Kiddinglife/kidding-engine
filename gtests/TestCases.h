@@ -1135,7 +1135,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 {
 	struct msgarg : public MessageArgs
 	{
-		virtual ACE_INT32 args_bytes_count(void)
+		virtual MessageLength1 args_bytes_count(void)
 		{
 			return 77;
 		}
