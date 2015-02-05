@@ -176,7 +176,8 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 					/// read msg length from the packet
 					in_ >> *(MessageLength*) &currMsgLen_;
 					pPacket->buff->rd_ptr(in_.rd_ptr());
-					ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen(%d)\n", currMsgLen_ ));
+
+					ACE_DEBUG(( LM_DEBUG, "%M::%T::variable msglen(%d)\n", currMsgLen_ ));
 
 					/// update this msg's stats and call its callback method
 					ACE_Singleton<NetStats, ACE_Null_Mutex>::instance()->
@@ -198,21 +199,20 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 						/// read msg length1 from the packet
 						in_ >> currMsgLen_;
 						pPacket->buff->rd_ptr(in_.rd_ptr());
-						ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen1(%d)\n", currMsgLen_ ));
+						ACE_DEBUG(( LM_DEBUG, "%M::%T::variable msglen1(%d)\n", currMsgLen_ ));
 
 						/// update this msg's stats and call its callback method
 						ACE_Singleton<NetStats, ACE_Null_Mutex>::instance()->
 							trackMessage(NetStats::RECV, pCurrMsg_,
 							currMsgLen_ + NETWORK_MESSAGE_ID_SIZE + NETWORK_MESSAGE_LENGTH_SIZE);
 					}
-
 				} else /// NETWORK_FIXED_MESSAGE
 				{
 					ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(fixed msg)\n" ));
 
 					currMsgLen_ = pCurrMsg_->msgArgsBytesCount_;
 
-					ACE_DEBUG(( LM_DEBUG, "%M::%T::currMsgLen_(%d)\n", currMsgLen_ ));
+					ACE_DEBUG(( LM_DEBUG, "%M::%T::fix mslen(%d)\n", currMsgLen_ ));
 
 					/// 更新该消息stats并回调跟踪函数
 					/// update this msg's stats and call its callback method
