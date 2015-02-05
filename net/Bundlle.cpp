@@ -453,20 +453,14 @@ void Bundle::end_new_curr_message(void)
 	//		"end_new_curr_message(void):: dump result: \n" ));
 	//}
 
-	//ACE_DEBUG(( LM_DEBUG,
-	//	"end_new_curr_message::pCurrMsg_ = %d, currMsgHandlerLength_= %d"
-	//	"pCurrPacket_ = %@, currMsgID_= %d, currMsgLengthPos_ = %@,\n"
-	//	"currMsgPacketCount_ = %d, currMsgLength_ = %d\n",
-	//	pCurrMsg_,
-	//	currMsgType_, pCurrPacket_,
-	//	currMsgID_, currMsgLengthPos_,
-	//	currMsgPacketCount_, currMsgLength_ ));
-
-	////清理该msg的相关变量值
-	//currMsgType_ = currMsgID_ =
-	//	currMsgPacketCount_ = currMsgLength_ = 0;
-	//currMsgLengthPos_ = NULL;
-	//pCurrMsg_ = NULL;
+	ACE_DEBUG(( LM_DEBUG,
+		"%M::pCurrMsg_ = %d, currMsgHandlerLength_= %d"
+		"pCurrPacket_ = %d, currMsgID_= %d, currMsgLengthPos_ = %d,\n"
+		"currMsgPacketCount_ = %d, currMsgLength_ = %d\n",
+		pCurrMsg_,
+		currMsgType_, pCurrPacket_,
+		currMsgID_, currMsgLengthPos_,
+		currMsgPacketCount_, currMsgLength_ ));
 
 	TRACE_RETURN_VOID();
 }
@@ -896,7 +890,7 @@ void Bundle::dumpMsgs()
 
 				ACE_DEBUG(( LM_DEBUG, "  totallen = %d\n", totallen ));
 
-				if( pPacket->length() >= totallen)
+				if( pPacket->length() >= totallen )
 				{
 					temppacket->os.write_char_array(pPacket->buff->rd_ptr(), totallen);
 					pPacket->buff->rd_ptr(totallen);

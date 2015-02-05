@@ -1201,17 +1201,8 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	msgs.add_msg("currhandler1", ag, NETWORK_VARIABLE_MESSAGE, currhandler1);
 
 	p->start_new_curr_message(currhandler1);
-	*p << (KBE_SRV_COMPONENT_TYPE) 5;
-	*p << (ENTITY_MAILBOX_TYPE) 5;
 	*p << (UCHAR) 1;
 	*p << (UINT16) 2;
-
-	char *blob1 = "blob1";
-	p->write_blob(blob1, strlen(blob1) + 1);
-	char *n31 = "name3";
-	*p << n31;
-	std::string n41 = "name4";
-	*p << n41;
 	p->end_new_curr_message();
 
 	//p->dumpMsgs();
