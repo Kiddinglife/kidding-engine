@@ -118,7 +118,7 @@ typedef ACE_UINT16	PacketLength;//最大65535
 #define ENCRYPTTION_WASTAGE_SIZE			(1 + 7) /// 加密额外存储的信息占用字节(长度+填充)
 
 #define PACKET_MAX_SIZE						1500
-#define PACKET_MAX_SIZE_TCP					12//1460 //因为使用ace_output(4) 时， 会自动加上8个字节对齐 因此我们在这里减去他
+#define PACKET_MAX_SIZE_TCP					25//1460 
 #define PACKET_MAX_SIZE_UDP					1472
 #define PACKET_LENGTH_BYTE_SIZE				sizeof(PacketLength)
 

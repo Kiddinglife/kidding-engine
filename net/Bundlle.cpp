@@ -501,6 +501,7 @@ void Bundle::start_new_curr_message(Message* msg)
 	//	pCurrPacket_->buff->base(), pCurrPacket_->buff->length(),
 	//	"Bundle::start_new_curr_message()::@A\n" ));
 
+	//ACE_ASSERT(pCurrPacket_->buff->length() - );
 	/// 将消息id写入到当前包中
 	( *this ) << msg->msgID_;
 
