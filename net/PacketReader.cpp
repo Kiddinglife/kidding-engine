@@ -101,13 +101,6 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 					break;
 				}
 
-				//ACE_DEBUG(( LM_DEBUG,
-				//	"%M::%T::PacketReader::processMessages()"
-				//	"pPacket->length(%d), pFragmentPacket_(%d),"
-				//	"rd_pos(%d), wr_pos(%d)\n",
-				//	pPacket->length(), pFragmentPacket_,
-				//	pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
-
 				/// read msg id from this packet to currMsgID_ and reset the msgID_
 				in_ >> currMsgID_;
 				pPacket->buff->rd_ptr(in_.rd_ptr());
@@ -299,6 +292,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				pPacket->buff->wr_ptr(curr_msg_end_pos_in_curr_packet);
 
 				TRACE_MESSAGE_PACKET(true, pPacket, pCurrMsg_, currMsgLen_, pChannel_->c_str());
+
 				pCurrMsg_->handle(pChannel_, pPacket);
 
 				ACE_DEBUG(( LM_DEBUG, "%M::%T::frpos(%d)\n", curr_msg_end_pos_in_curr_packet ));
@@ -322,6 +316,8 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 
 				/// set the wr position back to the orifinal
 				pPacket->buff->wr_ptr(curr_packet_end_pos_);
+				block_->wr_ptr(curr_packet_end_pos_);
+				block_->rd_ptr(pPacket->buff->rd_ptr());
 
 				ACE_DEBUG(( LM_DEBUG,
 					"%M::%T::PacketReader::processMessages()"
