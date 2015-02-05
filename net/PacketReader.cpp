@@ -111,14 +111,12 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				pPacket->buff->rd_ptr(in_.rd_ptr());
 				pPacket->msgID_ = currMsgID_;
 
-				//ACE_DEBUG(( LM_DEBUG, "%M::%T::PacketReader::processMessages()::"
-				//	"currMsgID_(%d)\n", currMsgID_ ));
-				//ACE_DEBUG(( LM_DEBUG,
-				//	"%M::%T::PacketReader::processMessages()"
-				//	"pPacket->length(%d), pFragmentPacket_(%d),"
-				//	"rd_pos(%d), wr_pos(%d)\n",
-				//	pPacket->length(), pFragmentPacket_,
-				//	pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
+				ACE_DEBUG(( LM_DEBUG,
+					"%M::%T::PacketReader::processMessages()::currMsgID_(%d)"
+					"pPacket->length(%d), pFragmentPacket_(%d),"
+					"rd_pos(%d), wr_pos(%d)\n",
+					currMsgID_, pPacket->length(), pFragmentPacket_,
+					pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 			}
 
 			// find the msg based on currMsgID_

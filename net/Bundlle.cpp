@@ -212,52 +212,56 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 	//because we must setup msg length in the first packet that hold this msg, 
 	//we have to ensure that the pPacket points to the first packet in the container.
 
-	ACE_DEBUG(( LM_DEBUG,
-		"Bundle::calculate_then_fill_variable_len_field()::@A::"
-		"All packets pointer in pakctes_:\n" ));
-	for each ( Packet* var in packets_ )
-	{
+	//ACE_DEBUG(( LM_DEBUG,
+	//	"Bundle::calculate_then_fill_variable_len_field()::@A::"
+	//	"All packets pointer in pakctes_:\n" ));
 
-		ACE_DEBUG(( LM_DEBUG,
-			"packet pointer = %d\n", var ));
-	}
+	//for each ( Packet* var in packets_ )
+	//{
+
+	//	ACE_DEBUG(( LM_DEBUG,
+	//		"packet pointer = %d\n", var ));
+	//}
 
 	Packet* pPacket = pCurrPacket_;
 
-	ACE_DEBUG(( LM_DEBUG,
-		"Bundle::calculate_then_fill_variable_len_field()::@2::"
-		"pPacket pointer = %d\n",
-		pPacket ));
+	//ACE_DEBUG(( LM_DEBUG,
+	//	"Bundle::calculate_then_fill_variable_len_field()::@2::"
+	//	"pPacket pointer = %d\n",
+	//	pPacket ));
 
 	if( currMsgPacketCount_ > 0 )
 		pPacket = packets_[packets_.size() - currMsgPacketCount_];
 
-	ACE_DEBUG(( LM_DEBUG,
-		"Bundle::calculate_then_fill_variable_len_field()::@3::"
-		"now pPacket pointer = %d\n",
-		pPacket ));
+	//ACE_DEBUG(( LM_DEBUG,
+	//	"Bundle::calculate_then_fill_variable_len_field()::@3::"
+	//	"now pPacket pointer = %d\n",
+	//	pPacket ));
 
 	//当前消息的长度已知，减去消息id域和消息长度域，得到消息的有效信息长度(payload size)
 	//the total length of the current msg is known, so we minuse id field size and the 
 	// msg len field size, then we get the actual payload size of the current msg.
-	ACE_DEBUG(( LM_DEBUG,
-		"Bundle::calculate_then_fill_variable_len_field()::@4::"
-		"total currMsgLength_ = %d\n",
-		currMsgLength_ ));
+
+	//ACE_DEBUG(( LM_DEBUG,
+	//	"Bundle::calculate_then_fill_variable_len_field()::@4::"
+	//	"total currMsgLength_ = %d\n",
+	//	currMsgLength_ ));
+
 	currMsgLength_ -= NETWORK_MESSAGE_ID_SIZE;
 	currMsgLength_ -= NETWORK_MESSAGE_LENGTH_SIZE;
-	ACE_DEBUG(( LM_DEBUG,
-		"Bundle::calculate_then_fill_variable_len_field()::@5::"
-		"payload currMsgLength_ = %d\n",
-		currMsgLength_ ));
+
+	//ACE_DEBUG(( LM_DEBUG,
+	//	"Bundle::calculate_then_fill_variable_len_field()::@5::"
+	//	"payload currMsgLength_ = %d\n",
+	//	currMsgLength_ ));
 
 	// 按照设计一个包最大也不可能超过NETWORK_MESSAGE_MAX_SIZE
 	// A msg will never exceed the max number of NETWORK_MESSAGE_MAX_SIZE
 
-	ACE_DEBUG(( LM_DEBUG,
-		"Bundle::calculate_then_fill_variable_len_field()::@6::"
-		"g_componentType = %d, g_componentType = %d\n",
-		g_componentType, g_componentType ));
+	//ACE_DEBUG(( LM_DEBUG,
+	//	"Bundle::calculate_then_fill_variable_len_field()::@6::"
+	//	"g_componentType = %d, g_componentType = %d\n",
+	//	g_componentType, g_componentType ));
 
 	if( g_componentType == KBE_BOTS_TYPE || g_componentType == CLIENT_TYPE )
 	{
@@ -270,10 +274,10 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 	// adds another 4 bytes behind the previous len field to hold more data.
 	if( currMsgLength_ >= NETWORK_MESSAGE_MAX_SIZE )
 	{
-		ACE_DEBUG(( LM_DEBUG,
-			"Bundle::calculate_then_fill_variable_len_field()::@7::"
-			"currMsgLength_= %d >= NETWORK_MESSAGE_MAX_SIZE = %d\n",
-			currMsgLength_, NETWORK_MESSAGE_MAX_SIZE ));
+		//ACE_DEBUG(( LM_DEBUG,
+		//	"Bundle::calculate_then_fill_variable_len_field()::@7::"
+		//	"currMsgLength_= %d >= NETWORK_MESSAGE_MAX_SIZE = %d\n",
+		//	currMsgLength_, NETWORK_MESSAGE_MAX_SIZE ));
 
 		MessageLength msgLen = NETWORK_MESSAGE_MAX_SIZE;
 		MessageLength1 ex_msg_length = currMsgLength_;
@@ -281,71 +285,72 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 		/* 先将MessageLength len写入到该packet中去 */
 		ACE_ASSERT(pPacket->os.replace(msgLen, currMsgLengthPos_));
 
-		ACE_DEBUG(( LM_DEBUG,
-			"Bundle::calculate_then_fill_variable_len_field()::@7.1::"
-			"currMsgLengthPos_ = %d\n",
-			currMsgLengthPos_ ));
+		//ACE_DEBUG(( LM_DEBUG,
+		//	"Bundle::calculate_then_fill_variable_len_field()::@7.1::"
+		//	"currMsgLengthPos_ = %d\n",
+		//	currMsgLengthPos_ ));
 
 		// 更新长度域写位置
 		// update the position just after msgLen field 
 		currMsgLengthPos_ += NETWORK_MESSAGE_LENGTH_SIZE;
 
-		ACE_DEBUG(( LM_DEBUG,
-			"Bundle::calculate_then_fill_variable_len_field()::@7.2::"
-			"currMsgLengthPos_ = %d\n",
-			currMsgLengthPos_ ));
+		//ACE_DEBUG(( LM_DEBUG,
+		//	"Bundle::calculate_then_fill_variable_len_field()::@7.2::"
+		//	"currMsgLengthPos_ = %d\n",
+		//	currMsgLengthPos_ ));
 
 		/* 再将MessageLength1 ex_msg_length写入到len后边 */
 
 		// 检测该包中是否有多余夫人4个字节来保存 ex_msg_length
 		// test if there are 4 bytes space in this packet to store ex_msg_length
 
-		ACE_DEBUG(( LM_DEBUG,
-			"Bundle::calculate_then_fill_variable_len_field()::@7.2::"
-			"currPacketMaxSize = %d\n"
-			"pPacket->buff->length() = %d\n",
-			currPacketMaxSize,
-			pPacket->buff->length() ));
+		//ACE_DEBUG(( LM_DEBUG,
+		//	"Bundle::calculate_then_fill_variable_len_field()::@7.2::"
+		//	"currPacketMaxSize = %d\n"
+		//	"pPacket->buff->length() = %d\n",
+		//	currPacketMaxSize,
+		//	pPacket->buff->length() ));
 
 		int num = NETWORK_MESSAGE_LENGTH1_SIZE -
 			( currPacketMaxSize - pPacket->buff->length() );
 
-		ACE_DEBUG(( LM_DEBUG,
-			"Bundle::calculate_then_fill_variable_len_field()::@7.2.1::"
-			"num = %d\n",
-			num ));
+		//ACE_DEBUG(( LM_DEBUG,
+		//	"Bundle::calculate_then_fill_variable_len_field()::@7.2.1::"
+		//	"num = %d\n",
+		//	num ));
 
 		if( num > 0 )
 		{
-			ACE_DEBUG(( LM_DEBUG,
-				"Bundle::calculate_then_fill_variable_len_field()::@7.2.1::"
-				"num = %d > 0, less than 4 bytes space in this packet.\n"
-				"Start to move memory\n",
-				num ));
+			//ACE_DEBUG(( LM_DEBUG,
+			//	"Bundle::calculate_then_fill_variable_len_field()::@7.2.1::"
+			//	"num = %d > 0, less than 4 bytes space in this packet.\n"
+			//	"Start to move memory\n",
+			//	num ));
+
 			//Packet* pOldPacket = pPacket;
-			ACE_DEBUG(( LM_DEBUG,
-				"Bundle::calculate_then_fill_variable_len_field()::@7.2.2::"
-				"now pPacket = %d\n",
-				pPacket ));
+			//ACE_DEBUG(( LM_DEBUG,
+			//	"Bundle::calculate_then_fill_variable_len_field()::@7.2.2::"
+			//	"now pPacket = %d\n",
+			//	pPacket ));
 
 			//resize 该包大小
-			ACE_DEBUG(( LM_DEBUG,
-				"Bundle::calculate_then_fill_variable_len_field()::@7.2.3::"
-				"before resize, size = %d\n"
-				"rd pos = %d, wr_pos = %d\n",
-				pPacket->buff->size(), pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
+			//ACE_DEBUG(( LM_DEBUG,
+			//	"Bundle::calculate_then_fill_variable_len_field()::@7.2.3::"
+			//	"before resize, size = %d\n"
+			//	"rd pos = %d, wr_pos = %d\n",
+			//	pPacket->buff->size(), pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 
 			pPacket->buff->size(pPacket->buff->size() + num);
 
-			ACE_DEBUG(( LM_DEBUG,
-				"Bundle::calculate_then_fill_variable_len_field()::@7.2.4::"
-				"After resize, size = %d, length = %d, \n"
-				"rd pos = %d, wr_pos = %d\n",
-				pPacket->buff->size(), pPacket->buff->length(),
-				pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
+			//ACE_DEBUG(( LM_DEBUG,
+			//	"Bundle::calculate_then_fill_variable_len_field()::@7.2.4::"
+			//	"After resize, size = %d, length = %d, \n"
+			//	"rd pos = %d, wr_pos = %d\n",
+			//	pPacket->buff->size(), pPacket->buff->length(),
+			//	pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 
-			ACE_HEX_DUMP(( LM_DEBUG, pPacket->buff->base(), pPacket->buff->size(),
-				"Before memmove::Result: \n" ));
+			//ACE_HEX_DUMP(( LM_DEBUG, pPacket->buff->base(), pPacket->buff->size(),
+			//	"Before memmove::Result: \n" ));
 
 			/// 将currMsgLengthPos_以后的内存向后移动num个bytes，为ex msg疼出来位置
 			currMsgLengthPos_ = pPacket->buff->rd_ptr() + NETWORK_MESSAGE_ID_SIZE + NETWORK_MESSAGE_LENGTH_SIZE;
@@ -438,24 +443,24 @@ void Bundle::end_new_curr_message(void)
 		calculate_then_fill_variable_len_field();
 	}
 
-	/// dump all packets in this msg
-	Packets::iterator iter = packets_.begin();
-	for( ; iter != packets_.end(); iter++ )
-	{
-		ACE_HEX_DUMP(( LM_DEBUG,
-			( *iter )->buff->base(),
-			( *iter )->buff->length(),
-			"end_new_curr_message(void):: dump result: \n" ));
-	}
+	///// dump all packets in this msg
+	//Packets::iterator iter = packets_.begin();
+	//for( ; iter != packets_.end(); iter++ )
+	//{
+	//	ACE_HEX_DUMP(( LM_DEBUG,
+	//		( *iter )->buff->base(),
+	//		( *iter )->buff->length(),
+	//		"end_new_curr_message(void):: dump result: \n" ));
+	//}
 
-	ACE_DEBUG(( LM_DEBUG,
-		"end_new_curr_message::pCurrMsg_ = %d, currMsgHandlerLength_= %d"
-		"pCurrPacket_ = %@, currMsgID_= %d, currMsgLengthPos_ = %@,\n"
-		"currMsgPacketCount_ = %d, currMsgLength_ = %d\n",
-		pCurrMsg_,
-		currMsgType_, pCurrPacket_,
-		currMsgID_, currMsgLengthPos_,
-		currMsgPacketCount_, currMsgLength_ ));
+	//ACE_DEBUG(( LM_DEBUG,
+	//	"end_new_curr_message::pCurrMsg_ = %d, currMsgHandlerLength_= %d"
+	//	"pCurrPacket_ = %@, currMsgID_= %d, currMsgLengthPos_ = %@,\n"
+	//	"currMsgPacketCount_ = %d, currMsgLength_ = %d\n",
+	//	pCurrMsg_,
+	//	currMsgType_, pCurrPacket_,
+	//	currMsgID_, currMsgLengthPos_,
+	//	currMsgPacketCount_, currMsgLength_ ));
 
 	////清理该msg的相关变量值
 	//currMsgType_ = currMsgID_ =

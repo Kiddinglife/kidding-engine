@@ -1164,12 +1164,10 @@ TEST(PacketReaderTests, ctor_dtor_test)
 
 	/// first msg is fixed msg
 	Message* currhandler = poolmsg->Ctor();
-	currhandler->msgID_ = 1;
-
-	msgs.add_msg("currhandler", ag, NETWORK_FIXED_MESSAGE, currhandler);
-
 	FixedMessages::MSGInfo info = { 1 };
 	ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler", info));
+
+	msgs.add_msg("currhandler", ag, NETWORK_FIXED_MESSAGE, currhandler);
 
 	p->start_new_curr_message(currhandler);
 	*p << (KBE_SRV_COMPONENT_TYPE) 5;
@@ -1200,7 +1198,6 @@ TEST(PacketReaderTests, ctor_dtor_test)
 
 	/// second msg is variable msg
 	Message* currhandler1 = poolmsg->Ctor();
-	currhandler1->msgID_ = 2;
 	msgs.add_msg("currhandler1", ag, NETWORK_VARIABLE_MESSAGE, currhandler1);
 
 	p->start_new_curr_message(currhandler1);
