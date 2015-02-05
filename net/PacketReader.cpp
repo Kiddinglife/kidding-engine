@@ -278,12 +278,12 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 					break;
 				}
 
-				ACE_DEBUG(( LM_DEBUG,
-					"%M::%T::PacketReader::processMessages()"
-					"pPacket->length(%d), pFragmentPacket_(%d),"
-					"pPacket rd_pos(%d), pPacket wr_pos(%d)\n",
-					pPacket->length(), pFragmentPacket_,
-					pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
+				//ACE_DEBUG(( LM_DEBUG,
+				//	"%M::%T::PacketReader::processMessages()"
+				//	"pPacket->length(%d), pFragmentPacket_(%d),"
+				//	"pPacket rd_pos(%d), pPacket wr_pos(%d)\n",
+				//	pPacket->length(), pFragmentPacket_,
+				//	pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 
 				/// because there maybe more than one msg in this packet
 				/// we need setup the wr and rd position to pick it out and then trace it
@@ -295,10 +295,10 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 
 				pCurrMsg_->handle(pChannel_, pPacket);
 
-				ACE_DEBUG(( LM_DEBUG, "%M::%T::frpos(%d)\n", curr_msg_end_pos_in_curr_packet ));
+				//ACE_DEBUG(( LM_DEBUG, "%M::%T::frpos(%d)\n", curr_msg_end_pos_in_curr_packet ));
 
 				/// the remote function this message stands for could have no parameters
-				/// if so, we do not need to check it.
+				/// if so, we do not need to check it. 
 				if( currMsgLen_ > 0 )
 				{
 					///if handler does not process all the data in this packet
@@ -310,21 +310,24 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 							pPacket->buff->rd_ptr(), curr_msg_end_pos_in_curr_packet,
 							currMsgID_, currMsgLen_ ));
 
+						///if handler does not process all the data in this packet
+						/// but we have to the rd pos into the expected position in order
+						/// to avoid impact the next msg
 						pPacket->buff->rd_ptr(curr_msg_end_pos_in_curr_packet);
 					}
 				}
 
-				/// set the wr position back to the orifinal
+				/// set the wr and rd positions back to the orifinal
 				pPacket->buff->wr_ptr(curr_packet_end_pos_);
 				block_->wr_ptr(curr_packet_end_pos_);
 				block_->rd_ptr(pPacket->buff->rd_ptr());
 
-				ACE_DEBUG(( LM_DEBUG,
-					"%M::%T::PacketReader::processMessages()"
-					"pPacket->length(%d), pFragmentPacket_(%d),"
-					"pPacket rd_pos(%d), pPacket wr_pos(%d)\n",
-					pPacket->length(), pFragmentPacket_,
-					pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
+				//ACE_DEBUG(( LM_DEBUG,
+				//	"%M::%T::PacketReader::processMessages()"
+				//	"pPacket->length(%d), pFragmentPacket_(%d),"
+				//	"pPacket rd_pos(%d), pPacket wr_pos(%d)\n",
+				//	pPacket->length(), pFragmentPacket_,
+				//	pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 			}
 
 			/// this message is processed completely at this point and so reset msgid and msglen to 0
