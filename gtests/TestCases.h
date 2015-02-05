@@ -1163,24 +1163,39 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	msgarg* ag = poolmsgarg->Ctor();
 
 	/// first msg is fixed msg
-	Message* currhandler = poolmsg->Ctor();
-	FixedMessages::MSGInfo info = { 1 };
-	ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler", info));
-
-	msgs.add_msg("currhandler", ag, NETWORK_FIXED_MESSAGE, currhandler);
-
-	p->start_new_curr_message(currhandler);
+	Message* currhandler1 = poolmsg->Ctor();
+	//FixedMessages::MSGInfo info1 = { 1 };
+	//ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler1", info1));
+	msgs.add_msg("currhandler1", ag, NETWORK_FIXED_MESSAGE, currhandler1);
+	p->start_new_curr_message(currhandler1);
 	*p << (INT32) -7;
 	p->end_new_curr_message();
 
 	/// second msg is variable msg
-	Message* currhandler1 = poolmsg->Ctor();
-	msgs.add_msg("currhandler1", ag, NETWORK_VARIABLE_MESSAGE, currhandler1);
-
-	p->start_new_curr_message(currhandler1);
+	Message* currhandler2 = poolmsg->Ctor();
+	msgs.add_msg("currhandler2", ag, NETWORK_VARIABLE_MESSAGE, currhandler2);
+	p->start_new_curr_message(currhandler2);
 	*p << (UCHAR) 1;
 	*p << (UINT16) 2;
 	p->end_new_curr_message();
+
+	///// second msg is variable msg
+	//Message* currhandler3 = poolmsg->Ctor();
+	//msgs.add_msg("currhandler3", ag, NETWORK_FIXED_MESSAGE, currhandler3);
+
+	//p->start_new_curr_message(currhandler3);
+	//*p << (UCHAR) 1;
+	//*p << (UINT16) 2;
+	//p->end_new_curr_message();
+
+	///// second msg is variable msg
+	//Message* currhandler4 = poolmsg->Ctor();
+	//msgs.add_msg("currhandler4", ag, NETWORK_VARIABLE_MESSAGE, currhandler4);
+
+	//p->start_new_curr_message(currhandler4);
+	//*p << (UCHAR) 1;
+	//*p << (UINT16) 2;
+	//p->end_new_curr_message();
 
 	//p->dumpMsgs();
 
