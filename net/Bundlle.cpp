@@ -798,7 +798,7 @@ void Bundle::dumpMsgs()
 			pPacket->buff->size());
 		const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(wpos);
 
-		ACE_DEBUG(( LM_DEBUG, "pPacket->length() = %d\n", pPacket->length() ));
+		//ACE_DEBUG(( LM_DEBUG, "pPacket->length() = %d\n", pPacket->length() ));
 
 		size_t headlen = 0;
 
@@ -806,7 +806,7 @@ void Bundle::dumpMsgs()
 		{
 			if( state == id )
 			{
-				ACE_DEBUG(( LM_DEBUG, " @1::state == id\n" ));
+				//ACE_DEBUG(( LM_DEBUG, " @1::state == id\n" ));
 
 				// 一些sendto操作的包导致, 这类包也不需要追踪
 				if( pPacket->length() < NETWORK_MESSAGE_ID_SIZE )
@@ -828,7 +828,7 @@ void Bundle::dumpMsgs()
 
 			} else if( state == len )
 			{
-				ACE_DEBUG(( LM_DEBUG, " @2::state == len\n" ));
+				//ACE_DEBUG(( LM_DEBUG, " @2::state == len\n" ));
 
 				pCurrMsgHandler = pCurrMsg_->pMsgs_->find(msgid);
 
@@ -842,7 +842,7 @@ void Bundle::dumpMsgs()
 
 				if( pCurrMsgHandler->msgType_ == NETWORK_VARIABLE_MESSAGE || g_packetAlwaysContainLength )
 				{
-					ACE_DEBUG(( LM_DEBUG, " @4::NETWORK_VARIABLE_MESSAGE\n" ));
+					//ACE_DEBUG(( LM_DEBUG, " @4::NETWORK_VARIABLE_MESSAGE\n" ));
 					headlen += sizeof(MessageLength);
 					in >> msglen;
 					pPacket->buff->rd_ptr(in.rd_ptr());
@@ -859,7 +859,7 @@ void Bundle::dumpMsgs()
 
 				} else
 				{
-					ACE_DEBUG(( LM_DEBUG, " @4::NETWORK_FIXED_MESSAGE\n" ));
+					//ACE_DEBUG(( LM_DEBUG, " @4::NETWORK_FIXED_MESSAGE\n" ));
 					msglen = pCurrMsgHandler->msgArgsBytesCount_;
 					//headlen += sizeof(MessageLength);
 					//temppacket->os << msglen;
@@ -871,7 +871,7 @@ void Bundle::dumpMsgs()
 
 			} else if( state == len1 )
 			{
-				ACE_DEBUG(( LM_DEBUG, " @5::state == len1\n" ));
+				//ACE_DEBUG(( LM_DEBUG, " @5::state == len1\n" ));
 
 				headlen += sizeof(MessageLength1);
 
@@ -888,11 +888,11 @@ void Bundle::dumpMsgs()
 
 			} else if( state == body )
 			{
-				ACE_DEBUG(( LM_DEBUG, " @6::state == body\n" ));
+				//ACE_DEBUG(( LM_DEBUG, " @6::state == body\n" ));
 
 				MessageLength1 totallen = msglen1 > 0 ? msglen1 : msglen;
 
-				ACE_DEBUG(( LM_DEBUG, "  totallen = %d\n", totallen ));
+				//ACE_DEBUG(( LM_DEBUG, "  totallen = %d\n", totallen ));
 
 				if( pPacket->length() >= totallen )
 				{
@@ -924,7 +924,7 @@ void Bundle::dumpMsgs()
 						msgpayload, pChnnel_ != NULL ? pChnnel_->c_str() : "none");
 
 					ACE_HEX_DUMP(( LM_DEBUG,
-						temppacket->buff->base(),
+						temppacket->buff->rd_ptr(),
 						temppacket->buff->length(),
 						"dump msg result:\n" ));
 

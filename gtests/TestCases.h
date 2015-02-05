@@ -1170,6 +1170,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	p->start_new_curr_message(currhandler1);
 	*p << (INT32) -7;
 	p->end_new_curr_message();
+	p->dumpMsgs();
 
 	/// second msg is variable msg
 	Message* currhandler2 = poolmsg->Ctor();
@@ -1178,26 +1179,27 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	*p << (UCHAR) 1;
 	*p << (UINT16) 2;
 	p->end_new_curr_message();
+	p->dumpMsgs();
 
 	///// second msg is variable msg
-	//Message* currhandler3 = poolmsg->Ctor();
-	//msgs.add_msg("currhandler3", ag, NETWORK_FIXED_MESSAGE, currhandler3);
+	Message* currhandler3 = poolmsg->Ctor();
+	msgs.add_msg("currhandler3", ag, NETWORK_FIXED_MESSAGE, currhandler3);
 
-	//p->start_new_curr_message(currhandler3);
-	//*p << (UCHAR) 1;
-	//*p << (UINT16) 2;
-	//p->end_new_curr_message();
+	p->start_new_curr_message(currhandler3);
+	*p << (UCHAR) 1;
+	*p << (UINT16) 2;
+	p->end_new_curr_message();
+	p->dumpMsgs();
 
 	///// second msg is variable msg
-	//Message* currhandler4 = poolmsg->Ctor();
-	//msgs.add_msg("currhandler4", ag, NETWORK_VARIABLE_MESSAGE, currhandler4);
+	Message* currhandler4 = poolmsg->Ctor();
+	msgs.add_msg("currhandler4", ag, NETWORK_VARIABLE_MESSAGE, currhandler4);
 
-	//p->start_new_curr_message(currhandler4);
-	//*p << (UCHAR) 1;
-	//*p << (UINT16) 2;
-	//p->end_new_curr_message();
-
-	//p->dumpMsgs();
+	p->start_new_curr_message(currhandler4);
+	*p << (UCHAR) 1;
+	*p << (UINT16) 2;
+	p->end_new_curr_message();
+	p->dumpMsgs();
 
 	PacketReader pr(&channel);
 
