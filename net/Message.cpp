@@ -68,9 +68,10 @@ Message*  Messages::add_msg(const std::string& ihName, MessageArgs* args,
 		{
 			msg->msgArgsBytesCount_ += ENTITY_ID_SIZE;
 		}
+
 		ACE_DEBUG(( LM_DEBUG,
 			"Messages :: add(%d) :: name = %s, msgID = %d, msgArgsCount_ = Fixed(%d).\n",
-			msgs_.size(), ihName.c_str(), msg->msgID_ ), msg->msgArgsBytesCount_);
+			msgs_.size(), msg->name_.c_str(), msg->msgID_, msg->msgArgsBytesCount_ ));
 	}
 
 	/// return the added msg

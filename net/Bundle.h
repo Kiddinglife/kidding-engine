@@ -76,7 +76,7 @@ struct Bundle
 	MessageID             currMsgID_;
 
 	/**
-	 * 当前packet中的msg的总长度，以byte为单位
+	 * 当前packet中的msg的payload长度(不包含id和len)，以byte为单位
 	 * 如果某个msg由多于一个packet装载，该数值会被重新从0开始计算
 	 * the current msg's length only in the current packet with the unit of byte
 	 * it will be recalculated if there are more than one packet to hold this msg
@@ -432,16 +432,12 @@ struct Bundle
 
 	Bundle &operator<<( const char *str )
 	{
-		ACE_DEBUG(( LM_DEBUG, "Bundle &operator<<( const char *str )\n" ));
-
 		static size_t len = 0;  // +1为字符串尾部的0位置
 		static size_t addtotalsize = 0;
 		static size_t ilen = 0;
 
 		len = ACE_OS::strlen(str) + 1;
 		addtotalsize = ilen = 0;
-
-		ACE_DEBUG(( LM_DEBUG, "Bundle &operator<<( const char *str ):: Begining len=%d, addtotalsize=%d, ilen=%d\n", len, addtotalsize, ilen ));
 
 		while( len > 0 )
 		{
@@ -453,7 +449,6 @@ struct Bundle
 			addtotalsize += ilen;
 			/// update the actual written-len
 			len -= ilen;
-			ACE_DEBUG(( LM_DEBUG, "Bundle &operator<<( const char *str ):: len=%d, addtotalsize=%d, ilen=%d\n", len, addtotalsize, ilen ));
 		}
 		return *this;
 	}
@@ -461,7 +456,9 @@ struct Bundle
 	/// read char string you need to make sure you have give a big=enough arr
 	Bundle &operator>>( char* str )
 	{
-		ACE_DEBUG(( LM_DEBUG, "Bundle &operator>>( char* str ) :: at begin, in.rd_pos = %d\n", in.rd_ptr() ));
+		/*ACE_DEBUG(( LM_DEBUG, "Bundle &operator>>( char* str ) :: at begin, in.rd_pos = %d\n",
+			in.rd_ptr() ));*/
+
 		if( packets_.size() <= 0 ) return *this;
 		static ACE_Message_Block* block = const_cast<ACE_Message_Block*>( in.start() );
 		*str = '1';
@@ -473,7 +470,7 @@ struct Bundle
 				packets_[0]->buff->rd_ptr(in.rd_ptr());
 				if( ( *str ) == 0 )
 				{
-					ACE_DEBUG(( LM_DEBUG, "Bundle &operator>>( char* str ) :: cnt = 0, break\n" ));
+					//ACE_DEBUG(( LM_DEBUG, "Bundle &operator>>( char* str ) :: cnt = 0, break\n" ));
 					break;
 				}
 				++str;
@@ -487,23 +484,6 @@ struct Bundle
 					packets_[0]->buff->length());
 				block->wr_ptr(packets_[0]->buff->wr_ptr());
 			}
-
-			//if( !( *str ) )
-			//{
-			//	if( in.length() == 0 )
-			//	{
-			//		packets_.erase(packets_.begin());
-			//		block->base(packets_[0]->buff->base(),
-			//			packets_[0]->buff->length());
-			//		block->wr_ptr(packets_[0]->buff->wr_ptr());
-			//	}
-			//} else
-			//{
-			//	packets_.erase(packets_.begin());
-			//	block->base(packets_[0]->buff->base(),
-			//		packets_[0]->buff->length());
-			//	block->wr_ptr(packets_[0]->buff->wr_ptr());
-			//}
 		}
 		//ACE_DEBUG(( LM_DEBUG, "Bundle &operator>>( char* str ) :: at end, in.rd_pos = %d\n", in.rd_ptr() ));
 
@@ -565,10 +545,12 @@ struct Bundle
 				//ACE_DEBUG(( LM_DEBUG, "@4 :: char = %c \n", cnt ));
 				//ACE_DEBUG(( LM_DEBUG, "@4 :: size = %d \n", value.size() ));
 			}
-			ACE_DEBUG(( LM_DEBUG, "@4 :: packets size = %d \n", packets_.size() ));
+
+			//ACE_DEBUG(( LM_DEBUG, "@4 :: packets size = %d \n", packets_.size() ));
+
 			if( in.length() == 0 )
 			{
-				ACE_DEBUG(( LM_DEBUG, "@7::go to next packet  because in.length == 0 but cnt = %c\n", (int) cnt ));
+				/*ACE_DEBUG(( LM_DEBUG, "@7::go to next packet  because in.length == 0 but cnt = %c\n", (int) cnt ));*/
 				packets_.erase(packets_.begin());
 				if( packets_.size() == 0 ) return *this;
 				block->base(packets_[0]->buff->base(),

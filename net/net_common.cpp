@@ -31,7 +31,7 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 	Message* pCurrMsgHandler, size_t length, const char* addr)
 {
 	TRACE("TRACE_MESSAGE_PACKET");
-	if( !g_trace_packet )	return;
+	//if( !g_trace_packet )	return;
 
 	if( g_trace_packet_use_logfile )
 	{

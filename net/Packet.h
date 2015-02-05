@@ -58,7 +58,7 @@ struct Packet
 	void on_read_packet_done()
 	{
 		/// advance the rd position in this packet
-		this->buff->rd_ptr(length());
+		this->buff->rd_ptr(this->buff->wr_ptr());
 	}
 
 	const size_t length() const { return buff->length(); }
