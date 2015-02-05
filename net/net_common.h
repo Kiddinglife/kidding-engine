@@ -115,17 +115,17 @@ typedef ACE_UINT32	MessageLength1;// 最大4294967295
 typedef ACE_UINT16	PacketLength;//最大65535
 
 /*msg sizes*/
-#define ENCRYPTTION_WASTAGE_SIZE			(1 + 7) /// 加密额外存储的信息占用字节(长度+填充)
+#define ENCRYPTTION_WASTAGE_SIZE			    (1 + 7) /// 加密额外存储的信息占用字节(长度+填充)
 
-#define PACKET_MAX_SIZE						1500
-#define PACKET_MAX_SIZE_TCP					50//1460 
-#define PACKET_MAX_SIZE_UDP					1472
-#define PACKET_LENGTH_BYTE_SIZE				sizeof(PacketLength)
+#define PACKET_MAX_SIZE						        1500
+#define PACKET_MAX_SIZE_TCP					    100//1460 
+#define PACKET_MAX_SIZE_UDP					    1472
+#define PACKET_LENGTH_BYTE_SIZE				    sizeof(PacketLength)
 
 #define NETWORK_MESSAGE_ID_SIZE				sizeof(MessageID)
-#define NETWORK_MESSAGE_LENGTH_SIZE			sizeof(MessageLength)
-#define NETWORK_MESSAGE_LENGTH1_SIZE		sizeof(MessageLength1)
-#define NETWORK_MESSAGE_MAX_SIZE			5//65535
+#define NETWORK_MESSAGE_LENGTH_SIZE		sizeof(MessageLength)
+#define NETWORK_MESSAGE_LENGTH1_SIZE	sizeof(MessageLength1)
+#define NETWORK_MESSAGE_MAX_SIZE			10//65535
 #define NETWORK_MESSAGE_MAX_SIZE1			4294967295
 
 #define GAME_PACKET_MAX_SIZE_TCP PACKET_MAX_SIZE_TCP - NETWORK_MESSAGE_ID_SIZE - \

@@ -314,12 +314,8 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 		int num = NETWORK_MESSAGE_LENGTH1_SIZE -
 			( currPacketMaxSize - pPacket->buff->length() );
 
-		//ACE_DEBUG(( LM_DEBUG,
-		//	"Bundle::calculate_then_fill_variable_len_field()::@7.2.1::"
-		//	"num = %d\n",
-		//	num ));
-
-		if( num > 0 )
+		/// check the rest space in this packet can hold the msglen1
+		if( num )
 		{
 			//ACE_DEBUG(( LM_DEBUG,
 			//	"Bundle::calculate_then_fill_variable_len_field()::@7.2.1::"
@@ -358,7 +354,8 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 		{
 			ACE_DEBUG(( LM_DEBUG,
 				"Bundle::calculate_then_fill_variable_len_field()::@7.2.1::"
-				"num = %d < 0, >= 4 bytes space in this packet, not resize()\n"
+				"num = %d >= NETWORK_MESSAGE_LENGTH1_SIZE(4) bytes space in this packet"
+				"no need to resize the packet\n"
 				"Start to move memory\n",
 				num ));
 		}
