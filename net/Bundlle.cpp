@@ -350,14 +350,6 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 
 			/// 将currMsgLengthPos_以后的内存向后移动num个bytes，为ex msg疼出来位置
 			currMsgLengthPos_ = pPacket->buff->rd_ptr() + NETWORK_MESSAGE_ID_SIZE + NETWORK_MESSAGE_LENGTH_SIZE;
-		} else
-		{
-			ACE_DEBUG(( LM_DEBUG,
-				"Bundle::calculate_then_fill_variable_len_field()::@7.2.1::"
-				"num = %d >= NETWORK_MESSAGE_LENGTH1_SIZE(4) bytes space in this packet"
-				"no need to resize the packet\n"
-				"Start to move memory\n",
-				-num ));
 		}
 
 		ACE_OS::memmove(currMsgLengthPos_ + NETWORK_MESSAGE_LENGTH1_SIZE, currMsgLengthPos_, pPacket->buff->length() + ENCRYPTTION_WASTAGE_SIZE);
