@@ -767,7 +767,7 @@ void Bundle::dumpMsgs()
 
 	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
 	Packet* temppacket = pool->Ctor();
-	temppacket->buff->size(512);
+	//temppacket->buff->size(512);
 
 	char* base = in.start()->base();
 	size_t size = in.start()->size();
