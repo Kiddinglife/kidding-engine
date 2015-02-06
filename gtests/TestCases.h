@@ -1201,13 +1201,13 @@ TEST(PacketReaderTests, ctor_dtor_test)
 
 	//p->dumpMsgs();
 
-	PacketReader pr(&channel);
+	//PacketReader pr(&channel);
 
-	Bundle::Packets::iterator iter = p->packets_.begin();
-	for( ; iter != p->packets_.end(); iter++ )
-	{
-		pr.processMessages(&msgs, *iter);
-	}
+	//Bundle::Packets::iterator iter = p->packets_.begin();
+	//for( ; iter != p->packets_.end(); iter++ )
+	//{
+	//	pr.processMessages(&msgs, *iter);
+	//}
 
 	pool->Dtor(p);
 
