@@ -47,26 +47,28 @@ pMsgs_(NULL)
 
 const char * Channel::c_str() const
 {
-	TRACE("Channel::c_str()");
-	TRACE_RETURN("Channel::c_str()");
+	//TRACE("Channel::c_str()");
+	//TRACE_RETURN("Channel::c_str()");
+	return "channael::c_str()";
 }
 
 void Channel::clearBundle()
 {
-	TRACE("Channel::clearBundle()");
-	TRACE_RETURN_VOID();
+	//TRACE("Channel::clearBundle()");
+	//TRACE_RETURN_VOID();
 }
 
 bool Channel::initialize()
 {
-	TRACE("Channel::initialize()");
-	TRACE_RETURN(true);
+	//TRACE("Channel::initialize()");
+	//TRACE_RETURN(true);
+	return true;
 }
 
 void Channel::destroy(void)
 {
-	TRACE("Channel::destroy()");
-	TRACE_RETURN_VOID();
+	//TRACE("Channel::destroy()");
+	//TRACE_RETURN_VOID();
 }
 
 void Channel::process_packets(Messages* pMsgHandlers)

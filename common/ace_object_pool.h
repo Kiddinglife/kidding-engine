@@ -316,22 +316,22 @@ class ACE_ObjectPoolFactory
 	ACE_LOCK mLocker;
 	ACE_ObjectPoolFactory() :mLocker(), mPoolMap()
 	{
-		TRACE("ACE_ObjectPoolFactory -> ctor()");
-		TRACE_RETURN_VOID();
+		//TRACE("ACE_ObjectPoolFactory -> ctor()");
+		//TRACE_RETURN_VOID();
 	}
 
 	public:
 	~ACE_ObjectPoolFactory()
 	{
-		TRACE("ACE_ObjectPoolFactory -> dtor()");
+		//TRACE("ACE_ObjectPoolFactory -> dtor()");
 		gc_all_pools();
-		TRACE_RETURN_VOID();
+		//TRACE_RETURN_VOID();
 	}
 
 	///get object pool
 	ACEObjectPoolPTR get_obj_pool(/*const SmallType& t2t, */ const std::string& sname)
 	{
-		TRACE("ACE_ObjectPoolFactory -> get_obj_pool()");
+		//TRACE("ACE_ObjectPoolFactory -> get_obj_pool()");
 		mLocker.acquire();
 		ACEObjectPoolPTR ptr = nullptr;
 		PoolMap::iterator it = mPoolMap.find(sname);
@@ -344,13 +344,14 @@ class ACE_ObjectPoolFactory
 			ptr = it->second;
 		}
 		mLocker.release();
-		TRACE_RETURN(ptr);
+		return ptr;
+		//TRACE_RETURN(ptr);
 	}
 
 	///GCËùÓÐµÄ¶ÔÏó³Ø ¸Ã·½·¨Ö»ÔÚ³ÌÐòÍË³öÊ±Ö´ÐÐ£¬³ÌÐòÖ´ÐÐÊ± Ö®·ÖÅäÄÚ´æ¶ø²»ÊÍ·Å¡£
 	void gc_all_pools()
 	{
-		TRACE("ACE_ObjectPoolFactory -> gc_all_pools()");
+		//TRACE("ACE_ObjectPoolFactory -> gc_all_pools()");
 		mLocker.acquire();
 		std::for_each(mPoolMap.begin(), mPoolMap.end(),
 			[ ](PoolMap::reference a)
@@ -358,7 +359,7 @@ class ACE_ObjectPoolFactory
 			delete a.second;
 		});
 		mLocker.release();
-		TRACE_RETURN_VOID();
+		//TRACE_RETURN_VOID();
 	}
 	void dump()
 	{
@@ -434,21 +435,21 @@ class ACE_ObjectPool /*: public IACE_ObjectPool //Ö®·ÖÅäÄÚ´æ²»ÊÇ·
 		mGrowSize(ACE_OBJECT_POOL_INIT_SIZE), mFreePointerIndexes() /*,mUnusedObjectsStatus()*/,
 		mFreeIndexes(), mLocker(), mUnusedCount(0), mUsedCount(0), mTotalCount(0)
 	{
-		TRACE("ACE_ObjectPool -> ctor()");
+		//TRACE("ACE_ObjectPool -> ctor()");
 		Grow();
-		TRACE_RETURN_VOID();
+		//TRACE_RETURN_VOID();
 	}
 
 	virtual ~ACE_ObjectPool()
 	{
-		TRACE("ACE_ObjectPool -> dtor()");
+		//TRACE("ACE_ObjectPool -> dtor()");
 		gc();
-		TRACE_RETURN_VOID();
+		//TRACE_RETURN_VOID();
 	}
 
 	void Grow()
 	{
-		TRACE("ACE_ObjectPool -> Grow()");
+		//TRACE("ACE_ObjectPool -> Grow()");
 
 		ACE_Byte* ptr = nullptr;
 		ACE_UINT32 objSize = sizeof(ObjectType);
@@ -472,7 +473,7 @@ class ACE_ObjectPool /*: public IACE_ObjectPool //Ö®·ÖÅäÄÚ´æ²»ÊÇ·
 		//ÏÂ´ÎÔö³¤Ò»±¶
 		mGrowSize *= 2;
 
-		TRACE_RETURN_VOID();
+		//TRACE_RETURN_VOID();
 	}
 	//TRACE("ACE_ObjectPool -> gc()");
 	//TRACE_RETURN_VOID();
@@ -480,25 +481,27 @@ class ACE_ObjectPool /*: public IACE_ObjectPool //Ö®·ÖÅäÄÚ´æ²»ÊÇ·
 
 	ACE_Byte* GetFreePointer()
 	{
-		TRACE("ACE_ObjectPool -> GetFreePointer()");
+		//TRACE("ACE_ObjectPool -> GetFreePointer()");
 		if( mFreeIndexes.empty() ) Grow();
 		ACE_Byte* ptr = reinterpret_cast<ACE_Byte*>( mFreeIndexes.back() );
 		mFreeIndexes.pop_back();
 		++mUsedCount;
 		--mUnusedCount;
-		TRACE_RETURN(ptr);
+		return ptr;
+	//	TRACE_RETURN(ptr);
 	}
 
 	///´´½¨Ò»¸ö¶ÔÏó[Ä¬ÈÏ¹¹Ôìº¯Êý]
 	///construct an object from pool [default ctor]
 	ObjectPtr Ctor()
 	{
-		TRACE("ACE_ObjectPool -> Ctor()");
+		//TRACE("ACE_ObjectPool -> Ctor()");
 		mLocker.acquire();
 		ACE_Byte* ptr = GetFreePointer();
 		ObjectPtr ptrr = new (ptr) ObjectType();
 		mLocker.release();
-		TRACE_RETURN(( ptrr == nullptr ) ? nullptr : ptrr);
+		return ( ptrr == nullptr ) ? nullptr : ptrr;
+		//TRACE_RETURN(( ptrr == nullptr ) ? nullptr : ptrr);
 	}
 
 	///´´½¨Ò»¸ö¶ÔÏó[Ò»¸ö²ÎÊý¹¹Ôìº¯Êý] »ù±¾ÀàÐÍ+¶ÔÏóÒýÓÃ[µ÷ÓÃ¸Ã¶ÔÏó¸´ÖÆctor]
@@ -506,12 +509,13 @@ class ACE_ObjectPool /*: public IACE_ObjectPool //Ö®·ÖÅäÄÚ´æ²»ÊÇ·
 	template<typename Type1>
 	ObjectPtr Ctor(Type1& para1)
 	{
-		TRACE("ACE_ObjectPool -> Ctor(Type1& para1)");
+		//TRACE("ACE_ObjectPool -> Ctor(Type1& para1)");
 		mLocker.acquire();
 		ACE_Byte* ptr = GetFreePointer();
 		ObjectPtr ptrr = new (ptr) ObjectType(para1);
 		mLocker.release();
-		TRACE_RETURN(( ptrr == nullptr ) ? nullptr : ptrr);
+		return ( ptrr == nullptr ) ? nullptr : ptrr;
+		//TRACE_RETURN(( ptrr == nullptr ) ? nullptr : ptrr);
 	}
 	template<typename Type1, typename Type2>
 	ObjectPtr Ctor(Type1& para1, Type2& para2)
@@ -562,7 +566,7 @@ class ACE_ObjectPool /*: public IACE_ObjectPool //Ö®·ÖÅäÄÚ´æ²»ÊÇ·
 	// Ïú»ÙÒ»¸ö¶ÔÏó
 	void Dtor(ObjectPtr const  _ptr)
 	{
-		TRACE("ACE_ObjectPool -> Dtor()");
+		//TRACE("ACE_ObjectPool -> Dtor()");
 
 		mLocker.acquire();
 		_ptr->~ObjectType();
@@ -572,7 +576,7 @@ class ACE_ObjectPool /*: public IACE_ObjectPool //Ö®·ÖÅäÄÚ´æ²»ÊÇ·
 		++mUnusedCount;
 		mLocker.release();
 
-		TRACE_RETURN_VOID();
+		//TRACE_RETURN_VOID();
 	}
 
 	//mLocker.acquire();
@@ -584,7 +588,7 @@ class ACE_ObjectPool /*: public IACE_ObjectPool //Ö®·ÖÅäÄÚ´æ²»ÊÇ·
 	//¸Ãº¯Êý»áÊÍ·ÅÄÚ´æ µ«Ö»ÔÚ³ÌÐòÍË³öÊ±·¢Éú
 	void gc(/*bool bEnforce = false*/)
 	{
-		TRACE("ACE_ObjectPool -> gc()");
+		//TRACE("ACE_ObjectPool -> gc()");
 
 		mLocker.acquire();
 		std::for_each(mFreePointerIndexes.begin(), mFreePointerIndexes.end(),
@@ -594,7 +598,7 @@ class ACE_ObjectPool /*: public IACE_ObjectPool //Ö®·ÖÅäÄÚ´æ²»ÊÇ·
 		});
 		mLocker.release();
 
-		TRACE_RETURN_VOID();
+		//TRACE_RETURN_VOID();
 	}
 
 	void dump()
@@ -635,76 +639,76 @@ class ACEPoolObject_Auto_Ptr
 
 	void reclaim_pool_object()
 	{
-		TRACE("ACEPoolObject_Auto_Ptr::reclaim_pool_object()");
+		//TRACE("ACEPoolObject_Auto_Ptr::reclaim_pool_object()");
 		ACE_PoolPtr_Getter(ObjPool, PoolObjectType, ACE_LOCK);
 		ObjPool->Dtor(p_);
-		TRACE_RETURN_VOID();
+		//TRACE_RETURN_VOID();
 	}
 
 	public: 	// = Initialization and termination methods
 	explicit ACEPoolObject_Auto_Ptr(element_type_ptr p = 0) : p_(p), mLocker()
 	{
-		TRACE("ACEPoolObject_Auto_Ptr::ctor()");
-		TRACE_RETURN_VOID();
+		//TRACE("ACEPoolObject_Auto_Ptr::ctor()");
+		//TRACE_RETURN_VOID();
 	}
 	ACEPoolObject_Auto_Ptr(ACEPoolObject_Auto_Ptr<element_type, ACE_LOCK> & ap) : p_(rhs.release())
 	{
-		TRACE("ACEPoolObject_Auto_Ptr::copy ctor()");
-		TRACE_RETURN_VOID();
+		//TRACE("ACEPoolObject_Auto_Ptr::copy ctor()");
+		//TRACE_RETURN_VOID();
 	}
 
 
 	ACEPoolObject_Auto_Ptr<element_type, ACE_LOCK>& operator= ( ACEPoolObject_Auto_Ptr
 		< element_type, ACE_LOCK >& rhs )
 	{
-		TRACE("ACE_Auto_Basic_Ptr<X>::operator=()");
+		//TRACE("ACE_Auto_Basic_Ptr<X>::operator=()");
 		if( this != &rhs )
 		{
 			this->reset(rhs.release());
 		}
-		TRACE_RETURN(*this);
+		//TRACE_RETURN(*this);
 	}
 	virtual ~ACEPoolObject_Auto_Ptr(void)
 	{
-		TRACE("ACEPoolObject_Auto_Ptr :: dtor()");
+		//TRACE("ACEPoolObject_Auto_Ptr :: dtor()");
 		reclaim_pool_object();
-		TRACE_RETURN_VOID();
+		//TRACE_RETURN_VOID();
 	}
 
 	// = Accessor methods.
 	element_type& operator *( ) const
 	{
-		TRACE("ACE_Auto_Basic_Ptr<X>::operator *()");
-		TRACE_RETURN(p_);
+		//TRACE("ACE_Auto_Basic_Ptr<X>::operator *()");
+		//TRACE_RETURN(p_);
 	}
 
 	element_type_ptr get(void) const
 	{
 		//mLocker.acquire(););
 		//mLocker.release();
-		TRACE("ACEPoolObject_Auto_Ptr->get()");
-		TRACE_RETURN(p_);
+		//TRACE("ACEPoolObject_Auto_Ptr->get()");
+		//TRACE_RETURN(p_);
 	}
 
 	element_type_ptr release(void)
 	{
 		//mLocker.acquire();
-		TRACE("ACEPoolObject_Auto_Ptr->release()");
+		//TRACE("ACEPoolObject_Auto_Ptr->release()");
 		element_type_ptr old = this->p_;
 		this->p_ = 0;
 		//mLocker.acquire();
-		TRACE_RETURN(old);
+		//TRACE_RETURN(old);
 	}
 
 	void reset(element_type_ptr p = 0)
 	{
 		mLocker.acquire();
-		TRACE("ACEPoolObject_Auto_Ptr :: reset()");
+		//TRACE("ACEPoolObject_Auto_Ptr :: reset()");
 		if( this->get() != p )
 			reclaim_pool_object() //delete this->get();
 			this->p_ = p;
 		mLocker.acquire();
-		TRACE_RETURN_VOID();
+		//TRACE_RETURN_VOID();
 	}
 
 	/// Dump the state of an object.

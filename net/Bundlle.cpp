@@ -230,7 +230,7 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 	//	"pPacket pointer = %d\n",
 	//	pPacket ));
 
-	if( currMsgPacketCount_ > 0 )
+	if( currMsgPacketCount_ )
 		pPacket = packets_[packets_.size() - currMsgPacketCount_];
 
 	//ACE_DEBUG(( LM_DEBUG,
@@ -420,14 +420,14 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 //void Bundle::fill_curr_msg_len_field(bool issend)
 void Bundle::end_new_curr_message(void)
 {
-	TRACE("Bundle::end_new_curr_message()");
+	//TRACE("Bundle::end_new_curr_message()");
 
 	// 对消息进行跟踪 trace the msg
 	if( numMessages_ >= 1 )
 	{
-		ACE_DEBUG(( LM_DEBUG,
-			"end_new_curr_message :: @2 :: pCurrMsg_ = %@, numMessages_ = %d\n",
-			pCurrMsg_, numMessages_ ));
+		//ACE_DEBUG(( LM_DEBUG,
+		//	"end_new_curr_message :: @2 :: pCurrMsg_ = %@, numMessages_ = %d\n",
+		//	pCurrMsg_, numMessages_ ));
 
 		/// 更新该消息stats并回调跟踪函数
 		/// update this msg's stats and call its callback method
@@ -443,26 +443,40 @@ void Bundle::end_new_curr_message(void)
 		calculate_then_fill_variable_len_field();
 	}
 
-	///// dump all packets in this msg
-	//Packets::iterator iter = packets_.begin();
-	//for( ; iter != packets_.end(); iter++ )
-	//{
-	//	ACE_HEX_DUMP(( LM_DEBUG,
-	//		( *iter )->buff->base(),
-	//		( *iter )->buff->length(),
-	//		"end_new_curr_message(void):: dump result: \n" ));
-	//}
 
 	ACE_DEBUG(( LM_DEBUG,
-		"%M::pCurrMsg_ = %d, currMsgHandlerLength_= %d"
+		"%M::end_new_curr_message()::pCurrMsg_name = %s, currMsgHandlerLength_= %d"
 		"pCurrPacket_ = %d, currMsgID_= %d, currMsgLengthPos_ = %d,\n"
 		"currMsgPacketCount_ = %d, currMsgLength_ = %d\n",
-		pCurrMsg_,
+		pCurrMsg_->name_.c_str(),
 		currMsgType_, pCurrPacket_,
 		currMsgID_, currMsgLengthPos_,
 		currMsgPacketCount_, currMsgLength_ ));
 
-	TRACE_RETURN_VOID();
+	if( currMsgPacketCount_ )
+		pCurrPacket_ = packets_[packets_.size() - currMsgPacketCount_];
+
+	///// dump all packets that construct this msg
+	for( int i = 0; i < currMsgPacketCount_; i++ )
+	{
+		ACE_HEX_DUMP(( LM_DEBUG,
+			( pCurrPacket_ + i )->buff->rd_ptr(),
+			( pCurrPacket_ + i )->buff->length(),
+			"%M::end_new_curr_message(void):: dump result: \n" ));
+	}
+
+	//清理该msg的相关变量值
+	pCurrPacket_ = NULL;
+	currMsgType_ = 0;
+
+	if( g_trace_packet > 0 )
+		//dumpMsgs();
+
+		currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
+	currMsgLengthPos_ = NULL;
+	//pCurrMsg_ = NULL;
+
+	//TRACE_RETURN_VOID();
 }
 
 /**
@@ -483,13 +497,7 @@ void Bundle::end_new_curr_message(void)
 */
 void Bundle::start_new_curr_message(Message* msg)
 {
-	ACE_DEBUG(( LM_DEBUG,
-		"@1 void Bundle::start_new_curr_message(const MessageHandler* msg)\n" ));
-
-	//清理上一个msg的相关变量值
-	currMsgType_ = currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
-	currMsgLengthPos_ = NULL;
-	pCurrMsg_ = NULL;
+	//ACE_DEBUG(( LM_DEBUG, "@1 void Bundle::start_new_curr_message(const MessageHandler* msg)\n" ));
 
 	/// 若当前包为空，则构造一个新的包
 	if( pCurrPacket_ == NULL ) this->create_new_curr_packet();
@@ -512,7 +520,7 @@ void Bundle::start_new_curr_message(Message* msg)
 	// 此处对于非固定长度的消息来说需要先设置它的消息长度位为0， 到最后需要填充长度
 	if( pCurrMsg_->msgType_ == NETWORK_VARIABLE_MESSAGE )
 	{
-		ACE_DEBUG(( LM_DEBUG, "Bundle::start_new_curr_message():: it is variable msg\n" ));
+		//ACE_DEBUG(( LM_DEBUG, "Bundle::start_new_curr_message():: it is variable msg\n" ));
 		calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_SHORT);
 		currMsgLengthPos_ = pCurrPacket_->os.write_short_placeholder();
 
@@ -763,12 +771,14 @@ void Bundle::dumpMsgs()
 
 	if( !pCurrMsg_ ) return;
 
+	ACE_DEBUG(( LM_DEBUG, "pCurrMsg_(%d), packets_ size(%d)\n", pCurrMsg_, packets_.size() ));
+
 	Packets packets;
 	packets.insert(packets.end(), packets_.begin(), packets_.end());
 
 	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
 	Packet* temppacket = pool->Ctor();
-	temppacket->buff->size(512);
+	//temppacket->buff->size(1024);
 
 	char* base = in.start()->base();
 	size_t size = in.start()->size();
@@ -787,6 +797,8 @@ void Bundle::dumpMsgs()
 	{
 		Packet* pPacket = ( *iter );
 		if( pPacket->length() == 0 ) continue;
+
+		ACE_HEX_DUMP(( LM_DEBUG, pPacket->buff->base(), pPacket->buff->length() ));
 
 		char* rpos = pPacket->buff->rd_ptr();
 		char* wpos = pPacket->buff->wr_ptr();
@@ -901,29 +913,17 @@ void Bundle::dumpMsgs()
 					pPacket->on_read_packet_done();
 				}
 
-				ACE_DEBUG(( LM_DEBUG, "totallen = %d\n", totallen ));
-				ACE_DEBUG(( LM_DEBUG, "cal = %d\n",
-					temppacket->length() - headlen ));
-
 				size_t msgpayload = temppacket->length() - headlen;
 				if( msgpayload == totallen )
 				{
-					ACE_DEBUG(( LM_DEBUG, " @7::write done\n" ));
-
+					//ACE_DEBUG(( LM_DEBUG, "if( msgpayload == totallen )\n" ));
 					state = 0;
 					msglen1 = 0;
 					msglen = 0;
 					msgid = 0;
 
-					this->pChnnel_->c_str();
-
 					TRACE_MESSAGE_PACKET(false, temppacket, pCurrMsgHandler,
 						msgpayload, pChnnel_ != NULL ? pChnnel_->c_str() : "none");
-
-					ACE_HEX_DUMP(( LM_DEBUG,
-						temppacket->buff->rd_ptr(),
-						temppacket->buff->length(),
-						"dump msg result:\n" ));
 
 					temppacket->reset();
 					continue;
@@ -940,7 +940,6 @@ void Bundle::dumpMsgs()
 	const_cast<ACE_Message_Block*>( in.start() )->rd_ptr(r);
 
 	pool->Dtor(temppacket);
-
 	TRACE_RETURN_VOID();
 }
 
