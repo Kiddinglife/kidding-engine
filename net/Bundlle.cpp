@@ -453,15 +453,17 @@ void Bundle::end_new_curr_message(void)
 		currMsgID_, currMsgLengthPos_,
 		currMsgPacketCount_, currMsgLength_ ));
 
-	///// dump all packets in this msg
+	if( currMsgPacketCount_ )
+		pCurrPacket_ = packets_[packets_.size() - currMsgPacketCount_];
+
+	///// dump all packets that construct this msg
 	for( int i = 0; i < currMsgPacketCount_; i++ )
 	{
 		ACE_HEX_DUMP(( LM_DEBUG,
-			packets_[i]->buff->rd_ptr(),
-			packets_[i]->buff->length(),
+			( pCurrPacket_ + i )->buff->rd_ptr(),
+			( pCurrPacket_ + i )->buff->length(),
 			"%M::end_new_curr_message(void):: dump result: \n" ));
 	}
-
 
 	//清理该msg的相关变量值
 	pCurrPacket_ = NULL;
