@@ -453,28 +453,25 @@ void Bundle::end_new_curr_message(void)
 		currMsgID_, currMsgLengthPos_,
 		currMsgPacketCount_, currMsgLength_ ));
 
-	if( currMsgPacketCount_ )
-		pCurrPacket_ = packets_[packets_.size() - currMsgPacketCount_];
-
 	///// dump all packets that construct this msg
-	for( int i = 0; i < currMsgPacketCount_; i++ )
+	if( g_trace_packet )
 	{
-		ACE_HEX_DUMP(( LM_DEBUG,
-			( pCurrPacket_ + i )->buff->rd_ptr(),
-			( pCurrPacket_ + i )->buff->length(),
-			"%M::end_new_curr_message(void):: dump result: \n" ));
+		/// locate at the first packet that construct this msg
+		if( currMsgPacketCount_ )
+			pCurrPacket_ = packets_[packets_.size() - currMsgPacketCount_];
+		/// loop and show 
+		for( int i = 0; i < currMsgPacketCount_; i++ )
+		{
+			ACE_HEX_DUMP(( LM_DEBUG,
+				( pCurrPacket_ + i )->buff->rd_ptr(),
+				( pCurrPacket_ + i )->buff->length(),
+				"%M::end_new_curr_message(void):: dump result: \n" ));
+		}
 	}
 
 	//清理该msg的相关变量值
-	pCurrPacket_ = NULL;
-	currMsgType_ = 0;
-
-	if( g_trace_packet > 0 )
-		//dumpMsgs();
-
-		currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
+	currMsgType_ = currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
 	currMsgLengthPos_ = NULL;
-	//pCurrMsg_ = NULL;
 
 	//TRACE_RETURN_VOID();
 }
