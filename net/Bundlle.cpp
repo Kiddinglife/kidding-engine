@@ -462,6 +462,11 @@ void Bundle::end_new_curr_message(void)
 		currMsgID_, currMsgLengthPos_,
 		currMsgPacketCount_, currMsgLength_ ));
 
+	//清理该msg的相关变量值
+	currMsgType_ = currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
+	currMsgLengthPos_ = NULL;
+	pCurrMsg_ = NULL;
+
 	//TRACE_RETURN_VOID();
 }
 
@@ -484,11 +489,6 @@ void Bundle::end_new_curr_message(void)
 void Bundle::start_new_curr_message(Message* msg)
 {
 	//ACE_DEBUG(( LM_DEBUG, "@1 void Bundle::start_new_curr_message(const MessageHandler* msg)\n" ));
-
-	//清理上一个msg的相关变量值
-	currMsgType_ = currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
-	currMsgLengthPos_ = NULL;
-	pCurrMsg_ = NULL;
 
 	/// 若当前包为空，则构造一个新的包
 	if( pCurrPacket_ == NULL ) this->create_new_curr_packet();
@@ -767,7 +767,7 @@ void Bundle::dumpMsgs()
 
 	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
 	Packet* temppacket = pool->Ctor();
-	//temppacket->buff->size(512);
+	temppacket->buff->size(1024);
 
 	char* base = in.start()->base();
 	size_t size = in.start()->size();

@@ -1171,7 +1171,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	*p << (INT32) -7;
 	*p << (INT32) -7;
 	p->end_new_curr_message();
-	p->dumpMsgs();
+	//p->dumpMsgs();
 
 	/// second msg is variable msg
 	Message* currhandler2 = poolmsg->Ctor();
@@ -1180,7 +1180,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	*p << (UINT64) 2;
 	*p << (UINT64) 2;
 	p->end_new_curr_message();
-	p->dumpMsgs();
+	//p->dumpMsgs();
 
 	///// second msg is variable msg
 	Message* currhandler3 = poolmsg->Ctor();
@@ -1190,7 +1190,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	*p << (INT32) -7;
 	*p << (INT32) -7;
 	p->end_new_curr_message();
-	p->dumpMsgs();
+	//p->dumpMsgs();
 
 	///// second msg is variable msg
 	Message* currhandler4 = poolmsg->Ctor();
