@@ -443,15 +443,6 @@ void Bundle::end_new_curr_message(void)
 		calculate_then_fill_variable_len_field();
 	}
 
-	///// dump all packets in this msg
-	//Packets::iterator iter = packets_.begin();
-	//for( ; iter != packets_.end(); iter++ )
-	//{
-	//	ACE_HEX_DUMP(( LM_DEBUG,
-	//		( *iter )->buff->base(),
-	//		( *iter )->buff->length(),
-	//		"end_new_curr_message(void):: dump result: \n" ));
-	//}
 
 	ACE_DEBUG(( LM_DEBUG,
 		"%M::end_new_curr_message()::pCurrMsg_name = %s, currMsgHandlerLength_= %d"
@@ -462,10 +453,26 @@ void Bundle::end_new_curr_message(void)
 		currMsgID_, currMsgLengthPos_,
 		currMsgPacketCount_, currMsgLength_ ));
 
+	///// dump all packets in this msg
+	for( int i = 0; i < currMsgPacketCount_; i++ )
+	{
+		ACE_HEX_DUMP(( LM_DEBUG,
+			packets_[i]->buff->rd_ptr(),
+			packets_[i]->buff->length(),
+			"%M::end_new_curr_message(void):: dump result: \n" ));
+	}
+
+
 	//清理该msg的相关变量值
-	currMsgType_ = currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
+	pCurrPacket_ = NULL;
+	currMsgType_ = 0;
+
+	if( g_trace_packet > 0 )
+		//dumpMsgs();
+
+		currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
 	currMsgLengthPos_ = NULL;
-	pCurrMsg_ = NULL;
+	//pCurrMsg_ = NULL;
 
 	//TRACE_RETURN_VOID();
 }
@@ -762,12 +769,14 @@ void Bundle::dumpMsgs()
 
 	if( !pCurrMsg_ ) return;
 
+	ACE_DEBUG(( LM_DEBUG, "pCurrMsg_(%d), packets_ size(%d)\n", pCurrMsg_, packets_.size() ));
+
 	Packets packets;
 	packets.insert(packets.end(), packets_.begin(), packets_.end());
 
 	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
 	Packet* temppacket = pool->Ctor();
-	temppacket->buff->size(1024);
+	//temppacket->buff->size(1024);
 
 	char* base = in.start()->base();
 	size_t size = in.start()->size();
@@ -786,6 +795,8 @@ void Bundle::dumpMsgs()
 	{
 		Packet* pPacket = ( *iter );
 		if( pPacket->length() == 0 ) continue;
+
+		ACE_HEX_DUMP(( LM_DEBUG, pPacket->buff->base(), pPacket->buff->length() ));
 
 		char* rpos = pPacket->buff->rd_ptr();
 		char* wpos = pPacket->buff->wr_ptr();
