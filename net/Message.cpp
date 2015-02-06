@@ -24,7 +24,7 @@ Message*  Messages::add_msg(const std::string& ihName, MessageArgs* args,
 {
 	if( msgID_ == 1 )
 	{
-		ACE_DEBUG(( LM_DEBUG, "Messages::@1::add()::starts....\n" ));
+		//ACE_DEBUG(( LM_DEBUG, "Messages::@1::add()::starts....\n" ));
 	}
 
 	/// 初始化msg的id
@@ -32,7 +32,7 @@ Message*  Messages::add_msg(const std::string& ihName, MessageArgs* args,
 
 	if( msgInfo == NULL )
 	{
-		ACE_DEBUG(( LM_DEBUG, "Messages::@1::msgInfo == NULL\n" ));
+		//ACE_DEBUG(( LM_DEBUG, "Messages::@1::msgInfo == NULL\n" ));
 		while( ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->isFixed(msgID_) )
 		{
 			msgID_++;
@@ -40,7 +40,7 @@ Message*  Messages::add_msg(const std::string& ihName, MessageArgs* args,
 		msg->msgID_ = msgID_++;
 	} else
 	{
-		ACE_DEBUG(( LM_DEBUG, "Messages::@2::msgInfo != NULL\n" ));
+		//ACE_DEBUG(( LM_DEBUG, "Messages::@2::msgInfo != NULL\n" ));
 		msg->msgID_ = msgInfo->msgid;
 	}
 
@@ -59,7 +59,7 @@ Message*  Messages::add_msg(const std::string& ihName, MessageArgs* args,
 	if( msgType == NETWORK_VARIABLE_MESSAGE )
 	{
 		ACE_DEBUG(( LM_DEBUG,
-			"Messages :: add(%d) :: name = %s, msgID = %d, msgType_ = Variable.\n",
+			"%M::Messages :: add(%d) :: name = %s, msgID = %d, msgType_ = Variable.\n",
 			msgs_.size(), ihName.c_str(), msg->msgID_ ));
 	} else
 	{
@@ -70,7 +70,7 @@ Message*  Messages::add_msg(const std::string& ihName, MessageArgs* args,
 		}
 
 		ACE_DEBUG(( LM_DEBUG,
-			"Messages :: add(%d) :: name = %s, msgID = %d, msgArgsCount_ = Fixed(%d).\n",
+			"%M::Messages :: add(%d) :: name = %s, msgID = %d, msgArgsCount_ = Fixed(%d).\n",
 			msgs_.size(), msg->name_.c_str(), msg->msgID_, msg->msgArgsBytesCount_ ));
 	}
 

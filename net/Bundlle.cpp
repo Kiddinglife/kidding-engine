@@ -420,14 +420,14 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 //void Bundle::fill_curr_msg_len_field(bool issend)
 void Bundle::end_new_curr_message(void)
 {
-	TRACE("Bundle::end_new_curr_message()");
+	//TRACE("Bundle::end_new_curr_message()");
 
 	// 对消息进行跟踪 trace the msg
 	if( numMessages_ >= 1 )
 	{
-		ACE_DEBUG(( LM_DEBUG,
-			"end_new_curr_message :: @2 :: pCurrMsg_ = %@, numMessages_ = %d\n",
-			pCurrMsg_, numMessages_ ));
+		//ACE_DEBUG(( LM_DEBUG,
+		//	"end_new_curr_message :: @2 :: pCurrMsg_ = %@, numMessages_ = %d\n",
+		//	pCurrMsg_, numMessages_ ));
 
 		/// 更新该消息stats并回调跟踪函数
 		/// update this msg's stats and call its callback method
@@ -462,7 +462,7 @@ void Bundle::end_new_curr_message(void)
 		currMsgID_, currMsgLengthPos_,
 		currMsgPacketCount_, currMsgLength_ ));
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 /**
@@ -483,8 +483,7 @@ void Bundle::end_new_curr_message(void)
 */
 void Bundle::start_new_curr_message(Message* msg)
 {
-	ACE_DEBUG(( LM_DEBUG,
-		"@1 void Bundle::start_new_curr_message(const MessageHandler* msg)\n" ));
+	//ACE_DEBUG(( LM_DEBUG, "@1 void Bundle::start_new_curr_message(const MessageHandler* msg)\n" ));
 
 	//清理上一个msg的相关变量值
 	currMsgType_ = currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
@@ -901,29 +900,17 @@ void Bundle::dumpMsgs()
 					pPacket->on_read_packet_done();
 				}
 
-				ACE_DEBUG(( LM_DEBUG, "totallen = %d\n", totallen ));
-				ACE_DEBUG(( LM_DEBUG, "cal = %d\n",
-					temppacket->length() - headlen ));
-
 				size_t msgpayload = temppacket->length() - headlen;
 				if( msgpayload == totallen )
 				{
-					ACE_DEBUG(( LM_DEBUG, " @7::write done\n" ));
-
+					//ACE_DEBUG(( LM_DEBUG, "if( msgpayload == totallen )\n" ));
 					state = 0;
 					msglen1 = 0;
 					msglen = 0;
 					msgid = 0;
 
-					this->pChnnel_->c_str();
-
 					TRACE_MESSAGE_PACKET(false, temppacket, pCurrMsgHandler,
 						msgpayload, pChnnel_ != NULL ? pChnnel_->c_str() : "none");
-
-					ACE_HEX_DUMP(( LM_DEBUG,
-						temppacket->buff->rd_ptr(),
-						temppacket->buff->length(),
-						"dump msg result:\n" ));
 
 					temppacket->reset();
 					continue;
@@ -940,7 +927,6 @@ void Bundle::dumpMsgs()
 	const_cast<ACE_Message_Block*>( in.start() )->rd_ptr(r);
 
 	pool->Dtor(temppacket);
-
 	TRACE_RETURN_VOID();
 }
 
