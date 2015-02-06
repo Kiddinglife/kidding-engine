@@ -274,10 +274,10 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 	// adds another 4 bytes behind the previous len field to hold more data.
 	if( currMsgLength_ >= NETWORK_MESSAGE_MAX_SIZE )
 	{
-		//ACE_DEBUG(( LM_DEBUG,
-		//	"Bundle::calculate_then_fill_variable_len_field()::@7::"
-		//	"currMsgLength_= %d >= NETWORK_MESSAGE_MAX_SIZE = %d\n",
-		//	currMsgLength_, NETWORK_MESSAGE_MAX_SIZE ));
+		ACE_DEBUG(( LM_DEBUG,
+			"Bundle::calculate_then_fill_variable_len_field()::@7::"
+			"currMsgLength_= %d >= NETWORK_MESSAGE_MAX_SIZE = %d\n",
+			currMsgLength_, NETWORK_MESSAGE_MAX_SIZE ));
 
 		MessageLength msgLen = NETWORK_MESSAGE_MAX_SIZE;
 		MessageLength1 ex_msg_length = currMsgLength_;
@@ -315,7 +315,7 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 			( currPacketMaxSize - pPacket->buff->length() );
 
 		/// check the rest space in this packet can hold the msglen1
-		if( num )
+		if( num > 0)
 		{
 			//ACE_DEBUG(( LM_DEBUG,
 			//	"Bundle::calculate_then_fill_variable_len_field()::@7.2.1::"
@@ -357,7 +357,7 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 				"num = %d >= NETWORK_MESSAGE_LENGTH1_SIZE(4) bytes space in this packet"
 				"no need to resize the packet\n"
 				"Start to move memory\n",
-				num ));
+				-num ));
 		}
 
 		ACE_OS::memmove(currMsgLengthPos_ + NETWORK_MESSAGE_LENGTH1_SIZE, currMsgLengthPos_, pPacket->buff->length() + ENCRYPTTION_WASTAGE_SIZE);
@@ -459,14 +459,15 @@ void Bundle::end_new_curr_message(void)
 		/// locate at the first packet that construct this msg
 		if( currMsgPacketCount_ )
 			pCurrPacket_ = packets_[packets_.size() - currMsgPacketCount_];
-		/// loop and show 
-		for( int i = 0; i < currMsgPacketCount_; i++ )
-		{
-			ACE_HEX_DUMP(( LM_DEBUG,
-				( pCurrPacket_ + i )->buff->rd_ptr(),
-				( pCurrPacket_ + i )->buff->length(),
-				"%M::end_new_curr_message(void):: dump result: \n" ));
-		}
+		
+			/// loop and show 
+			for( int i = 0; i < currMsgPacketCount_; i++ )
+			{
+				ACE_HEX_DUMP(( LM_DEBUG,
+					( pCurrPacket_ + i )->buff->rd_ptr(),
+					( pCurrPacket_ + i )->buff->length(),
+					"%M::end_new_curr_message(void):: dump result: \n" ));
+			}
 	}
 
 	//清理该msg的相关变量值
