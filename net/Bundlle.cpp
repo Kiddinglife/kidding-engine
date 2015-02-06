@@ -230,7 +230,7 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 	//	"pPacket pointer = %d\n",
 	//	pPacket ));
 
-	if( currMsgPacketCount_ > 0 )
+	if( currMsgPacketCount_ )
 		pPacket = packets_[packets_.size() - currMsgPacketCount_];
 
 	//ACE_DEBUG(( LM_DEBUG,
@@ -454,10 +454,10 @@ void Bundle::end_new_curr_message(void)
 	//}
 
 	ACE_DEBUG(( LM_DEBUG,
-		"%M::pCurrMsg_ = %d, currMsgHandlerLength_= %d"
+		"%M::end_new_curr_message()::pCurrMsg_name = %s, currMsgHandlerLength_= %d"
 		"pCurrPacket_ = %d, currMsgID_= %d, currMsgLengthPos_ = %d,\n"
 		"currMsgPacketCount_ = %d, currMsgLength_ = %d\n",
-		pCurrMsg_,
+		pCurrMsg_->name_.c_str(),
 		currMsgType_, pCurrPacket_,
 		currMsgID_, currMsgLengthPos_,
 		currMsgPacketCount_, currMsgLength_ ));
@@ -511,7 +511,7 @@ void Bundle::start_new_curr_message(Message* msg)
 	// 此处对于非固定长度的消息来说需要先设置它的消息长度位为0， 到最后需要填充长度
 	if( pCurrMsg_->msgType_ == NETWORK_VARIABLE_MESSAGE )
 	{
-		ACE_DEBUG(( LM_DEBUG, "Bundle::start_new_curr_message():: it is variable msg\n" ));
+		//ACE_DEBUG(( LM_DEBUG, "Bundle::start_new_curr_message():: it is variable msg\n" ));
 		calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_SHORT);
 		currMsgLengthPos_ = pCurrPacket_->os.write_short_placeholder();
 
