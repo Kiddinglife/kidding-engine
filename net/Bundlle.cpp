@@ -446,21 +446,21 @@ void Bundle::end_new_curr_message(void)
 		currMsgPacketCount_, currMsgLength_ ));
 
 	///// dump all packets that construct this msg
-	if( g_trace_packet )
-	{
-		/// locate at the first packet that construct this msg
-		if( currMsgPacketCount_ )
-			pCurrPacket_ = packets_[packets_.size() - currMsgPacketCount_];
-		
-			/// loop and show 
-			for( int i = 0; i < currMsgPacketCount_; i++ )
-			{
-				ACE_HEX_DUMP(( LM_DEBUG,
-					( pCurrPacket_ + i )->buff->rd_ptr(),
-					( pCurrPacket_ + i )->buff->length(),
-					"%M::end_new_curr_message(void):: dump result: \n" ));
-			}
-	}
+	//if( g_trace_packet )
+	//{
+	//	/// locate at the first packet that construct this msg
+	//	if( currMsgPacketCount_ )
+	//		pCurrPacket_ = packets_[packets_.size() - currMsgPacketCount_];
+	//	
+	//		/// loop and show 
+	//		for( int i = 0; i < currMsgPacketCount_; i++ )
+	//		{
+	//			ACE_HEX_DUMP(( LM_DEBUG,
+	//				( pCurrPacket_ + i )->buff->rd_ptr(),
+	//				( pCurrPacket_ + i )->buff->length(),
+	//				"%M::end_new_curr_message(void):: dump result: \n" ));
+	//		}
+	//}
 
 	//清理该msg的相关变量值
 	currMsgType_ = currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
