@@ -221,9 +221,9 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				}
 			}
 
-			/// This situation is like an error but we need remind the user this happened
-			/// and will discard the rest of bytes in this packet
-			if( pChannel_->channelScope_&&
+			/// This situation is like an error where the client send the packet exceeds the max
+			/// but we need remind the user this happened and will discard the rest of bytes in this packet
+			if( pChannel_->channelScope_ == Channel::ChannelScope::EXTERNAL&&
 				g_componentType != KBE_BOTS_TYPE &&
 				g_componentType != CLIENT_TYPE &&
 				currMsgLen_ > NETWORK_MESSAGE_MAX_SIZE )
