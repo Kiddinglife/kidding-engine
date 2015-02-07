@@ -74,7 +74,8 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 		if( fragmentsFlag_ != FRAGMENT_DATA_UNKNOW )
 		{
 
-			ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(fragmentsFlag_!=FRAGMENT_DATA_UNKNOW)\n" ));
+			ACE_DEBUG(( LM_DEBUG, 
+				"%M::%T::@if(fragmentsFlag_(%d)!=FRAGMENT_DATA_UNKNOW(d))\n", fragmentsFlag_, FRAGMENT_DATA_UNKNOW ));
 
 			/// when this message's fragment type is determined, go this branch
 			mergeFragmentMessage(pPacket);
@@ -340,8 +341,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 	TRACE_RETURN_VOID();
 }
 
-void PacketReader::writeFragmentMessage(FragmentType fragmentsFlag, Packet* pPacket,
-	ACE_UINT32 datasize)
+void PacketReader::writeFragmentMessage(FragmentType fragmentsFlag, Packet* pPacket, ACE_UINT32 datasize)
 {
 	TRACE("PacketReader::writeFragmentMessage()");
 
@@ -356,7 +356,7 @@ void PacketReader::writeFragmentMessage(FragmentType fragmentsFlag, Packet* pPac
 	///// assign @param dattasize bytes of space to the pFragments
 	//pFragments_ = new char[opsize + pFragmentsRemainning + 1];
 
-	//fragmentsFlag_ = fragmentsFlag;
+	fragmentsFlag_ = fragmentsFlag;
 
 	///// update the write position
 	//pFragmentsWpos_ = opsize;
