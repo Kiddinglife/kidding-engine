@@ -228,7 +228,6 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				g_componentType != CLIENT_TYPE &&
 				currMsgLen_ > NETWORK_MESSAGE_MAX_SIZE )
 			{
-				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(currMsgLen_ > NETWORK_MESSAGE_MAX_SIZE)\n", currMsgLen_ ));
 				/**
 				* change the read position to the begainning of the packet
 				* for the convience of trace of this packet, when trace is done,
