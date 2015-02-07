@@ -21,8 +21,8 @@ enum FragmentType
 struct PacketReader
 {
 	char*                    pFragments_; //pFragmentDatas_
-	ACE_UINT32		    pFragmentsWpos_; //pFragmentDatasWpos_;
-	ACE_UINT32			pFragmentsRemainning_; //pFragmentDatasRemain_;
+	char*		            pFragmentsWpos_; //pFragmentDatasWpos_;
+	size_t			        pFragmentsRemainning_; //pFragmentDatasRemain_;
 	FragmentType      fragmentsFlag_; //fragmentDatasFlag_
 
 	Channel*			    pChannel_;
@@ -43,8 +43,7 @@ struct PacketReader
 	virtual ~PacketReader();
 	void reset();
 
-	void writeFragmentMessage(FragmentType fragmentFlag, Packet* pPacket,
-		ACE_UINT32 datasize);
+	void writeFragmentMessage(size_t totalLen);
 
 	void mergeFragmentMessage(Packet* pPacket);
 

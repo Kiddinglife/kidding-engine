@@ -5,8 +5,8 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
 PacketReader::PacketReader(Channel* pChannel) :
-pFragments_(NULL), //pFragmentDatas_
-pFragmentsWpos_(0), //pFragmentDatasWpos_;
+pFragments_(new char[PACKET_MAX_SIZE]), //pFragmentDatas_
+pFragmentsWpos_(pFragments_), //pFragmentDatasWpos_;
 pFragmentsRemainning_(0), //pFragmentDatasRemain_;
 fragmentsFlag_(FRAGMENT_DATA_UNKNOW), //fragmentDatasFlag_
 pChannel_(pChannel),
@@ -35,8 +35,8 @@ void PacketReader::reset()
 	TRACE("PacketReader::reset()");
 
 	fragmentsFlag_ = FRAGMENT_DATA_UNKNOW;
-	currMsgLen_ = currMsgID_ = pFragmentsRemainning_ = pFragmentsWpos_ = 0;
-
+	currMsgLen_ = currMsgID_ = pFragmentsRemainning_ = 0;
+	pFragmentsWpos_ = NULL;
 	SAFE_RELEASE_ARRAY(pFragments_);
 
 	if( pFragmentPacket_ )
@@ -97,8 +97,8 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				if( pPacket->length() < NETWORK_MESSAGE_ID_SIZE )
 				{
 					ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pPacket->length() < NETWORK_MESSAGE_ID_SIZE)" ));
-
-					writeFragmentMessage(FRAGMENT_DATA_MESSAGE_ID, pPacket, NETWORK_MESSAGE_ID_SIZE);
+					fragmentsFlag_ = FRAGMENT_DATA_MESSAGE_ID;
+					writeFragmentMessage(NETWORK_MESSAGE_ID_SIZE);
 					break;
 				}
 
@@ -169,7 +169,8 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 					if( pPacket->length() < NETWORK_MESSAGE_LENGTH_SIZE )
 					{
 						ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen incomplate, wait next packet\n" ));
-						writeFragmentMessage(FRAGMENT_DATA_MESSAGE_LENGTH, pPacket, NETWORK_MESSAGE_LENGTH_SIZE);
+						fragmentsFlag_ = FRAGMENT_DATA_MESSAGE_LENGTH;
+						writeFragmentMessage(NETWORK_MESSAGE_LENGTH_SIZE);
 						break;
 					}
 
@@ -192,7 +193,8 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 						{
 							ACE_DEBUG(( LM_DEBUG, "%M::%T::msglen1 incomplete, wait next packet\n" ));
 							// 如果长度信息不完整，则等待下一个包处理
-							writeFragmentMessage(FRAGMENT_DATA_MESSAGE_LENGTH1, pPacket, NETWORK_MESSAGE_LENGTH1_SIZE);
+							fragmentsFlag_ = FRAGMENT_DATA_MESSAGE_LENGTH1;
+							writeFragmentMessage(NETWORK_MESSAGE_LENGTH1_SIZE);
 							break;
 						}
 
@@ -275,7 +277,8 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 				if( pPacket->length() < currMsgLen_ )
 				{
 					ACE_DEBUG(( LM_DEBUG, "%M::%T::@if( pPacket->length() < currMsgLen_)\n" ));
-					writeFragmentMessage(FRAGMENT_DATA_MESSAGE_BODY, pPacket, currMsgLen_);
+					fragmentsFlag_ = FRAGMENT_DATA_MESSAGE_BODY;
+					writeFragmentMessage(currMsgLen_);
 					break;
 				}
 
@@ -341,17 +344,16 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 	TRACE_RETURN_VOID();
 }
 
-void PacketReader::writeFragmentMessage(FragmentType fragmentsFlag, Packet* pPacket, ACE_UINT32 totalLen)
+void PacketReader::writeFragmentMessage(size_t totalLen)
 {
 	TRACE("PacketReader::writeFragmentMessage()");
+	ACE_ASSERT(in_.length() < PACKET_MAX_SIZE);
 
-	ACE_ASSERT(pFragments_ == NULL);
-	ACE_ASSERT(pPacket->length() < PACKET_MAX_SIZE);
-
-	fragmentsFlag_ = fragmentsFlag;
+	//fragmentsFlag_ = fragmentsFlag;
 
 	/// the current number of bytes in this packet
-	size_t opsize = pPacket->length();
+	//size_t opsize = pPacket->length();
+	size_t opsize = in_.length();
 
 	/// the number of bytes needed in the furture
 	pFragmentsRemainning_ = totalLen - opsize;
@@ -360,14 +362,15 @@ void PacketReader::writeFragmentMessage(FragmentType fragmentsFlag, Packet* pPac
 	//pFragments_ = new char[opsize + pFragmentsRemainning_ + 1];
 
 	/// update the write position
-	pFragmentsWpos_ = opsize;
+	pFragmentsWpos_ = pFragments_ + opsize;
 
 	if( opsize > 0 )
 	{
-		/// copy the existing bytes in the packet into this buffer 
-		memcpy(pFragments_, pPacket->buff->rd_ptr(), opsize);
-		/// advance the rd position in this packet
-		pPacket->on_read_packet_done();
+		///// copy the existing bytes in the packet into this buffer 
+		//memcpy(pFragments_, pPacket->buff->rd_ptr(), opsize);
+		///// advance the rd position in this packet
+		//pPacket->on_read_packet_done();
+		in_.read_char_array(pFragments_, opsize);
 	}
 
 	ACE_DEBUG(( LM_DEBUG,
@@ -384,72 +387,74 @@ void PacketReader::mergeFragmentMessage(Packet* pPacket)
 	TRACE("PacketReader::mergeFragmentMessage()");
 
 	///// the payload size in this packet
-	//size_t opsize = pPacket->length();
-	//if( !opsize ) return;
+	size_t opsize = pPacket->length();
 
-	///// the left space in pFragments_ buffer <= the written bytes in the packet
-	//if( pPacket->length() >= pFragmentsRemainning )
-	//{
-	//	/// first, fillout with the left space in the pFragments_ buffer 
-	//	memcpy(pFragments_ + pFragmentsWpos_,
-	//		pPacket->buff->rd_ptr(), pFragmentsRemainning);
+	/// stop when this packet is empty
+	if( !opsize ) return;
 
-	//	ACE_ASSERT(pFragmentPacket_ == NULL);
+	///// pFragmentsRemainning_ data is included in this packet and so merge it
+	if( opsize >= pFragmentsRemainning_ )
+	{
+		/// first, fillout with the left space in the pFragments_ buffer 
+		//ACE_OS::memcpy(pFragmentsWpos_, pPacket->buff->rd_ptr(), pFragmentsRemainning_);
+		in_.read_char_array(pFragmentsWpos_, pFragmentsRemainning_);
+		pPacket->buff->rd_ptr(in_.rd_ptr());
+		//	ACE_ASSERT(pFragmentPacket_ == NULL);
 
-	//	///
-	//	switch( fragmentsFlag_ )
-	//	{
-	//		case FRAGMENT_DATA_MESSAGE_ID:			// 消息ID信息不全
-	//			memcpy(&currMsgID_, pFragments_, NETWORK_MESSAGE_ID_SIZE);
-	//			break;
+		//	///
+		//	switch( fragmentsFlag_ )
+		//	{
+		//		case FRAGMENT_DATA_MESSAGE_ID:			// 消息ID信息不全
+		//			memcpy(&currMsgID_, pFragments_, NETWORK_MESSAGE_ID_SIZE);
+		//			break;
 
-	//		case FRAGMENT_DATA_MESSAGE_LENGTH:		// 消息长度信息不全
-	//			memcpy(&currMsgLen_, pFragments_, NETWORK_MESSAGE_LENGTH_SIZE);
-	//			break;
+		//		case FRAGMENT_DATA_MESSAGE_LENGTH:		// 消息长度信息不全
+		//			memcpy(&currMsgLen_, pFragments_, NETWORK_MESSAGE_LENGTH_SIZE);
+		//			break;
 
-	//		case FRAGMENT_DATA_MESSAGE_LENGTH1:		// 消息长度信息不全
-	//			memcpy(&currMsgLen_, pFragments_, NETWORK_MESSAGE_LENGTH1_SIZE);
-	//			break;
+		//		case FRAGMENT_DATA_MESSAGE_LENGTH1:		// 消息长度信息不全
+		//			memcpy(&currMsgLen_, pFragments_, NETWORK_MESSAGE_LENGTH1_SIZE);
+		//			break;
 
-	//		case FRAGMENT_DATA_MESSAGE_BODY:		// 消息内容信息不全
-	//			ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
-	//			pFragmentPacket_ = pool->Ctor();
-	//			pFragmentPacket_->os.write_char_array(pFragments_, currMsgLen_);
-	//			//pFragmentStream_ = MemoryStream::ObjPool().createObject();
-	//			//pFragmentStream_->append(pFragmentDatas_, currMsgLen_);
-	//			break;
-	//	}
+		//		case FRAGMENT_DATA_MESSAGE_BODY:		// 消息内容信息不全
+		//			ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
+		//			pFragmentPacket_ = pool->Ctor();
+		//			pFragmentPacket_->os.write_char_array(pFragments_, currMsgLen_);
+		//			//pFragmentStream_ = MemoryStream::ObjPool().createObject();
+		//			//pFragmentStream_->append(pFragmentDatas_, currMsgLen_);
+		//			break;
+		//	}
 
-	//	ACE_DEBUG(( LM_DEBUG,
-	//		"PacketReader::mergeFragmentMessage({%s}): channel[{%d}], fragmentsFlag={%d},"
-	//		"currMsgID={%d}, currMsgLen={%d}, completed!\n",
-	//		pChannel_->c_str(),
-	//		(void*) pChannel_,
-	//		fragmentsFlag_,
-	//		currMsgID_,
-	//		currMsgLen_ ));
+		//	ACE_DEBUG(( LM_DEBUG,
+		//		"PacketReader::mergeFragmentMessage({%s}): channel[{%d}], fragmentsFlag={%d},"
+		//		"currMsgID={%d}, currMsgLen={%d}, completed!\n",
+		//		pChannel_->c_str(),
+		//		(void*) pChannel_,
+		//		fragmentsFlag_,
+		//		currMsgID_,
+		//		currMsgLen_ ));
 
-	//	fragmentsFlag_ = FRAGMENT_DATA_UNKNOW;
-	//	pFragmentsRemainning = 0;
-	//	SAFE_RELEASE_ARRAY(pFragments_);
+		//	fragmentsFlag_ = FRAGMENT_DATA_UNKNOW;
+		//	pFragmentsRemainning = 0;
+		//	SAFE_RELEASE_ARRAY(pFragments_);
 
-	//} else /// the left space in pFragments_ buffer > the written bytes in the packet
-	//{
-	//	memcpy(pFragments_ + pFragmentsWpos_, pPacket->buff->rd_ptr(), opsize);
-	//	pFragmentsRemainning -= opsize;
-	//	pFragmentsWpos_ += opsize;
-	//	pPacket->buff->rd_ptr(opsize);
+	} else /// the left space in pFragments_ buffer > the written bytes in the packet
+	{
+		//	memcpy(pFragments_ + pFragmentsWpos_, pPacket->buff->rd_ptr(), opsize);
+		//	pFragmentsRemainning -= opsize;
+		//	pFragmentsWpos_ += opsize;
+		//	pPacket->buff->rd_ptr(opsize);
 
-	//	ACE_DEBUG(( LM_DEBUG,
-	//		"PacketReader::mergeFragmentMessage({%s}): channel[{%d}], fragmentsFlag={%d},"
-	//		"remainsize={%d}, currMsgID={%d}, currMsgLen={%d}\n",
-	//		pChannel_->c_str(),
-	//		(void*) pChannel_,
-	//		fragmentsFlag_,
-	//		pFragmentsRemainning,
-	//		currMsgID_,
-	//		currMsgLen_ ));
-	//}
+		//	ACE_DEBUG(( LM_DEBUG,
+		//		"PacketReader::mergeFragmentMessage({%s}): channel[{%d}], fragmentsFlag={%d},"
+		//		"remainsize={%d}, currMsgID={%d}, currMsgLen={%d}\n",
+		//		pChannel_->c_str(),
+		//		(void*) pChannel_,
+		//		fragmentsFlag_,
+		//		pFragmentsRemainning,
+		//		currMsgID_,
+		//		currMsgLen_ ));
+	}
 
 	TRACE_RETURN_VOID();
 }
