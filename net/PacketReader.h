@@ -22,7 +22,7 @@ struct PacketReader
 {
 	char*                    pFragments_; //pFragmentDatas_
 	ACE_UINT32		    pFragmentsWpos_; //pFragmentDatasWpos_;
-	ACE_UINT32			pFragmentsRemainning; //pFragmentDatasRemain_;
+	ACE_UINT32			pFragmentsRemainning_; //pFragmentDatasRemain_;
 	FragmentType      fragmentsFlag_; //fragmentDatasFlag_
 
 	Channel*			    pChannel_;

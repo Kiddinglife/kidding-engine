@@ -7,7 +7,7 @@ NETWORK_NAMESPACE_BEGIN_DECL
 PacketReader::PacketReader(Channel* pChannel) :
 pFragments_(NULL), //pFragmentDatas_
 pFragmentsWpos_(0), //pFragmentDatasWpos_;
-pFragmentsRemainning(0), //pFragmentDatasRemain_;
+pFragmentsRemainning_(0), //pFragmentDatasRemain_;
 fragmentsFlag_(FRAGMENT_DATA_UNKNOW), //fragmentDatasFlag_
 pChannel_(pChannel),
 pFragmentPacket_(NULL), //pFragmentStream_
@@ -35,7 +35,7 @@ void PacketReader::reset()
 	TRACE("PacketReader::reset()");
 
 	fragmentsFlag_ = FRAGMENT_DATA_UNKNOW;
-	currMsgLen_ = currMsgID_ = pFragmentsRemainning = pFragmentsWpos_ = 0;
+	currMsgLen_ = currMsgID_ = pFragmentsRemainning_ = pFragmentsWpos_ = 0;
 
 	SAFE_RELEASE_ARRAY(pFragments_);
 
@@ -69,12 +69,12 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 			pPacket->length(), pFragmentPacket_,
 			pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
 
-		ACE_HEX_DUMP(( LM_DEBUG, pPacket ->buff->rd_ptr(), pPacket->length()));
+		ACE_HEX_DUMP(( LM_DEBUG, pPacket->buff->rd_ptr(), pPacket->length() ));
 
 		if( fragmentsFlag_ != FRAGMENT_DATA_UNKNOW )
 		{
 
-			ACE_DEBUG(( LM_DEBUG, 
+			ACE_DEBUG(( LM_DEBUG,
 				"%M::%T::@if(fragmentsFlag_(%d)!=FRAGMENT_DATA_UNKNOW(%d))\n", fragmentsFlag_, FRAGMENT_DATA_UNKNOW ));
 
 			/// when this message's fragment type is determined, go this branch
@@ -341,33 +341,40 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 	TRACE_RETURN_VOID();
 }
 
-void PacketReader::writeFragmentMessage(FragmentType fragmentsFlag, Packet* pPacket, ACE_UINT32 datasize)
+void PacketReader::writeFragmentMessage(FragmentType fragmentsFlag, Packet* pPacket, ACE_UINT32 totalLen)
 {
 	TRACE("PacketReader::writeFragmentMessage()");
 
 	ACE_ASSERT(pFragments_ == NULL);
-
-	///// get the avaiable space in this packet [wpos_ - rpos_]
-	//size_t opsize = pPacket->length();
-
-	///// the amounts of data left in the  buffer
-	//pFragmentsRemainning = datasize - opsize;
-
-	///// assign @param dattasize bytes of space to the pFragments
-	//pFragments_ = new char[opsize + pFragmentsRemainning + 1];
+	ACE_ASSERT(pPacket->length() < PACKET_MAX_SIZE);
 
 	fragmentsFlag_ = fragmentsFlag;
 
-	///// update the write position
-	//pFragmentsWpos_ = opsize;
+	/// the current number of bytes in this packet
+	size_t opsize = pPacket->length();
 
-	//if( opsize > 0 )
-	//{
-	//	/// copy the bytes in the packet into this buffer 
-	//	memcpy(pFragments_, pPacket->buff->rd_ptr(), opsize);
-	//	/// advance the rd position in this packet
-	//	pPacket->on_read_packet_done();
-	//}
+	/// the number of bytes needed in the furture
+	pFragmentsRemainning_ = totalLen - opsize;
+
+	///// assign @param dattasize bytes of space to the pFragments
+	//pFragments_ = new char[opsize + pFragmentsRemainning_ + 1];
+
+	/// update the write position
+	pFragmentsWpos_ = opsize;
+
+	if( opsize > 0 )
+	{
+		/// copy the existing bytes in the packet into this buffer 
+		memcpy(pFragments_, pPacket->buff->rd_ptr(), opsize);
+		/// advance the rd position in this packet
+		pPacket->on_read_packet_done();
+	}
+
+	ACE_DEBUG(( LM_DEBUG,
+		"PacketReader::writeFragmentMessage({%s}): channel(%d), fragmentDatasFlag={%d},"
+		"remainsize={%d}, currMsgID={%d}, currMsgPayloadLen={%d}.\n",
+		pChannel_->c_str(), pChannel_, fragmentsFlag_,
+		pFragmentsRemainning_, currMsgID_, currMsgLen_ ));
 
 	TRACE_RETURN_VOID();
 }
