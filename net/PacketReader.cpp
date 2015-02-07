@@ -75,11 +75,11 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pPacket)
 		{
 
 			ACE_DEBUG(( LM_DEBUG, 
-				"%M::%T::@if(fragmentsFlag_(%d)!=FRAGMENT_DATA_UNKNOW(d))\n", fragmentsFlag_, FRAGMENT_DATA_UNKNOW ));
+				"%M::%T::@if(fragmentsFlag_(%d)!=FRAGMENT_DATA_UNKNOW(%d))\n", fragmentsFlag_, FRAGMENT_DATA_UNKNOW ));
 
 			/// when this message's fragment type is determined, go this branch
 			mergeFragmentMessage(pPacket);
-
+			break; /// for test need delete later
 		} else
 		{
 			ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(fragmentsFlag_ == FRAGMENT_DATA_UNKNOW )\n" ));

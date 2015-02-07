@@ -1199,15 +1199,15 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	*p << (UINT64) 2;
 	p->end_new_curr_message();
 
-	//p->dumpMsgs();
+	p->dumpMsgs();
 
-	//PacketReader pr(&channel);
+	PacketReader pr(&channel);
 
-	//Bundle::Packets::iterator iter = p->packets_.begin();
-	//for( ; iter != p->packets_.end(); iter++ )
-	//{
-	//	pr.processMessages(&msgs, *iter);
-	//}
+	Bundle::Packets::iterator iter = p->packets_.begin();
+	for( ; iter != p->packets_.end(); iter++ )
+	{
+		pr.processMessages(&msgs, *iter);
+	}
 
 	pool->Dtor(p);
 
