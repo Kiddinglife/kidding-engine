@@ -21,17 +21,18 @@ enum FragmentType
 struct PacketReader
 {
 	char*                    pFragments_; //pFragmentDatas_
-	ACE_UINT32		    pFragmentsWpos_; //pFragmentDatasWpos_;
-	ACE_UINT32			pFragmentsRemainning; //pFragmentDatasRemain_;
+	char*		            pFragmentsWpos_; //pFragmentDatasWpos_;
+	size_t			        pFragmentsRemainning_; //pFragmentDatasRemain_;
 	FragmentType      fragmentsFlag_; //fragmentDatasFlag_
 
 	Channel*			    pChannel_;
 	Packet*				    pFragmentPacket_; //pFragmentStream_
-
+	Packet*                pCurrPacket_;
 	Message*             pCurrMsg_;
 	MessageID			currMsgID_;
 	MessageLength1  currMsgLen_;
 	ACE_INT8             currMsgType_;
+	MessageLength1  currMsgFieldLen_;
 
 	ACE_InputCDR      in_;
 	ACE_Message_Block* block_;
@@ -43,10 +44,9 @@ struct PacketReader
 	virtual ~PacketReader();
 	void reset();
 
-	void writeFragmentMessage(FragmentType fragmentFlag, Packet* pPacket,
-		ACE_UINT32 datasize);
+	void writeFragmentMessage(void);
 
-	void mergeFragmentMessage(Packet* pPacket);
+	void mergeFragmentMessage(void);
 
 	void PacketReader::processMessages(Messages* pMsgHandlers, Packet* pPacket);
 };
