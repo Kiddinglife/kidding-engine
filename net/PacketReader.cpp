@@ -70,20 +70,16 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pCurrPacket)
 	{
 		if( fragmentsFlag_ != FRAGMENT_DATA_UNKNOW )
 		{
-
-			ACE_DEBUG(( LM_DEBUG,
-				"%M::%T::@if(fragmentsFlag_(%d)!=FRAGMENT_DATA_UNKNOW(%d))\n", fragmentsFlag_, FRAGMENT_DATA_UNKNOW ));
-
 			/// when this message's fragment type is determined, go this branch
 			mergeFragmentMessage();
 		} else
 		{
-			ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(fragmentsFlag_ == FRAGMENT_DATA_UNKNOW )\n" ));
+			//ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(fragmentsFlag_ == FRAGMENT_DATA_UNKNOW )\n" ));
 
 			/// start to reaqd msg id from the current packet
 			if( currMsgID_ == 0 )
 			{
-				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(currMsgID_ == 0)\n" ));
+				//ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(currMsgID_ == 0)\n" ));
 
 				/**
 				 * If the length of current pakcket is less than the size of msg id
@@ -92,7 +88,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pCurrPacket)
 				 */
 				if( pCurrPacket_->length() < NETWORK_MESSAGE_ID_SIZE )
 				{
-					ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pCurrPacket_->length() < NETWORK_MESSAGE_ID_SIZE)" ));
+					//ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pCurrPacket_->length() < NETWORK_MESSAGE_ID_SIZE)" ));
 					fragmentsFlag_ = FRAGMENT_DATA_MESSAGE_ID;
 					currMsgFieldLen_ = NETWORK_MESSAGE_ID_SIZE;
 					writeFragmentMessage();
@@ -104,12 +100,12 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pCurrPacket)
 				pCurrPacket_->buff->rd_ptr(NETWORK_MESSAGE_ID_SIZE);
 				pCurrPacket_->msgID_ = currMsgID_;
 
-				ACE_DEBUG(( LM_DEBUG,
-					"%M::%T::PacketReader::processMessages()::currMsgID_(%d)"
-					"pCurrPacket_->length(%d), pFragmentPacket_(%d),"
-					"rd_pos(%d), wr_pos(%d)\n",
-					currMsgID_, pCurrPacket_->length(), pFragmentPacket_,
-					pCurrPacket_->buff->rd_ptr(), pCurrPacket_->buff->wr_ptr() ));
+				//ACE_DEBUG(( LM_DEBUG,
+				//	"%M::%T::PacketReader::processMessages()::currMsgID_(%d)"
+				//	"pCurrPacket_->length(%d), pFragmentPacket_(%d),"
+				//	"rd_pos(%d), wr_pos(%d)\n",
+				//	currMsgID_, pCurrPacket_->length(), pFragmentPacket_,
+				//	pCurrPacket_->buff->rd_ptr(), pCurrPacket_->buff->wr_ptr() ));
 			}
 
 			// find the msg based on currMsgID_
@@ -118,7 +114,7 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pCurrPacket)
 			/// it must be something wrong if pCurrMsg_ == NULL. user will be told this situation
 			if( pCurrMsg_ == NULL )
 			{
-				ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pCurrMsg_ == NULL)\n" ));
+				//ACE_DEBUG(( LM_DEBUG, "%M::%T::@if(pCurrMsg_ == NULL)\n" ));
 
 				/**
 				* change the read position to the begainning of the packet
@@ -135,11 +131,11 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pCurrPacket)
 
 				pPacket1->buff->rd_ptr(rpos);
 
-				ACE_ERROR(( LM_ERROR,
-					"%M::%T::PacketReader::processMessages::"
-					"not found msg with ID(%d), msglen(%d), from(%s),"
-					"set this channel to condem\n",
-					currMsgID_, pPacket1->length(), pChannel_->c_str() ));
+				//ACE_ERROR(( LM_ERROR,
+				//	"%M::%T::PacketReader::processMessages::"
+				//	"not found msg with ID(%d), msglen(%d), from(%s),"
+				//	"set this channel to condem\n",
+				//	currMsgID_, pPacket1->length(), pChannel_->c_str() ));
 
 				/// reset related values
 				currMsgID_ = 0;
@@ -245,11 +241,11 @@ void PacketReader::processMessages(Messages* pMsgs, Packet* pCurrPacket)
 
 				pPacket1->buff->rd_ptr(rpos);
 
-				ACE_DEBUG(( LM_WARNING,
-					"%M::%T::PacketReader::processMessages::"
-					"msglen exceeds the limit with ID(%d), msg len(%d-%d), maxlen(%d) from(%s),"
-					"set this channel to condem\n",
-					currMsgID_, pPacket1->length(), currMsgLen_, NETWORK_MESSAGE_MAX_SIZE, pChannel_->c_str() ));
+				//ACE_DEBUG(( LM_WARNING,
+				//	"%M::%T::PacketReader::processMessages::"
+				//	"msglen exceeds the limit with ID(%d), msg len(%d-%d), maxlen(%d) from(%s),"
+				//	"set this channel to condem\n",
+				//	currMsgID_, pPacket1->length(), currMsgLen_, NETWORK_MESSAGE_MAX_SIZE, pChannel_->c_str() ));
 
 				currMsgLen_ = 0;
 				pChannel_->isCondemn_ = true;
