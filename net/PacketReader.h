@@ -27,11 +27,12 @@ struct PacketReader
 
 	Channel*			    pChannel_;
 	Packet*				    pFragmentPacket_; //pFragmentStream_
-
+	Packet*                pCurrPacket_;
 	Message*             pCurrMsg_;
 	MessageID			currMsgID_;
 	MessageLength1  currMsgLen_;
 	ACE_INT8             currMsgType_;
+	MessageLength1  currMsgFieldLen_;
 
 	ACE_InputCDR      in_;
 	ACE_Message_Block* block_;
@@ -43,9 +44,9 @@ struct PacketReader
 	virtual ~PacketReader();
 	void reset();
 
-	void writeFragmentMessage(size_t totalLen);
+	void writeFragmentMessage(void);
 
-	void mergeFragmentMessage(Packet* pPacket);
+	void mergeFragmentMessage(void);
 
 	void PacketReader::processMessages(Messages* pMsgHandlers, Packet* pPacket);
 };
