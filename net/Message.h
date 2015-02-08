@@ -5,7 +5,7 @@
 #include "ace\Null_Mutex.h"
 #include "common\ace_object_pool.h"
 #include "FixedMessages.h"
-
+#include "net\Packet.h"
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
@@ -15,7 +15,6 @@ extern std::vector<Messages*>* gPtrMsgsPtrContainer;
 extern FixedMessages* gPtrFixedMsgs;
 
 struct Channel;
-struct Packet;
 
 struct ExposedMessageInfo
 {
@@ -120,6 +119,7 @@ struct Message
 	{
 		TRACE("Message::handle()");
 		pMsgArgs_->fetch_args_from(s);
+		s->on_read_packet_done();
 		// 将参数传给最终的接口
 		TRACE_RETURN_VOID();
 	};
