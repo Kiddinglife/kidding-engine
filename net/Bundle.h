@@ -111,7 +111,7 @@ struct Bundle
 		// 如果使用了openssl加密通讯则我们保证一个包最大能被Blowfish::BLOCK_SIZE除尽
 		// 这样我们在加密一个满载包时不需要额外填充字节
 		/*ACE_DEBUG(( LM_DEBUG, "// 如果使用了openssl加密通讯则我们保证一个包最大能被Blowfish::BLOCK_SIZE除尽 \n" ));*/
-		if( g_channelExternalEncryptType == 1 )
+		if( g_channelExternalEncryptType)
 		{
 			//ACE_DEBUG(( LM_DEBUG, " currPacketMaxSize=%d \n", currPacketMaxSize ));
 			currPacketPaddingBeforeEncrytypeField = currPacketMaxSize % KBEBlowfish::BLOCK_SIZE;
