@@ -5,7 +5,6 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
 /**
-
 * @para calpCurrPacket_
 * 如果包含当前包的长度，则为真，否则为假
 * true if calculating pCurrPacket_'s length, false if not.
@@ -99,7 +98,7 @@ void Bundle::recycle_all_packets(void)
 * the actually-writable space size in current packet will be returned that may be <= addsize
 *
 * @ChangeLog
-* 11: 26 AM, 12/01/2015 
+* 11: 26 AM, 12/01/2015
 * Change "on_packet_append" to "calculate_avaiable_space_of_curr_packet",
 * this name can clearly show  the aim of this function.
 */
