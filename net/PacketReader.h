@@ -20,13 +20,13 @@ enum FragmentType
 
 struct PacketReader
 {
-	char*                    pFragments_; //pFragmentDatas_
+	//char*                    pFragments_; //pFragmentDatas_
 	char*		            pFragmentsWpos_; //pFragmentDatasWpos_;
 	size_t			        pFragmentsRemainning_; //pFragmentDatasRemain_;
 	FragmentType      fragmentsFlag_; //fragmentDatasFlag_
 
 	Channel*			    pChannel_;
-	Packet*				    pFragmentPacket_; //pFragmentStream_
+	static Packet*	    pFragmentPacket_; //pFragmentStream_
 	Packet*                pCurrPacket_;
 	Message*             pCurrMsg_;
 	MessageID			currMsgID_;

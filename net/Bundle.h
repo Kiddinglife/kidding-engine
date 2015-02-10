@@ -202,6 +202,12 @@ struct Bundle
 	void clear(void);
 
 	/**
+	* 该方法将会回收该bundle中所有的包到对应的对象池中
+	* this mothod recycles all the packets in the container back to the right pool
+	*/
+	void recycle_all_packets(void);
+
+	/**
 	* @Brief
 	* 该方法用于填充当前变长消息的长度域，该长度有可能会超过
 	* This method is use to calculate the variable-len message's length field

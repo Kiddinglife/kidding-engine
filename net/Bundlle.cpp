@@ -34,6 +34,26 @@ size_t Bundle::get_packets_length()
 */
 void Bundle::clear()
 {
+	recycle_all_packets();
+
+	///初始化成员初值
+	reuse_ = false;
+	pChnnel_ = NULL;
+	numMessages_ = 0;
+	currMsgID_ = 0;
+	currMsgPacketCount_ = 0;
+	currMsgLength_ = 0;
+	currMsgLengthPos_ = 0;
+	currMsgType_ = 0;
+	pCurrMsg_ = NULL;
+}
+
+/**
+* 该方法将会回收该bundle中所有的包到对应的对象池中
+* this mothod recycles all the packets in the container back to the right pool
+*/
+void Bundle::recycle_all_packets(void)
+{
 	///清空当前packet
 	///clear the current packet
 	if( pCurrPacket_ != NULL )
@@ -53,19 +73,7 @@ void Bundle::clear()
 	///清空元素但不回收空间，提高效率
 	///clear the packet container without recycling the allocated memory
 	packets_.clear();
-
-	///初始化成员初值
-	reuse_ = false;
-	pChnnel_ = NULL;
-	numMessages_ = 0;
-	currMsgID_ = 0;
-	currMsgPacketCount_ = 0;
-	currMsgLength_ = 0;
-	currMsgLengthPos_ = 0;
-	currMsgType_ = 0;
-	pCurrMsg_ = NULL;
 }
-
 /**
 * @Brief
 * 该方法调整当前包的空间以便装入（@para addsize）大小的消息。
@@ -91,7 +99,7 @@ void Bundle::clear()
 * the actually-writable space size in current packet will be returned that may be <= addsize
 *
 * @ChangeLog
-* 11: 26 AM, 12/01/2015 ::
+* 11: 26 AM, 12/01/2015 
 * Change "on_packet_append" to "calculate_avaiable_space_of_curr_packet",
 * this name can clearly show  the aim of this function.
 */
@@ -315,7 +323,7 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 			( currPacketMaxSize - pPacket->buff->length() );
 
 		/// check the rest space in this packet can hold the msglen1
-		if( num > 0)
+		if( num > 0 )
 		{
 			//ACE_DEBUG(( LM_DEBUG,
 			//	"Bundle::calculate_then_fill_variable_len_field()::@7.2.1::"

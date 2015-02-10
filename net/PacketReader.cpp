@@ -4,13 +4,14 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
+ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
+Packet* PacketReader::pFragmentPacket_ = pool->Ctor();
+
 PacketReader::PacketReader(Channel* pChannel) :
-pFragments_(new char[PACKET_MAX_SIZE]), //pFragmentDatas_
-pFragmentsWpos_(pFragments_), //pFragmentDatasWpos_;
+pFragmentsWpos_(NULL), //pFragmentDatasWpos_;
 pFragmentsRemainning_(0), //pFragmentDatasRemain_;
 fragmentsFlag_(FRAGMENT_DATA_UNKNOW), //fragmentDatasFlag_
 pChannel_(pChannel),
-pFragmentPacket_(NULL), //pFragmentStream_
 pCurrPacket_(NULL),
 pCurrMsg_(NULL),
 currMsgID_(0),
@@ -21,8 +22,6 @@ in_((char*) NULL, 0),
 block_(const_cast<ACE_Message_Block*>( in_.start() ))
 {
 	TRACE("PacketReader::ctor()");
-	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
-	pFragmentPacket_ = pool->Ctor();
 	TRACE_RETURN_VOID();
 }
 
@@ -41,14 +40,14 @@ void PacketReader::reset()
 	fragmentsFlag_ = FRAGMENT_DATA_UNKNOW;
 	currMsgLen_ = currMsgID_ = pFragmentsRemainning_ = 0;
 	pFragmentsWpos_ = NULL;
-	SAFE_RELEASE_ARRAY(pFragments_);
+	//SAFE_RELEASE_ARRAY(pFragments_);
 
-	if( pFragmentPacket_ )
-	{
-		ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
-		pool->Dtor(pFragmentPacket_);
-		pFragmentPacket_ = NULL;
-	}
+	//if( pFragmentPacket_ )
+	//{
+	//	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
+	//	pool->Dtor(pFragmentPacket_);
+	//	pFragmentPacket_ = NULL;
+	//}
 
 	pChannel_ = NULL;
 
