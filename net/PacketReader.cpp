@@ -5,13 +5,14 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
 ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
-Packet* PacketReader::pFragmentPacket_ = pool->Ctor();
+Packet* PacketReader::pSecomdaryFragmentPacket_ = pool->Ctor();
 
 PacketReader::PacketReader(Channel* pChannel) :
 pFragmentsWpos_(NULL), //pFragmentDatasWpos_;
 pFragmentsRemainning_(0), //pFragmentDatasRemain_;
 fragmentsFlag_(FRAGMENT_DATA_UNKNOW), //fragmentDatasFlag_
 pChannel_(pChannel),
+pFragmentPacket_(pool->Ctor()),
 pCurrPacket_(NULL),
 pCurrMsg_(NULL),
 currMsgID_(0),
@@ -40,14 +41,13 @@ void PacketReader::reset()
 	fragmentsFlag_ = FRAGMENT_DATA_UNKNOW;
 	currMsgLen_ = currMsgID_ = pFragmentsRemainning_ = 0;
 	pFragmentsWpos_ = NULL;
-	//SAFE_RELEASE_ARRAY(pFragments_);
 
-	//if( pFragmentPacket_ )
-	//{
-	//	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
-	//	pool->Dtor(pFragmentPacket_);
-	//	pFragmentPacket_ = NULL;
-	//}
+	if( pFragmentPacket_ )
+	{
+		ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
+		pool->Dtor(pFragmentPacket_);
+		pFragmentPacket_ = NULL;
+	}
 
 	pChannel_ = NULL;
 
@@ -345,13 +345,13 @@ void PacketReader::mergeFragmentMessage()
 {
 	TRACE("PacketReader::mergeFragmentMessage()");
 
-	///// the payload size in this packet
+	/// the payload size in this packet
 	size_t opsize = in_.length();
 
 	/// stop when this packet is empty
 	if( !opsize ) return;
 
-	///// pFragmentsRemainning_ data is included in this packet and so merge it
+	/// the rest of data is fully received and so we just merge it 
 	if( opsize >= pFragmentsRemainning_ )
 	{
 		/// first, fillout with the left space in the pFragmentPacket_ buffer 
@@ -377,6 +377,7 @@ void PacketReader::mergeFragmentMessage()
 				break;
 
 			case FRAGMENT_DATA_MESSAGE_BODY:		// 消息内容信息不全
+				/// nothing to do here, just instructive
 				break;
 		}
 

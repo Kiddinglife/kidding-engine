@@ -8,7 +8,7 @@ NETWORK_NAMESPACE_BEGIN_DECL
 * @para calpCurrPacket_
 * 如果包含当前包的长度，则为真，否则为假
 * true if calculating pCurrPacket_'s length, false if not.
-* \n
+* 
 * @retvalue size_t
 * 返回值为该bundle中的所有包的有效长度(即msg所占的空间大小)
 * return the all packets length
@@ -79,11 +79,11 @@ void Bundle::recycle_all_packets(void)
 * 一个消息如果很大的话，可能需要多个包来装载
 * This mothod is is to ajust the space in the current packet when adding @para
 * addsize msg. A big msg may be divided into more than one packet.
-* \n
+* 
 * @para size_t addsize
 * 写入包中的消息大小， 不能大于包的最大容量
 * the size of msg that will be added to the current packet
-* \n
+* 
 * @para bool inseparable
 * 若为真，该方法会检测当前包可用空间的大小是否足以装下当前消息。
 * 如果当前包不能够装下的的话，该方法会创建一个新的包来装下整条消息。
@@ -91,7 +91,7 @@ void Bundle::recycle_all_packets(void)
 * if inseparable is true, it tests if  the rest of space in the current packet can hold the
 * addsize of msg, if space is not enough, it will create a new packet to hold whole msg,
 * the old space will leave empty.
-* \n
+* 
 * @retvalue size_t
 * 返回值为实际所能够写入的有效大小，
 * 如果 @para inseparable == false, 可能会 <= @para addsize 的大小
@@ -175,7 +175,7 @@ size_t Bundle::calculate_avaiable_space_of_curr_packet(size_t addsize, bool inse
 * @member Packet* pCurrPacket_.
 * 该方法用从对应的对象池中构造出一个新的tcp包或者udp包，
 * 该方法成功后，会更新 @member Packet* pCurrPacket_的值
-* \n
+* 
 * @para void
 * @retvalue void
 * @TO-DO
@@ -203,7 +203,7 @@ void Bundle::create_new_curr_packet(void)
 * 该方法用于填充当前变长消息的长度域，该长度有可能会超过
 * This method is use to calculate the variable-len message's length field
 * NETWORK_MESSAGE_MAX_SIZE 65535
-* \n
+* 
 * @para void
 * @retvalue void
 * @ChangeLog
@@ -404,17 +404,13 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 * 该方法在结束时将初始化所有与该消息相关的状态信息：
 * currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
 * currMsgLengthPos_ = NULL;
-* \n
+* 
 * @para bool issend
 * whether to send this bundle or not after finishing handling the current msg
 * when true, it will initialize all the memebers related the current msg at the end of this call
 * 该参数用于表明是否该方法调用结束后发送该bundle，若为真，该方法会将当前包加入到发送队列中去
-* \n
+* 
 * @retvalue void
-*
-* @ChangeLog
-* 11: 26 AM, 12/01/2015 :: Change "finish" to "fill_curr_msg_len_field",
-* this name can clearly show  the aim of this function.
 */
 //void Bundle::fill_curr_msg_len_field(bool issend)
 void Bundle::end_new_curr_message(void)
@@ -479,18 +475,8 @@ void Bundle::end_new_curr_message(void)
 /**
 * @Brief
 * This inline method is to
-* \n
 * @para const MessageHandler* msg
-*
 * @retvalue void
-*
-* @Q1
-* ///  这里出现了fill__curr_msg_begin， 有点不解，
-* /// fill__curr_msg_begin函数我的理解是为了添加消息长度信息，
-* /// 而这时的currMsgLength_应该为0，，那么fill__curr_msg_begin在这里到底有什么用？
-* @Q1 - Answer
-* 该方法会跟踪当前msg以及初始化所有的成员函数， 此时跟踪当前msg相当可以看到当前msg，
-* 就能够看到该msg的长度域的值，相当于调试了。
 */
 void Bundle::start_new_curr_message(Message* msg)
 {
@@ -536,7 +522,7 @@ void Bundle::start_new_curr_message(Message* msg)
 * This inline mothod is call back after this bundle gets sent.
 * when reuse = true, we do nothing but return so that all the states of this bundle
 * will remain unchanged including the current msg, current packet and the container
-* \n
+* 
 * @para void
 * @retvalue void
 */

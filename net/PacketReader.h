@@ -26,7 +26,8 @@ struct PacketReader
 	FragmentType      fragmentsFlag_; //fragmentDatasFlag_
 
 	Channel*			    pChannel_;
-	static Packet*	    pFragmentPacket_; //pFragmentStream_
+	Packet*	                pFragmentPacket_; //pFragmentStream_
+	static Packet*	    pSecomdaryFragmentPacket_; //pFragmentStream_
 	Packet*                pCurrPacket_;
 	Message*             pCurrMsg_;
 	MessageID			currMsgID_;
