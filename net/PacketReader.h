@@ -22,7 +22,8 @@ struct PacketReader
 {
 	//char*                    pFragments_; //pFragmentDatas_
 	char*		            pFragmentsWpos_; //pFragmentDatasWpos_;
-	size_t			        pFragmentsRemainning_; //pFragmentDatasRemain_;
+	MessageLength    pFragmentsRemainning_; //pFragmentDatasRemain_;
+	MessageLength    opsize;
 	FragmentType      fragmentsFlag_; //fragmentDatasFlag_
 
 	Channel*			    pChannel_;
