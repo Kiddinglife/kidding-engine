@@ -1140,7 +1140,34 @@ TEST(PacketReaderTests, ctor_dtor_test)
 		}
 		virtual void fetch_args_from(Packet* p)
 		{
-			p->on_read_packet_done();
+			INT32  para1 = *(INT32*) p->buff->rd_ptr();
+			p->buff->rd_ptr(4);
+			INT32  para2 = *(INT32*) p->buff->rd_ptr();
+			p->buff->rd_ptr(4);
+			INT32  para3 = *(INT32*) p->buff->rd_ptr();
+			ACE_DEBUG(( LM_DEBUG, "(%d)(%d)(%d)\n", para1, para2, para3 ));
+		}
+
+		virtual void add_args_to(Packet* p)
+		{
+		}
+	};
+
+	struct msgarg_variable : public MessageArgs
+	{
+		virtual MessageLength1 args_bytes_count(void)
+		{
+			return 0;
+		}
+		virtual void fetch_args_from(Packet* p)
+		{
+			for( int i = 0; i < 4; i++ )
+			{
+				INT64  para1 = *(INT64*) p->buff->rd_ptr();
+				p->buff->rd_ptr(8);
+				ACE_DEBUG(( LM_DEBUG, "(%d)", para1 ));
+			}
+			ACE_DEBUG(( LM_DEBUG, "\n" ));
 		}
 
 		virtual void add_args_to(Packet* p)
@@ -1154,12 +1181,14 @@ TEST(PacketReaderTests, ctor_dtor_test)
 
 	ACE_PoolPtr_Getter(pool, Bundle, ACE_Null_Mutex);
 	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
+	ACE_PoolPtr_Getter(poolmsgarg_variable, msgarg_variable, ACE_Null_Mutex);
 	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
 	ACE_PoolPtr_Getter(poolpacket, Packet, ACE_Null_Mutex);
 
 	Bundle* p = pool->Ctor();
 	Messages msgs;
 	msgarg* ag = poolmsgarg->Ctor();
+	msgarg_variable* ag_va = poolmsgarg_variable->Ctor();
 
 	/// first msg is fixed msg
 	Message* currhandler1 = poolmsg->Ctor();
@@ -1175,7 +1204,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 
 	/// second msg is variable msg
 	Message* currhandler2 = poolmsg->Ctor();
-	msgs.add_msg("currhandler2", ag, NETWORK_VARIABLE_MESSAGE, currhandler2);
+	msgs.add_msg("currhandler2", ag_va, NETWORK_VARIABLE_MESSAGE, currhandler2);
 	p->start_new_curr_message(currhandler2);
 	*p << (UINT64) 2;
 	*p << (UINT64) 2;
@@ -1196,7 +1225,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 
 	///// second msg is variable msg
 	Message* currhandler4 = poolmsg->Ctor();
-	msgs.add_msg("currhandler4", ag, NETWORK_VARIABLE_MESSAGE, currhandler4);
+	msgs.add_msg("currhandler4", ag_va, NETWORK_VARIABLE_MESSAGE, currhandler4);
 	p->start_new_curr_message(currhandler4);
 	*p << (UINT64) 2;
 	*p << (UINT64) 2;
