@@ -41,6 +41,14 @@ struct Packet
 		//ACE_DEBUG(( LM_DEBUG, "DEBUG:: leave Packet() \n" ));
 	}
 
+	/// THIS ctor us used in packetreader::processpackets to get a reasoanle size of 
+	/// packet to hold the too long payload of a msg
+	Packet(ACE_UINT32 SIZE) :
+		os(SIZE),
+		buff(const_cast<ACE_Message_Block*>( os.begin() ))
+	{
+	}
+
 	void reset(void)
 	{
 		// It is tempting not to remove the memory, 

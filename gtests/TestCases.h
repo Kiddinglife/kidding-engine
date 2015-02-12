@@ -1155,6 +1155,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	ACE_PoolPtr_Getter(pool, Bundle, ACE_Null_Mutex);
 	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
 	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
+	ACE_PoolPtr_Getter(poolpacket, Packet, ACE_Null_Mutex);
 
 	Bundle* p = pool->Ctor();
 	Messages msgs;
@@ -1178,6 +1179,8 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	p->start_new_curr_message(currhandler2);
 	*p << (UINT64) 2;
 	*p << (UINT64) 2;
+	*p << (UINT64) 2;
+	*p << (UINT64) 2;
 	p->end_new_curr_message();
 	//p->dumpMsgs();
 
@@ -1197,18 +1200,14 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	p->start_new_curr_message(currhandler4);
 	*p << (UINT64) 2;
 	*p << (UINT64) 2;
+	*p << (UINT64) 2;
+	*p << (UINT64) 2;
 	p->end_new_curr_message();
 
-	p->dumpMsgs();
+	//p->dumpMsgs();
 
 	PacketReader pr(&channel);
-
-	Bundle::Packets::iterator iter = p->packets_.begin();
-	for( ; iter != p->packets_.end(); iter++ )
-	{
-		pr.processMessages(&msgs, *iter);
-	}
-
+	pr.processMessages(&msgs, p);
 	pool->Dtor(p);
 
 }
