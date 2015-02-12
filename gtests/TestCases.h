@@ -1203,14 +1203,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	//p->dumpMsgs();
 
 	PacketReader pr(&channel);
-	pr.pFragmentPacket_ = poolpacket->Ctor();
-	Bundle::Packets::iterator iter = p->packets_.begin();
-	for( ; iter != p->packets_.end(); iter++ )
-	{
-		pr.processMessages(&msgs, *iter);
-	}
-	poolpacket->Dtor(pr.pFragmentPacket_);
-	pr.pFragmentPacket_ = NULL;
+	pr.processMessages(&msgs, p);
 	pool->Dtor(p);
 
 }

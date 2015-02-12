@@ -20,7 +20,6 @@ enum FragmentType
 
 struct PacketReader
 {
-	//char*                    pFragments_; //pFragmentDatas_
 	char*		            pFragmentsWpos_; //pFragmentDatasWpos_;
 	MessageLength    pFragmentsRemainning_; //pFragmentDatasRemain_;
 	MessageLength    opsize;
@@ -43,13 +42,7 @@ struct PacketReader
 
 	PacketReader(Channel* pChannel = NULL);
 	virtual ~PacketReader();
-	void reset();
-
-	void writeFragmentMessage(void);
-
-	void mergeFragmentMessage(void);
-
-	void PacketReader::processMessages(Messages* pMsgHandlers, Packet* pPacket);
+	void PacketReader::processMessages(Messages* pMsgHandlers, Bundle* pPacket);
 };
 
 NETWORK_NAMESPACE_END_DECL
