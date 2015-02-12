@@ -1199,7 +1199,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	*p << (UINT64) 2;
 	p->end_new_curr_message();
 
-	p->dumpMsgs();
+	//p->dumpMsgs();
 
 	PacketReader pr(&channel);
 
