@@ -6,29 +6,29 @@ NETWORK_NAMESPACE_BEGIN_DECL
 /**
  * ctor creates external and internal listenning socket both are tcp
  */
-NetworkInterface::NetworkInterface(
-Nub* pDispatcher,
-ACE_INT16 extlisteningPort_min,
-ACE_INT16 extlisteningPort_max,
-const char * extlisteningInterface,
-ACE_UINT32 extrbuffer,
-ACE_UINT32 extwbuffer,
-ACE_INT16 intlisteningPort,
-const char * intlisteningInterface,
-ACE_UINT32 intrbuffer,
-ACE_UINT32 intwbuffer) :
+ NetworkInterface::NetworkInterface(
+ Nub* pDispatcher,
+ ACE_INT16 extlisteningPort_min,
+ ACE_INT16 extlisteningPort_max,
+ const char * extlisteningInterface,
+ ACE_UINT32 extrbuffer,
+ ACE_UINT32 extwbuffer,
+ ACE_INT16 intlisteningPort,
+ const char * intlisteningInterface,
+ ACE_UINT32 intrbuffer,
+ ACE_UINT32 intwbuffer) :
 
-ACE_Event_Handler(),
-channelMap_(),
-nub_(pDispatcher),
-pExtensionData_(NULL),
-pExtListenerReceiver_(NULL),
-pIntListenerReceiver_(NULL),
-pDelayedChannels_(new DelayedChannelHandlers()),
-pChannelTimeOutHandler_(NULL),
-pChannelDeregisterHandler_(NULL),
-isExternal_(extlisteningPort_min != -1),
-numExtChannels_(0)
+ ACE_Event_Handler(),
+ channelMap_(),
+ nub_(pDispatcher),
+ pExtensionData_(NULL),
+ pExtListenerReceiver_(NULL),
+ pIntListenerReceiver_(NULL),
+ pDelayedChannels_(new DelayedChannelHandlers()),
+ pChannelTimeOutHandler_(NULL),
+ pChannelDeregisterHandler_(NULL),
+ isExternal_(extlisteningPort_min != -1),
+ numExtChannels_(0)
 {
 	/// first listen on external interface
 	if( isExternal_ )
