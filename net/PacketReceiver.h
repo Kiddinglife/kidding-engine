@@ -38,7 +38,7 @@ struct TCP_Packet_Receiver
 	virtual Reason processFilteredPacket(Channel* pChannel, Packet * pPacket) = 0;
 	virtual bool processRecv(bool expectingPacket) = 0;
 	virtual RecvState checkSocketErrors(int len, bool expectingPacket) = 0;
-	virtual Channel* getChannel();
+	virtual inline Channel* getChannel();
 };
 
 NETWORK_NAMESPACE_END_DECL

@@ -109,15 +109,16 @@ struct NetworkInterface : public ACE_Event_Handler
 	*/
 	bool is_ip_addr_valid(const char* spec, char* name);
 
+	/// Send methods
 	void delayed_channels_send(Channel* channel);
 	void send_on_delayed(Channel* channel);
 
-	/*These three methods are used to register and deregister the channel*/
+	/// These three methods are used to register and deregister the channel
 	bool register_channel(Channel* pChannel);
 	bool deregister_channel(Channel* pChannel);
 	bool deregister_all_channels();
 
-	/*These twp methods are used to find the channel */
+	/// These twp methods are used to find the channel 
 	Channel* channel(const ACE_INET_Addr& addr);
 	Channel* channel(ACE_HANDLE  handle);
 
@@ -131,7 +132,7 @@ struct NetworkInterface : public ACE_Event_Handler
 	*/
 	virtual int handle_timeout(const ACE_Time_Value &tv, const void *arg);
 
-	/*this method will go through all the channels and process its packets*/
+	/// this method will go through all the channels and process its packets
 	void process_all_channels_packets(Messages* pMsgHandlers);
 };
 
