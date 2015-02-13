@@ -1128,6 +1128,7 @@
 //	in.deregister_all_channels();
 //
 //}
+
 #include "net\PacketReader.h"
 #include "net\NetworkInterface.h"
 TEST(PacketReaderTests, ctor_dtor_test)
@@ -1167,6 +1168,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 				p->buff->rd_ptr(8);
 				ACE_DEBUG(( LM_DEBUG, "(%d)", para1 ));
 			}
+
 			ACE_DEBUG(( LM_DEBUG, "\n" ));
 		}
 
@@ -1238,3 +1240,4 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	pool->Dtor(p);
 
 }
+

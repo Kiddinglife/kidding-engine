@@ -1,11 +1,11 @@
 ﻿#include "PacketReceiver.h"
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
-PacketReceiver::PacketReceiver()
+TCP_Packet_Receiver::PacketReceiver()
 {
 }
 
-PacketReceiver::~PacketReceiver()
+TCP_Packet_Receiver::~PacketReceiver()
 {
 }
 NETWORK_NAMESPACE_END_DECL
