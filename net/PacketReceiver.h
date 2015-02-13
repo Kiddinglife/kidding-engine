@@ -16,6 +16,7 @@ struct Nub;
 struct TCP_Packet_Receiver
 {
 	NetworkInterface* pNetworkInterface_;
+	ACE_SOCK_Stream* pEndpoint_;
 
 	enum RecvState
 	{
