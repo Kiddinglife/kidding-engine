@@ -118,8 +118,9 @@ struct Message
 	virtual void handle(Channel* pChannel, Packet* s)
 	{
 		TRACE("Message::handle()");
+		ACE_DEBUG(( LM_DEBUG,
+			"%M::Message::msg payload len(%d)\n", s->length() ));
 		pMsgArgs_->fetch_args_from(s);
-		s->on_read_packet_done();
 		// 将参数传给最终的接口
 		TRACE_RETURN_VOID();
 	};
