@@ -33,7 +33,7 @@ struct DelayedChannelHandlers;
  * @Brief
  * This class is the abstraction of the network interface in the host machina.
  * It is listenning on the external and internal socket to wait the connection request.
- * When a connection comes, the nub create new socket handler to handle it and will call back 
+ * When a connection comes, the nub create new socket handler to handle it and will call back
  * register function to register a new channel
  */
 struct NetworkInterface : public ACE_Event_Handler
@@ -134,6 +134,8 @@ struct NetworkInterface : public ACE_Event_Handler
 
 	/// this method will go through all the channels and process its packets
 	void process_all_channels_packets(Messages* pMsgHandlers);
+
+	inline void close_socket(void);
 };
 
 NETWORK_NAMESPACE_END_DECL

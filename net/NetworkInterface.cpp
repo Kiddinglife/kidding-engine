@@ -16,8 +16,8 @@ NETWORK_NAMESPACE_BEGIN_DECL
  ACE_INT16 intlisteningPort,
  const char * intlisteningInterface,
  ACE_UINT32 intrbuffer,
- ACE_UINT32 intwbuffer) :
-
+ ACE_UINT32 intwbuffer)
+ :
  ACE_Event_Handler(),
  channelMap_(),
  nub_(pDispatcher),
@@ -456,5 +456,16 @@ void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
 	TRACE_RETURN_VOID();
 }
 
+void NetworkInterface::close_socket(void)
+{
+	if( pExtListenerReceiver_ )
+		nub_->rec->remove_handler(pExtListenerReceiver_,
+		ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
+
+	if( pIntListenerReceiver_ )
+		nub_->rec->remove_handler(pIntListenerReceiver_,
+		ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
+
+}
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
