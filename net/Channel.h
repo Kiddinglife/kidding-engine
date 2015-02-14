@@ -51,6 +51,7 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	//@TO-DO need create struct PacketReceiver
 	PacketReceiver*				      pPacketReceiver_;
 	PacketSender*				          pPacketSender_;
+
 	//@TO-DO need create struct PacketFilter
 	PacketFilterPtr				          pFilter_;
 

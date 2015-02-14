@@ -19,7 +19,11 @@ struct DelayedChannelHandlers : public Task
 	NetworkInterface* pNetworkInterface_;
 	ACE_INET_Addr channel_addr_;
 
-	DelayedChannelHandlers() :channeladdrs_(), pNetworkInterface_(NULL), channel_addr_()
+	DelayedChannelHandlers() :
+		Task(),
+		channeladdrs_(),
+		pNetworkInterface_(NULL),
+		channel_addr_()
 	{
 		TRACE("DelayedChannelHandlers::Ctor()");
 		TRACE_RETURN_VOID();
@@ -32,12 +36,12 @@ struct DelayedChannelHandlers : public Task
 		TRACE_RETURN_VOID();
 	}
 
-	inline void init(Nub* dispatcher, NetworkInterface* pNetworkInterface);
+	void init(Nub* dispatcher, NetworkInterface* pNetworkInterface);
 	void fini(Nub* dispatcher);
 
 	void add(Channel* channel);
 
-	void sendIfDelayed(Channel* channel);
+	void send_delayed_channel(Channel* channel);
 
 	virtual bool process();
 };

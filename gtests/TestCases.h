@@ -1085,6 +1085,7 @@
 
 #include "net\NetworkInterface.h"
 #include "net\Channel.h"
+#include "net\DelayedChannelHandler.h"
 TEST(NetworkInterfaceTest, get_ip_addr_str)
 {
 	Nub              pDispatcher;
@@ -1128,6 +1129,11 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	in.deregister_all_channels();
 	in.close_listenning_sockets();
 
+	DelayedChannelHandlers delay;
+	delay.init(&pDispatcher, &in);
+	delay.add(&tcpchannel);
+	delay.send_delayed_channel(&tcpchannel);
+	delay.process();
 }
 
 //#include "net\PacketReader.h"

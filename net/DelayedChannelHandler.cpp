@@ -31,7 +31,7 @@ void DelayedChannelHandlers::add(Channel* channel)
 	TRACE_RETURN_VOID();
 }
 
-void DelayedChannelHandlers::sendIfDelayed(Channel* channel)
+void DelayedChannelHandlers::send_delayed_channel(Channel* channel)
 {
 	TRACE("DelayedChannelHandlers::sendIfDelayed()");
 

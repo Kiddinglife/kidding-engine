@@ -383,7 +383,7 @@ void NetworkInterface::delayed_channels_send(Channel* channel)
 void NetworkInterface::send_on_delayed(Channel* channel)
 {
 	TRACE("NetworkInterface::send_on_delayed()");
-	pDelayedChannels_->sendIfDelayed(channel);
+	pDelayedChannels_->send_delayed_channel(channel);
 	TRACE_RETURN_VOID();
 }
 

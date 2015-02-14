@@ -80,6 +80,7 @@ void Channel::process_packets(Messages* pMsgHandlers)
 void Channel::send(Bundle * pBundle)
 {
 	TRACE("Channel::send(Bundle * pBundle)");
+
 	TRACE_RETURN_VOID();
 }
 NETWORK_NAMESPACE_END_DECL
