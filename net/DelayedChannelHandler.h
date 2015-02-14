@@ -13,7 +13,26 @@ struct Channel;
 struct Nub;
 struct DelayedChannelHandlers : public Task
 {
-	void init(Nub* dispatcher, NetworkInterface* pNetworkInterface);
+	typedef std::set<ACE_INET_Addr> ChannelAddrs;
+
+	ChannelAddrs channeladdrs_;
+	NetworkInterface* pNetworkInterface_;
+	ACE_INET_Addr channel_local_addr_;
+
+	DelayedChannelHandlers() :channeladdrs_(), pNetworkInterface_(NULL), channel_local_addr_()
+	{
+		TRACE("DelayedChannelHandlers::Ctor()");
+		TRACE_RETURN_VOID();
+	}
+
+
+	~DelayedChannelHandlers()
+	{
+		TRACE("DelayedChannelHandlers::dtor()");
+		TRACE_RETURN_VOID();
+	}
+
+	inline void init(Nub* dispatcher, NetworkInterface* pNetworkInterface);
 	void fini(Nub* dispatcher);
 
 	void add(Channel* channel);
@@ -21,14 +40,6 @@ struct DelayedChannelHandlers : public Task
 	void sendIfDelayed(Channel* channel);
 
 	virtual bool process();
-
-	typedef std::set<ACE_INET_Addr> ChannelAddrs;
-	ChannelAddrs channeladdrs_;
-
-	NetworkInterface* pNetworkInterface_;
-
-	DelayedChannelHandlers();
-	~DelayedChannelHandlers();
 };
 
 NETWORK_NAMESPACE_END_DECL

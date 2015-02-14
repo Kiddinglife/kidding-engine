@@ -77,5 +77,9 @@ void Channel::process_packets(Messages* pMsgHandlers)
 	TRACE_RETURN_VOID();
 }
 
+void Channel::send(Bundle * pBundle)
+{
+
+}
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

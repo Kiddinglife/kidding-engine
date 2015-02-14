@@ -127,6 +127,8 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	void destroy(void);
 
 	void process_packets(Messages* pMsgHandlers);
+
+	void send(Bundle * pBundle = NULL);
 };
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
