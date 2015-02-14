@@ -410,7 +410,7 @@ Channel * NetworkInterface::channel(ACE_HANDLE handle)
 	TRACE_RETURN(NULL);
 }
 
-inline void NetworkInterface::on_channel_left(Channel* pChannel)
+void NetworkInterface::on_channel_left(Channel* pChannel)
 {
 	TRACE("NetworkInterface::onChannelGone()");
 	TRACE_RETURN_VOID();
@@ -434,7 +434,7 @@ void NetworkInterface::on_channel_timeout(Channel* pChannel)
 }
 
 /*this method will go through all the channels and process its packets*/
-inline void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
+void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
 {
 	TRACE("NetworkInterface::process_all_channels_packets()");
 	ChannelMap::iterator iter = channelMap_.begin();
@@ -460,10 +460,11 @@ void NetworkInterface::close_listenning_sockets(void)
 {
 	TRACE("NetworkInterface::close_socket()");
 	if( pExtListenerReceiver_ )
-		nub_->rec->remove_handler(pExtListenerReceiver_->get_handle(),
+		pExtListenerReceiver_->handle_close(pExtListenerReceiver_->get_handle(),
 		ACE_Event_Handler::ACCEPT_MASK | ACE_Event_Handler::DONT_CALL);
+
 	if( pIntListenerReceiver_ )
-		nub_->rec->remove_handler(pIntListenerReceiver_->get_handle(),
+		pIntListenerReceiver_->handle_close(pExtListenerReceiver_->get_handle(),
 		ACE_Event_Handler::ACCEPT_MASK | ACE_Event_Handler::DONT_CALL);
 
 	TRACE_RETURN_VOID();

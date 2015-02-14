@@ -1126,7 +1126,7 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	in.process_all_channels_packets(&msgs);
 	in.deregister_channel(&tcpchannel);
 	in.deregister_all_channels();
-	in.close_socket();
+	in.close_listenning_sockets();
 
 }
 
