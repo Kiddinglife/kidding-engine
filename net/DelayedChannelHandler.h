@@ -17,9 +17,9 @@ struct DelayedChannelHandlers : public Task
 
 	ChannelAddrs channeladdrs_;
 	NetworkInterface* pNetworkInterface_;
-	ACE_INET_Addr channel_local_addr_;
+	ACE_INET_Addr channel_addr_;
 
-	DelayedChannelHandlers() :channeladdrs_(), pNetworkInterface_(NULL), channel_local_addr_()
+	DelayedChannelHandlers() :channeladdrs_(), pNetworkInterface_(NULL), channel_addr_()
 	{
 		TRACE("DelayedChannelHandlers::Ctor()");
 		TRACE_RETURN_VOID();

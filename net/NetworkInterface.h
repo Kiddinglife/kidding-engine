@@ -135,7 +135,7 @@ struct NetworkInterface : public ACE_Event_Handler
 	/// this method will go through all the channels and process its packets
 	void process_all_channels_packets(Messages* pMsgHandlers);
 
-	/// close listenning sockets by remove the handlers from the nub reactor
+	/// close listenning sockets by remove the handlers from the reactor
 	void close_listenning_sockets(void);
 };
 

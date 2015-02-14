@@ -302,8 +302,10 @@ bool NetworkInterface::register_channel(Channel* pChannel)
 {
 	TRACE("NetworkInterface::registerChannel");
 	/// get the current channel's address
-	ACE_INET_Addr localAddr;
-	pChannel->pEndPoint_->get_local_addr(localAddr);
+	static ACE_INET_Addr localAddr;
+	pChannel->protocolType_ == PROTOCOL_TCP ?
+		pChannel->pEndPoint_->get_remote_addr(localAddr) :
+		pChannel->pEndPoint_->get_local_addr(localAddr);
 
 	ACE_ASSERT(localAddr.get_ip_address() != 0);
 	ACE_ASSERT(pChannel->pNetworkInterface_ == this);
