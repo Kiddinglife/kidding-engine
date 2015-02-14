@@ -372,13 +372,13 @@ bool NetworkInterface::deregister_all_channels()
 	TRACE_RETURN(true);
 }
 
-inline void NetworkInterface::delayed_channels_send(Channel* channel)
+void NetworkInterface::delayed_channels_send(Channel* channel)
 {
 	TRACE("NetworkInterface::delayedSend()");
 	pDelayedChannels_->add(channel);
 	TRACE_RETURN_VOID();
 }
-inline void NetworkInterface::send_on_delayed(Channel* channel)
+void NetworkInterface::send_on_delayed(Channel* channel)
 {
 	TRACE("NetworkInterface::send_on_delayed()");
 	pDelayedChannels_->sendIfDelayed(channel);
@@ -415,7 +415,7 @@ inline void NetworkInterface::on_channel_left(Channel* pChannel)
 	TRACE("NetworkInterface::onChannelGone()");
 	TRACE_RETURN_VOID();
 }
-inline void NetworkInterface::on_channel_timeout(Channel* pChannel)
+void NetworkInterface::on_channel_timeout(Channel* pChannel)
 {
 	TRACE("NetworkInterface::onChannelTimeOut()");
 
@@ -434,7 +434,7 @@ inline void NetworkInterface::on_channel_timeout(Channel* pChannel)
 }
 
 /*this method will go through all the channels and process its packets*/
-void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
+inline void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
 {
 	TRACE("NetworkInterface::process_all_channels_packets()");
 	ChannelMap::iterator iter = channelMap_.begin();
@@ -456,16 +456,17 @@ void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
 	TRACE_RETURN_VOID();
 }
 
-void NetworkInterface::close_socket(void)
+void NetworkInterface::close_listenning_sockets(void)
 {
+	TRACE("NetworkInterface::close_socket()");
 	if( pExtListenerReceiver_ )
-		nub_->rec->remove_handler(pExtListenerReceiver_,
-		ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
-
+		nub_->rec->remove_handler(pExtListenerReceiver_->get_handle(),
+		ACE_Event_Handler::ACCEPT_MASK | ACE_Event_Handler::DONT_CALL);
 	if( pIntListenerReceiver_ )
-		nub_->rec->remove_handler(pIntListenerReceiver_,
-		ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
+		nub_->rec->remove_handler(pIntListenerReceiver_->get_handle(),
+		ACE_Event_Handler::ACCEPT_MASK | ACE_Event_Handler::DONT_CALL);
 
+	TRACE_RETURN_VOID();
 }
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

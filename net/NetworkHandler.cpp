@@ -52,8 +52,7 @@ int TCP_Acceptor_Handler::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close
 {
 	if( this->acceptor_.get_handle() != ACE_INVALID_HANDLE )
 	{
-		ACE_Reactor_Mask m = ACE_Event_Handler::ACCEPT_MASK | ACE_Event_Handler::DONT_CALL;
-		this->reactor()->remove_handler(this, m);
+		this->reactor()->remove_handler(this, close_mask);
 		this->acceptor_.close();
 	}
 	return 0;
