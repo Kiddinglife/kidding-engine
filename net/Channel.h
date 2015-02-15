@@ -5,6 +5,7 @@
 #include "ace\Refcounted_Auto_Ptr.h"
 #include "common\ace_object_pool.h"
 #include "Bundle.h"
+#include "ace\Event_Handler.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -14,9 +15,10 @@ struct PacketReader;
 struct PacketReceiver;
 struct PacketSender;
 struct PacketFilter;
+
 typedef ACE_Refcounted_Auto_Ptr<PacketFilter, ACE_Null_Mutex> PacketFilterPtr;
 
-struct Channel // : public TimerHandler, public RefCountable, public PoolObject
+struct Channel : public ACE_Event_Handler
 {
 	/// INTERNAL describes the properties of channel from server to server.
 	/// EXTERNAL describes the properties of a channel from client to server.
@@ -33,6 +35,11 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 		PACKET_IS_CORRUPT
 	};
 
+	enum TimeOutType
+	{
+		TIMEOUT_INACTIVITY_CHECK
+	};
+
 	//@TO-DO 可能需要查看apg timer那个例子
 	TimerHandle					          inactivityTimerHandle_;
 
@@ -46,11 +53,12 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	PacketReader*				          pPacketReader_; //bufferedReceives_ 
 
 	//@TO-DO maybe can use ace_handle 
-	ACE_SOCK*					          pEndPoint_;
+	//ACE_SOCK*					          pEndPoint_;
+	ACE_Event_Handler*					  pEndPoint_;
 
 	//@TO-DO need create struct PacketReceiver
-	PacketReceiver*				      pPacketReceiver_;
-	PacketSender*				          pPacketSender_;
+	//PacketReceiver*				      pPacketReceiver_;
+	//PacketSender*				          pPacketSender_;
 
 	//@TO-DO need create struct PacketFilter
 	PacketFilterPtr				          pFilter_;
@@ -58,6 +66,10 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	/// 可以指定通道使用某些特定的消息
 	/// can designate the channel to use some specific msgs
 	Messages*                              pMsgs_;
+
+	/// bundles in this channel
+	typedef std::vector<Bundle*> Bundles;
+	Bundles                                  bundles_;
 
 	/// 接收到的所有包的集合：the container for the received packets
 	typedef std::vector<Packet*> RecvPackets;
@@ -112,8 +124,15 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 		if( !channel->ref_count_ ) delete channel;
 	}
 
+	//Channel(NetworkInterface* networkInterface = NULL,
+	//	ACE_SOCK* endpoint = NULL,
+	//	ChannelScope traits = EXTERNAL,
+	//	ProtocolType pt = PROTOCOL_TCP,
+	//	PacketFilterPtr pFilter = PacketFilterPtr(NULL),
+	//	ChannelID id = CHANNEL_ID_NULL);
+
 	Channel(NetworkInterface* networkInterface = NULL,
-		ACE_SOCK* endpoint = NULL,
+		ACE_Event_Handler* endpoint = NULL,
 		ChannelScope traits = EXTERNAL,
 		ProtocolType pt = PROTOCOL_TCP,
 		PacketFilterPtr pFilter = PacketFilterPtr(NULL),
@@ -121,12 +140,16 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 
 	virtual ~Channel(void) { }
 
+	virtual int handle_timeout(const ACE_Time_Value &current_time, const void *act = 0);
 	const char*  c_str(void) const;
 
-	void clearBundle(void);
+	void clearBundles(void);
+	void clearState(bool warnOnDiscard = false);
 	bool initialize(void);
+	bool finalise(void);
 	void destroy(void);
-
+	void reset(const ACE_Event_Handler* pEndPoint, bool warnOnDiscard);
+	inline void add_delayed_channel(void);
 	void process_packets(Messages* pMsgHandlers);
 
 	void send(Bundle * pBundle = NULL);

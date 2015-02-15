@@ -1,4 +1,4 @@
-#ifndef PacketReceiver_H_
+﻿#ifndef PacketReceiver_H_
 #define PacketReceiver_H_
 
 #include "ace\pre.h"
@@ -13,7 +13,7 @@ struct Channel;
 struct NetworkInterface;
 struct Nub;
 
-struct TCP_Packet_Receiver
+struct Packet_Receiver
 {
 	NetworkInterface* pNetworkInterface_;
 	ACE_SOCK_Stream* pEndpoint_;
@@ -31,8 +31,8 @@ struct TCP_Packet_Receiver
 		UDP_PACKET_RECEIVER = 1
 	};
 
-	TCP_Packet_Receiver();
-	~TCP_Packet_Receiver() { }
+	Packet_Receiver() :pNetworkInterface_(NULL), pEndpoint_(NULL) { }
+	~Packet_Receiver() { }
 
 	virtual Reason processPacket(Channel* pChannel, Packet * pPacket);
 	virtual Reason processFilteredPacket(Channel* pChannel, Packet * pPacket) = 0;

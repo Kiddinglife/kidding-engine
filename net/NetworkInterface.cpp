@@ -297,21 +297,21 @@ bool NetworkInterface::is_ip_addr_valid(const char* spec, char* name)
 
 }
 
-/*These three methods are used to register and deregister the channel*/
+/// These three methods are used to register and deregister the channel
 bool NetworkInterface::register_channel(Channel* pChannel)
 {
 	TRACE("NetworkInterface::registerChannel");
 	/// get the current channel's address
-	static ACE_INET_Addr localAddr;
+	static ACE_INET_Addr addr;
 	pChannel->protocolType_ == PROTOCOL_TCP ?
-		pChannel->pEndPoint_->get_remote_addr(localAddr) :
-		pChannel->pEndPoint_->get_local_addr(localAddr);
+		( (TCP_SOCK_Handler*) pChannel->pEndPoint_ )->sock_.get_remote_addr(addr) :
+		( (UDP_SOCK_Handler*) pChannel->pEndPoint_ )->sock_.get_local_addr(addr);
 
-	ACE_ASSERT(localAddr.get_ip_address() != 0);
+	//ACE_ASSERT(addr.get_ip_address() != 0);
 	ACE_ASSERT(pChannel->pNetworkInterface_ == this);
 
 	/// check if this channel has already been added
-	ChannelMap::iterator iter = channelMap_.find(localAddr);
+	ChannelMap::iterator iter = channelMap_.find(addr);
 	Channel * pExisting = iter != channelMap_.end() ? iter->second : NULL;
 	if( pExisting )
 	{
@@ -321,7 +321,7 @@ bool NetworkInterface::register_channel(Channel* pChannel)
 	}
 
 	/// if not added  then add it
-	channelMap_[localAddr] = pChannel;
+	channelMap_[addr] = pChannel;
 
 	///if it is external channel, increment by 1
 	if( pChannel->channelScope_ = Channel::EXTERNAL )
@@ -334,14 +334,17 @@ bool NetworkInterface::deregister_channel(Channel* pChannel)
 	TRACE("NetworkInterface::deregisterChannel");
 
 	/// get the current channel's address
-	ACE_INET_Addr localAddr;
-	pChannel->pEndPoint_->get_local_addr(localAddr);
+	static ACE_INET_Addr addr;
+	pChannel->protocolType_ == PROTOCOL_TCP ?
+		( (TCP_SOCK_Handler*) pChannel->pEndPoint_ )->sock_.get_remote_addr(addr) :
+		( (UDP_SOCK_Handler*) pChannel->pEndPoint_ )->sock_.get_local_addr(addr);
+	//pChannel->pEndPoint_-> ->get_local_addr(localAddr);
 
 	///if it is external channel, decrement by 1
 	if( pChannel->channelScope_ = Channel::EXTERNAL )
 		numExtChannels_--;
 
-	if( !channelMap_.erase(localAddr) )
+	if( !channelMap_.erase(addr) )
 	{
 		ACE_DEBUG(( LM_ERROR, "NetworkInterface::deregisterChannel: "
 			"Channel not found {}!\n",
@@ -374,20 +377,20 @@ bool NetworkInterface::deregister_all_channels()
 	TRACE_RETURN(true);
 }
 
-void NetworkInterface::delayed_channels_send(Channel* channel)
+void NetworkInterface::add_delayed_channel(Channel* channel)
 {
 	TRACE("NetworkInterface::delayedSend()");
 	pDelayedChannels_->add(channel);
 	TRACE_RETURN_VOID();
 }
-void NetworkInterface::send_on_delayed(Channel* channel)
+void NetworkInterface::send_delayed_channel(Channel* channel)
 {
 	TRACE("NetworkInterface::send_on_delayed()");
 	pDelayedChannels_->send_delayed_channel(channel);
 	TRACE_RETURN_VOID();
 }
 
-/*These twp methods are used to find the channel */
+/// These twp methods are used to find the channel 
 Channel * NetworkInterface::channel(const ACE_INET_Addr& addr)
 {
 	TRACE("NetworkInterface::findChannel(const ACE_INET_Addr&)");
@@ -412,6 +415,7 @@ Channel * NetworkInterface::channel(ACE_HANDLE handle)
 	TRACE_RETURN(NULL);
 }
 
+/// channel cb
 void NetworkInterface::on_channel_left(Channel* pChannel)
 {
 	TRACE("NetworkInterface::onChannelGone()");
@@ -435,7 +439,7 @@ void NetworkInterface::on_channel_timeout(Channel* pChannel)
 	TRACE_RETURN_VOID();
 }
 
-/*this method will go through all the channels and process its packets*/
+/// this method will go through all the channels and process its packets
 void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
 {
 	TRACE("NetworkInterface::process_all_channels_packets()");

@@ -284,7 +284,7 @@ template< typename T, typename ACE_LOCK> class SmartPoolObject
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define ACE_OBJECT_POOL_INIT_SIZE 1024
+#define ACE_OBJECT_POOL_INIT_SIZE 100
 ///¶ÔÏó³ØÖ¸Õë¶¨Òå
 #define ACE_OBJECT_POOL_PTR_SETTER(OBJECTTYPE, POOL)  ACE_ObjectPool* POOL
 ///»ñµÃÌØ¶¨¶ÔÏó³ØÖ¸Õë
@@ -488,7 +488,7 @@ class ACE_ObjectPool /*: public IACE_ObjectPool //Ö®·ÖÅäÄÚ´æ²»ÊÇ·
 		++mUsedCount;
 		--mUnusedCount;
 		return ptr;
-	//	TRACE_RETURN(ptr);
+		//	TRACE_RETURN(ptr);
 	}
 
 	///´´½¨Ò»¸ö¶ÔÏó[Ä¬ÈÏ¹¹Ôìº¯Êý]

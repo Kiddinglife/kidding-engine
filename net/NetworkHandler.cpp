@@ -5,7 +5,7 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-ACE_PoolPtr_Getter(TCP_Acceptor_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
+ACE_PoolPtr_Getter(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
 
 int TCP_Acceptor_Handler::open(const ACE_INET_Addr &listen_addr)
 {
@@ -20,11 +20,11 @@ int TCP_Acceptor_Handler::open(const ACE_INET_Addr &listen_addr)
 //@TO-DO
 int TCP_Acceptor_Handler::handle_input(ACE_HANDLE fd)
 {
-	TCP_SOCK_Handler* client = TCP_Acceptor_Handler_Pool->Ctor();
+	TCP_SOCK_Handler* client = TCP_SOCK_Handler_Pool->Ctor();
 
 	if( this->acceptor_.accept(client->sock_) == -1 )
 	{
-		TCP_Acceptor_Handler_Pool->Dtor(client);
+		TCP_SOCK_Handler_Pool->Dtor(client);
 		ACE_ERROR_RETURN(( LM_ERROR,
 			ACE_TEXT("(%P|%t) %p\n"),
 			ACE_TEXT("Failed to accept ")
@@ -38,7 +38,8 @@ int TCP_Acceptor_Handler::handle_input(ACE_HANDLE fd)
 		client->handle_close(ACE_INVALID_HANDLE,
 		ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
 
-	Channel* pchannel = new Channel(networkInterface_, &client->sock_, channelScope_);
+	//Channel* pchannel = new Channel(networkInterface_, &client->sock_, channelScope_);
+	Channel* pchannel = new Channel(networkInterface_, client, channelScope_);
 
 	if( !networkInterface_->register_channel(pchannel) )
 	{
@@ -79,7 +80,7 @@ int TCP_SOCK_Handler::handle_close(ACE_HANDLE, ACE_Reactor_Mask mask)
 	this->reactor()->remove_handler(this, mask);
 	this->sock_.close();
 	//this->output_queue_.flush();
-	TCP_Acceptor_Handler_Pool->Dtor(this);
+	TCP_SOCK_Handler_Pool->Dtor(this);
 	return 0;
 }
 int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)

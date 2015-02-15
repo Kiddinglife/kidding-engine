@@ -110,8 +110,8 @@ struct NetworkInterface : public ACE_Event_Handler
 	bool is_ip_addr_valid(const char* spec, char* name);
 
 	/// Send methods
-	void delayed_channels_send(Channel* channel);
-	void send_on_delayed(Channel* channel);
+	void add_delayed_channel(Channel* channel);
+	void send_delayed_channel(Channel* channel);
 
 	/// These three methods are used to register and deregister the channel
 	bool register_channel(Channel* pChannel);
@@ -124,7 +124,7 @@ struct NetworkInterface : public ACE_Event_Handler
 
 	/// call back functon when the specific channel goes away
 	void on_channel_left(Channel * pChannel);
-	void NetworkInterface::on_channel_timeout(Channel * pChannel);
+	void on_channel_timeout(Channel * pChannel);
 
 	/**
 	* This method is used to handle the timout event in network interface

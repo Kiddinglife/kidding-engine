@@ -24,9 +24,11 @@ void DelayedChannelHandlers::fini(Nub* dispatcher)
 void DelayedChannelHandlers::add(Channel* channel)
 {
 	TRACE("DelayedChannelHandlers::add()");
+
 	channel->protocolType_ == PROTOCOL_TCP ?
-		channel->pEndPoint_->get_remote_addr(channel_addr_) :
-		channel->pEndPoint_->get_local_addr(channel_addr_);
+		( (TCP_SOCK_Handler*) channel->pEndPoint_ )->sock_.get_remote_addr(channel_addr_) :
+		( (UDP_SOCK_Handler*) channel->pEndPoint_ )->sock_.get_local_addr(channel_addr_);
+
 	channeladdrs_.insert(channel_addr_);
 	TRACE_RETURN_VOID();
 }
@@ -36,8 +38,8 @@ void DelayedChannelHandlers::send_delayed_channel(Channel* channel)
 	TRACE("DelayedChannelHandlers::sendIfDelayed()");
 
 	channel->protocolType_ == PROTOCOL_TCP ?
-		channel->pEndPoint_->get_remote_addr(channel_addr_) :
-		channel->pEndPoint_->get_local_addr(channel_addr_);
+		( (TCP_SOCK_Handler*) channel->pEndPoint_ )->sock_.get_remote_addr(channel_addr_) :
+		( (UDP_SOCK_Handler*) channel->pEndPoint_ )->sock_.get_local_addr(channel_addr_);
 
 	if( channeladdrs_.erase(channel_addr_) > 0 )
 	{

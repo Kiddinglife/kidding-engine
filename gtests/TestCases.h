@@ -1117,7 +1117,7 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	in.handle_timeout(tv, 0);
 
 	ACE_INET_Addr addr(20006, "192.168.2.47");
-	ACE_SOCK_Dgram dg(addr);
+	TCP_SOCK_Handler dg(Channel::ChannelScope::EXTERNAL, &in);
 	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
 	Messages msgs;
 
