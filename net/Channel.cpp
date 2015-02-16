@@ -6,11 +6,6 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
 ACE_PoolPtr_Getter(BundlePool, Bundle, ACE_Null_Mutex);
-
-//ACE_PoolPtr_Getter(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
-static ACE_ObjectPool<TCP_SOCK_Handler, ACE_Null_Mutex>* TCP_SOCK_Handler_Pool =
-ACE_ObjectPoolFactory<TCP_SOCK_Handler, ACE_Null_Mutex>::Singlton::instance()->get_obj_pool("ACE_TCP_SOCK_Handler_Pool_Pool");
-
 ACE_PoolPtr_Getter(PacketSender_Pool, PacketSender, ACE_Null_Mutex);
 
 Channel::
@@ -147,18 +142,15 @@ bool Channel::finalise(void)
 		pNetworkInterface_->on_channel_left(this);
 	}
 
-	//SAFE_RELEASE(pPacketReceiver_);
-	//SAFE_RELEASE(pEndPoint_);
 	SAFE_RELEASE(pPacketReader_);
-	//SAFE_RELEASE(pPacketSender_);
 
 	TRACE_RETURN(true);
 }
 
 void Channel::destroy(void)
 {
-	//TRACE("Channel::destroy()");
-	//TRACE_RETURN_VOID();
+	TRACE("Channel::destroy()");
+	TRACE_RETURN_VOID();
 }
 
 void Channel::process_packets(Messages* pMsgHandlers)
@@ -199,10 +191,7 @@ void Channel::send(Bundle * pBundle)
 
 	if( !sending_ )
 	{
-		//if( !pPacketSender_ )
-		//	PacketSender_Pool->Ctor<ProtocolType, ACE_Event_Handler*, NetworkInterface*>(protocolType_, pEndPoint_, pNetworkInterface_);
-
-		//pPacketSender_->processSend_(this);
+		protocolType_ == PROTOCOL_TCP ? ( (TCP_SOCK_Handler*) pEndPoint_ )->process_send(this) : ( (UDP_SOCK_Handler*) pEndPoint_ )->process_send(this);
 
 		// 如果不能立即发送到系统缓冲区，那么交给poller处理
 		if( bundles_.size() && !isCondemn_ && !isDestroyed_ )

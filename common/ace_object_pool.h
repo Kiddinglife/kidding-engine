@@ -614,6 +614,9 @@ class ACE_ObjectPool /*: public IACE_ObjectPool //Ö®·ÖÅäÄÚ´æ²»ÊÇ·
 
 };
 
+#define ACE_PoolPtr_Declare(PoolName,ObjectType, LockerType) \
+extern ACE_ObjectPool<ObjectType,LockerType>* PoolName 
+
 #define ACE_PoolPtr_Getter(PoolName,ObjectType, LockerType) \
 ACE_ObjectPool<ObjectType,LockerType>* PoolName = \
 ACE_ObjectPoolFactory<ObjectType, LockerType>::Singlton::instance()->get_obj_pool("ACE_"#ObjectType"_Pool")

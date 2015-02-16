@@ -1,6 +1,8 @@
 ﻿#include "net_common.h"
 #include "Message.h"
 #include "Packet.h"
+#include "NetworkHandler.h"
+#include "Channel.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -12,6 +14,9 @@ namespace UDP /*ÒÔºóÀ©Õ¹ÓÃ*/
 namespace TCP
 {
 }
+
+ACE_PoolPtr_Getter(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
+ACE_PoolPtr_Getter(Channel_Pool, Channel, ACE_Null_Mutex);
 
 bool g_debugEntity = false;
 bool g_appPublish = 1;

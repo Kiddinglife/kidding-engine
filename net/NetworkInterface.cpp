@@ -312,7 +312,8 @@ bool NetworkInterface::register_channel(Channel* pChannel)
 
 	/// check if this channel has already been added
 	ChannelMap::iterator iter = channelMap_.find(addr);
-	Channel * pExisting = iter != channelMap_.end() ? iter->second : NULL;
+	Channel * pExisting = ( iter != channelMap_.end() ? iter->second : NULL );
+
 	if( pExisting )
 	{
 		ACE_ERROR_RETURN(( LM_CRITICAL,

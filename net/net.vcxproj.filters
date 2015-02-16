@@ -27,9 +27,6 @@
     <ClInclude Include="Address.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Endpoint.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Nub.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -75,9 +72,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Address.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Endpoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Nub.cpp">

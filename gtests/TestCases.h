@@ -1118,7 +1118,7 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 
 	ACE_INET_Addr addr(20006, "192.168.2.47");
 	TCP_SOCK_Handler dg(Channel::ChannelScope::EXTERNAL, &in);
-	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
+	Channel tcpchannel(&in, &dg);
 	Messages msgs;
 
 	in.register_channel(&tcpchannel);
@@ -1134,6 +1134,7 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	delay.add(&tcpchannel);
 	delay.send_delayed_channel(&tcpchannel);
 	delay.process();
+	delay.fini(&pDispatcher);
 }
 
 //#include "net\PacketReader.h"

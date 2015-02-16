@@ -43,7 +43,7 @@ void DelayedChannelHandlers::send_delayed_channel(Channel* channel)
 
 	if( channeladdrs_.erase(channel_addr_) > 0 )
 	{
-		channel->send();
+		channel->send(NULL);
 	}
 	TRACE_RETURN_VOID();
 }
@@ -58,7 +58,7 @@ bool DelayedChannelHandlers::process()
 		Channel * pChannel = pNetworkInterface_->channel(( *iter ));
 		if( pChannel && ( pChannel->isCondemn_ || !pChannel->isDestroyed_ ) )
 		{
-			pChannel->send();
+			pChannel->send(NULL);
 		}
 
 		++iter;

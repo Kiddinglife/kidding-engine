@@ -3,9 +3,11 @@
 
 #include "ace\pre.h"
 #include "ace\Null_Mutex.h"
+#include "common\common.h"
 #include "common\ace_object_pool.h"
 #include "FixedMessages.h"
 #include "net\Packet.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 

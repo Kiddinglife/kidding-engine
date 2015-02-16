@@ -2,41 +2,47 @@
 #define NET_COMMON_H_
 
 #include "ace\pre.h"
-#include "ace/SOCK_Stream.h"
+#include "ace\SOCK_Stream.h"
 #include "ace\SOCK_Dgram.h"
-#include "common\common.h"
+#include "common\ace_object_pool.h"
 
+//#include "net\NetworkHandler.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-template <typename SOCK_TYPE>
-struct SOCK_TYPE_TRAITS
-{
-	typedef typename SOCK_TYPE::sock_type  sock_type;//定义一个traits实现  
-	typedef typename SOCK_TYPE::tcp_upd_type  tcp_upd_type;//定义一个traits实现
-};
-struct TCP_TYPE
-{
-	typedef  ACE_SOCK_Stream sock_type;
-	typedef  TCP_TYPE  tcp_upd_type;
-};
-struct UDP_TYPE
-{
-	typedef ACE_SOCK_Dgram sock_type;
-	typedef  UDP_TYPE  tcp_upd_type;
-};
+//template <typename SOCK_TYPE>
+//struct SOCK_TYPE_TRAITS
+//{
+//	typedef typename SOCK_TYPE::sock_type  sock_type;//定义一个traits实现  
+//	typedef typename SOCK_TYPE::tcp_upd_type  tcp_upd_type;//定义一个traits实现
+//};
+//struct TCP_TYPE
+//{
+//	typedef  ACE_SOCK_Stream sock_type;
+//	typedef  TCP_TYPE  tcp_upd_type;
+//};
+//struct UDP_TYPE
+//{
+//	typedef ACE_SOCK_Dgram sock_type;
+//	typedef  UDP_TYPE  tcp_upd_type;
+//};
 
 namespace UDP /*以后扩展用*/
 {
-
 #define PACKET_MAX_SIZE_UDP					1472 
 }
 
 namespace TCP
 {
-
 }
+
+struct TCP_SOCK_Handler;
+ACE_PoolPtr_Declare(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
+
+struct Channel;
+ACE_PoolPtr_Declare(Channel_Pool, Channel, ACE_Null_Mutex);
+
 //========================================================
 /*这个开关设置数据包是否总是携带长度信息， 这样在某些前端进行耦合时提供一些便利
 如果为false则一些固定长度的数据包不携带长度信息， 由对端自行解析*/
@@ -297,6 +303,9 @@ inline int setbuffersize(int optname, int size, ACE_SOCK& mSockIO)
 {
 	return mSockIO.set_option(SOL_SOCKET, optname, &size, sizeof(size));
 }
+
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
+#include "ace\post.h"
 #endif

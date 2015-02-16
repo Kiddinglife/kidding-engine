@@ -5,7 +5,9 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-ACE_PoolPtr_Getter(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
+//ACE_PoolPtr_Getter(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
+ACE_PoolPtr_Declare(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
+ACE_PoolPtr_Declare(Channel_Pool, Channel, ACE_Null_Mutex);
 
 int TCP_Acceptor_Handler::open(const ACE_INET_Addr &listen_addr)
 {
@@ -35,11 +37,12 @@ int TCP_Acceptor_Handler::handle_input(ACE_HANDLE fd)
 	client->reactor(this->reactor());
 
 	if( client->open() == -1 )
+	{
 		client->handle_close(ACE_INVALID_HANDLE,
-		ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
+			ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
+	}
 
-	//Channel* pchannel = new Channel(networkInterface_, &client->sock_, channelScope_);
-	Channel* pchannel = new Channel(networkInterface_, client, channelScope_);
+	Channel* pchannel = Channel_Pool->Ctor(networkInterface_, client, channelScope_);
 
 	if( !networkInterface_->register_channel(pchannel) )
 	{
@@ -59,6 +62,13 @@ int TCP_Acceptor_Handler::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close
 		this->acceptor_.close();
 	}
 	return 0;
+}
+
+bool TCP_SOCK_Handler::process_send(Channel* pChannel)
+{
+	TRACE(" TCP_SOCK_Handler::process_send()");
+
+	TRACE_RETURN(true);
 }
 
 int TCP_SOCK_Handler::open(void)
@@ -109,6 +119,13 @@ int UDP_SOCK_Handler::handle_output(ACE_HANDLE fd)
 int UDP_SOCK_Handler::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
 {
 	return 0;
+}
+
+bool UDP_SOCK_Handler::process_send(Channel* pChannel)
+{
+	TRACE(" UDP_SOCK_Handler::process_send()");
+
+	TRACE_RETURN(true);
 }
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
