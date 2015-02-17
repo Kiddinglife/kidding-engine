@@ -6,8 +6,6 @@
 #include "ace\SOCK_Dgram.h"
 #include "common\ace_object_pool.h"
 
-//#include "net\NetworkHandler.h"
-
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
@@ -37,6 +35,7 @@ namespace TCP
 {
 };
 
+//========================== Pools =========================
 struct TCP_SOCK_Handler;
 ACE_PoolPtr_Declare(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
 
@@ -51,6 +50,8 @@ ACE_PoolPtr_Declare(UDP_SOCK_Handler_Pool, UDP_SOCK_Handler, ACE_Null_Mutex);
 
 struct Packet;
 ACE_PoolPtr_Declare(Packet_Pool, Packet, ACE_Null_Mutex);
+//========================================================
+
 //========================================================
 /*这个开关设置数据包是否总是携带长度信息， 这样在某些前端进行耦合时提供一些便利
 如果为false则一些固定长度的数据包不携带长度信息， 由对端自行解析*/
