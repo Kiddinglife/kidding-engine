@@ -1,4 +1,5 @@
 ﻿#include "net_common.h"
+#include "PacketReader.h"
 #include "Message.h"
 #include "Packet.h"
 #include "NetworkHandler.h"
@@ -17,6 +18,9 @@ namespace TCP
 
 ACE_PoolPtr_Getter(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
 ACE_PoolPtr_Getter(Channel_Pool, Channel, ACE_Null_Mutex);
+ACE_PoolPtr_Getter(PacketReader_Pool, PacketReader, ACE_Null_Mutex);
+ACE_PoolPtr_Getter(UDP_SOCK_Handler_Pool, UDP_SOCK_Handler, ACE_Null_Mutex);
+ACE_PoolPtr_Getter(Packet_Pool, Packet, ACE_Null_Mutex);
 
 bool g_debugEntity = false;
 bool g_appPublish = 1;

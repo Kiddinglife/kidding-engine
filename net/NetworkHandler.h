@@ -49,13 +49,12 @@ NETWORK_NAMESPACE_BEGIN_DECL
  //};
 struct TCP_SOCK_Handler : public ACE_Event_Handler
 {
-	Channel::ChannelScope  channelScope_;
 	NetworkInterface* networkInterface_;
+	Channel::ChannelScope  channelScope_;
 	ACE_SOCK_Stream sock_;
-	//Channel* pChannel_;
+	Channel* pChannel_;
 
-	TCP_SOCK_Handler(Channel::ChannelScope  channelScope_ = Channel::ChannelScope::EXTERNAL,
-		NetworkInterface* networkInterface = NULL) :
+	TCP_SOCK_Handler(NetworkInterface* networkInterface = NULL, Channel::ChannelScope  channelScope_ = Channel::ChannelScope::EXTERNAL) :
 		ACE_Event_Handler(),
 		channelScope_(channelScope_),
 		networkInterface_(networkInterface),
@@ -88,15 +87,17 @@ struct TCP_SOCK_Handler : public ACE_Event_Handler
 	virtual int handle_close(ACE_HANDLE handle,
 		ACE_Reactor_Mask close_mask);
 };
+
 struct UDP_SOCK_Handler : public ACE_Event_Handler
 {
 	Channel::ChannelScope channelScope_;
 	NetworkInterface* networkInterface_;
 	ACE_SOCK_Dgram sock_;
+	Channel* pChannel_;
 
 	UDP_SOCK_Handler(ACE_INET_Addr& addr,
-		Channel::ChannelScope channelScope = Channel::ChannelScope::INTERNAL,
-		NetworkInterface* networkInterface = NULL) :
+		NetworkInterface* networkInterface = NULL,
+		Channel::ChannelScope channelScope = Channel::ChannelScope::INTERNAL) :
 		ACE_Event_Handler(),
 		channelScope_(channelScope),
 		networkInterface_(networkInterface),

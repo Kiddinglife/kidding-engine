@@ -1,6 +1,7 @@
 ﻿#include "Channel.h"
 #include "net\NetworkInterface.h"
 #include "net\PacketSender.h"
+#include "net\PacketReader.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -26,7 +27,7 @@ inactivityExceptionPeriod_(0),
 lastRecvTime_(0),
 bundle_(),
 recvPacketIndex_(0),
-pPacketReader_(0),
+pPacketReader_(NULL),
 isDestroyed_(false),
 numPacketsSent_(0),
 numPacketsReceived_(0),
@@ -49,6 +50,11 @@ pMsgs_(NULL)
 	intrusive_add_ref(this);
 	clearBundles();
 	initialize();
+}
+
+Channel::~Channel()
+{
+	finalise();
 }
 
 void Channel::clearState(bool warnOnDiscard /*=false*/)
@@ -118,17 +124,17 @@ void Channel::clearBundles(void)
 	TRACE_RETURN_VOID();
 }
 
-bool Channel::initialize()
+bool Channel::initialize(ACE_INET_Addr* addr)
 {
-	TRACE("Channel::initialize()");
+	TRACE("Channel::initialize_udp_sock_handler()");
 
-	if( protocolType_ == PROTOCOL_TCP )
+	if( protocolType_ == PROTOCOL_UDP )
 	{
-
-	} else
-	{
-
+		pEndPoint_ = UDP_SOCK_Handler_Pool->Ctor(*addr, pNetworkInterface_);
+		( (UDP_SOCK_Handler*) pEndPoint_ )->pChannel_ = this;
 	}
+	//startInactivityDetection(( traits_ == INTERNAL ) ? g_channelInternalTimeout :
+	//	g_channelExternalTimeout);
 
 	TRACE_RETURN(true);
 }
@@ -142,7 +148,14 @@ bool Channel::finalise(void)
 		pNetworkInterface_->on_channel_left(this);
 	}
 
-	SAFE_RELEASE(pPacketReader_);
+	if( pPacketReader_ )
+	{
+		PacketReader_Pool->Dtor(pPacketReader_);
+		pPacketReader_ = NULL;
+	}
+
+	if( protocolType_ == PROTOCOL_UDP )
+		pEndPoint_->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
 
 	TRACE_RETURN(true);
 }

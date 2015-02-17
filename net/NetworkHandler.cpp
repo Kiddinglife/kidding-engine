@@ -43,6 +43,7 @@ int TCP_Acceptor_Handler::handle_input(ACE_HANDLE fd)
 	}
 
 	Channel* pchannel = Channel_Pool->Ctor(networkInterface_, client, channelScope_);
+	pchannel = pchannel;
 
 	if( !networkInterface_->register_channel(pchannel) )
 	{

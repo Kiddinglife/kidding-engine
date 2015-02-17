@@ -31,11 +31,11 @@ NETWORK_NAMESPACE_BEGIN_DECL
 namespace UDP /*以后扩展用*/
 {
 #define PACKET_MAX_SIZE_UDP					1472 
-}
+};
 
 namespace TCP
 {
-}
+};
 
 struct TCP_SOCK_Handler;
 ACE_PoolPtr_Declare(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
@@ -43,6 +43,14 @@ ACE_PoolPtr_Declare(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
 struct Channel;
 ACE_PoolPtr_Declare(Channel_Pool, Channel, ACE_Null_Mutex);
 
+struct PacketReader;
+ACE_PoolPtr_Declare(PacketReader_Pool, PacketReader, ACE_Null_Mutex);
+
+struct UDP_SOCK_Handler;
+ACE_PoolPtr_Declare(UDP_SOCK_Handler_Pool, UDP_SOCK_Handler, ACE_Null_Mutex);
+
+struct Packet;
+ACE_PoolPtr_Declare(Packet_Pool, Packet, ACE_Null_Mutex);
 //========================================================
 /*这个开关设置数据包是否总是携带长度信息， 这样在某些前端进行耦合时提供一些便利
 如果为false则一些固定长度的数据包不携带长度信息， 由对端自行解析*/
@@ -303,7 +311,6 @@ inline int setbuffersize(int optname, int size, ACE_SOCK& mSockIO)
 {
 	return mSockIO.set_option(SOL_SOCKET, optname, &size, sizeof(size));
 }
-
 
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

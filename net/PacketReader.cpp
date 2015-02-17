@@ -4,8 +4,6 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
-
 PacketReader::PacketReader(Channel* pChannel) :
 pFragmentsWpos_(NULL), //pFragmentDatasWpos_;
 pFragmentsRemainning_(0), //pFragmentDatasRemain_;
@@ -29,24 +27,24 @@ block_(const_cast<ACE_Message_Block*>( in_.start() ))
 PacketReader::~PacketReader()
 {
 	TRACE("PacketReader::dtor()");
+
 	fragmentsFlag_ = FRAGMENT_DATA_UNKNOW;
 	currMsgLen_ = currMsgID_ = pFragmentsRemainning_ = 0;
 	pFragmentsWpos_ = NULL;
-
 	if( pFragmentPacket_ )
 	{
-		pool->Dtor(pFragmentPacket_);
+		Packet_Pool->Dtor(pFragmentPacket_);
 		pFragmentPacket_ = NULL;
 	}
-
 	pChannel_ = NULL;
+
 	TRACE_RETURN_VOID();
 }
 
 //void PacketReader::processMessages(Messages* pMsgs, Bundle* pBundle)
 //{
 //	TRACE("PacketReader::processMessages()");
-//	if( !pFragmentPacket_ ) pFragmentPacket_ = pool->Ctor();
+//	if( !pFragmentPacket_ ) pFragmentPacket_ = Packet_Pool->Ctor();
 //	Bundle::Packets::iterator iter = pBundle->packets_.begin();
 //	for( ; iter != pBundle->packets_.end(); iter++ )
 //	{
@@ -387,14 +385,14 @@ PacketReader::~PacketReader()
 //			}
 //		}
 //	}
-//	pool->Dtor(pFragmentPacket_);
+//	Packet_Pool->Dtor(pFragmentPacket_);
 //	pFragmentPacket_ = NULL;
 //	TRACE_RETURN_VOID();
 //}
 void PacketReader::processMessages(Messages* pMsgs, Bundle* pBundle)
 {
 	TRACE("PacketReader::processMessages()");
-	if( !pFragmentPacket_ ) pFragmentPacket_ = pool->Ctor();
+	if( !pFragmentPacket_ ) pFragmentPacket_ = Packet_Pool->Ctor();
 	Bundle::Packets::iterator iter = pBundle->packets_.begin();
 	for( ; iter != pBundle->packets_.end(); iter++ )
 	{
@@ -670,7 +668,7 @@ void PacketReader::processMessages(Messages* pMsgs, Bundle* pBundle)
 							{
 								ACE_DEBUG(( LM_DEBUG,
 									"%M::%T::@if( currMsgFieldLen_ > pFragmentPacket_->buff->size() )\n" ));
-								Packet* p = pool->Ctor<ACE_UINT32>(currMsgFieldLen_);
+								Packet* p = Packet_Pool->Ctor<ACE_UINT32>(currMsgFieldLen_);
 
 								if( pFragmentPacket_->length() )
 								{
@@ -678,7 +676,7 @@ void PacketReader::processMessages(Messages* pMsgs, Bundle* pBundle)
 								}
 
 								pFragmentPacket_->reset();
-								pool->Dtor(pFragmentPacket_);
+								Packet_Pool->Dtor(pFragmentPacket_);
 								pFragmentPacket_ = p;
 							}
 
@@ -748,14 +746,14 @@ void PacketReader::processMessages(Messages* pMsgs, Bundle* pBundle)
 
 		/// recycle this packet when read is done
 		pCurrPacket_->buff->reset();
-		pool->Dtor(pCurrPacket_);
+		Packet_Pool->Dtor(pCurrPacket_);
 	}
 
 	/// maybe the pFragmentPacket_ is incomplete and so we need wait for the next 
 	/// tick to receive more data from network for the full construction of this msg's payload
 	if( !pFragmentPacket_->length() )
 	{
-		pool->Dtor(pFragmentPacket_);
+		Packet_Pool->Dtor(pFragmentPacket_);
 		pFragmentPacket_ = NULL;
 	}
 
