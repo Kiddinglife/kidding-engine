@@ -71,15 +71,16 @@ void Channel::add_delayed_channel(void)
 	pNetworkInterface_->add_delayed_channel(this);
 }
 
-void Channel::reset(const ACE_Event_Handler* pEndPoint, bool warnOnDiscard)
+void Channel::reset(ACE_Event_Handler* pEndPoint, bool warnOnDiscard)
 {
-	/// 如果地址没有改变则不重置
 	/// if adrr does not change, we do not change it
 	if( pEndPoint == pEndPoint_ ) return;
-	// 让网络接口下一个tick处理自己
-	/// handle in next tick 
+
+	/// let pNetworkInterface_ the handle irself in next tick 
 	if( pNetworkInterface_ ) pNetworkInterface_->send_delayed_channel(this);
 
+	this->clearState(warnOnDiscard);
+	pEndPoint_ = pEndPoint;
 }
 
 int Channel::handle_timeout(const ACE_Time_Value &current_time, const void *act)

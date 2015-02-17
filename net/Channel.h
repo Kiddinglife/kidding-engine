@@ -148,7 +148,7 @@ struct Channel : public ACE_Event_Handler
 	bool initialize(ACE_INET_Addr* addr = NULL);
 	bool finalise(void);
 	void destroy(void);
-	void reset(const ACE_Event_Handler* pEndPoint, bool warnOnDiscard);
+	void reset(ACE_Event_Handler* pEndPoint, bool warnOnDiscard);
 	inline void add_delayed_channel(void);
 	void process_packets(Messages* pMsgHandlers);
 
