@@ -86,6 +86,8 @@ struct TCP_SOCK_Handler : public ACE_Event_Handler
 	// Called when this handler is removed from the ACE_Reactor.
 	virtual int handle_close(ACE_HANDLE handle,
 		ACE_Reactor_Mask close_mask);
+
+	virtual int handle_timeout(const ACE_Time_Value &current_time, const void * = 0);
 };
 
 struct UDP_SOCK_Handler : public ACE_Event_Handler

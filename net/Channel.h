@@ -96,6 +96,9 @@ struct Channel : public ACE_Event_Handler
 	/// 扩展用, for extension
 	std::string					              strextra_;
 
+	/// tinmer id
+	long                                       timerID_;
+
 	ACE_UINT64						      inactivityExceptionPeriod_;
 	ACE_UINT64                           lastRecvTime_;
 	ACE_UINT32                           winSize_;
@@ -110,26 +113,20 @@ struct Channel : public ACE_Event_Handler
 	ACE_UINT32                           lastTickBytesSent_;
 
 	/// Reference count.
-	int ref_count_;
+	//int ref_count_;
 
-	static void intrusive_add_ref(Channel* channel)
-	{
-		++channel->ref_count_;
-	}
+	//static void intrusive_add_ref(Channel* channel)
+	//{
+	//	++channel->ref_count_;
+	//}
 
-	static void intrusive_remove_ref(Channel* channel)
-	{
-		--channel->ref_count_;
-		ACE_ASSERT(channel->ref_count_ >= 0 && "RefCountable:ref_count_ maybe a error!");
-		if( !channel->ref_count_ ) delete channel;
-	}
+	//static void intrusive_remove_ref(Channel* channel)
+	//{
+	//	--channel->ref_count_;
+	//	ACE_ASSERT(channel->ref_count_ >= 0 && "RefCountable:ref_count_ maybe a error!");
+	//	if( !channel->ref_count_ ) delete channel;
+	//}
 
-	//Channel(NetworkInterface* networkInterface = NULL,
-	//	ACE_SOCK* endpoint = NULL,
-	//	ChannelScope traits = EXTERNAL,
-	//	ProtocolType pt = PROTOCOL_TCP,
-	//	PacketFilterPtr pFilter = PacketFilterPtr(NULL),
-	//	ChannelID id = CHANNEL_ID_NULL);
 
 	Channel(NetworkInterface* networkInterface = NULL,
 		ACE_Event_Handler* endpoint = NULL,
@@ -141,14 +138,16 @@ struct Channel : public ACE_Event_Handler
 	virtual ~Channel(void);
 
 	virtual int handle_timeout(const ACE_Time_Value &current_time, const void *act = 0);
-	const char*  c_str(void) const;
 
+	const char*  c_str(void) const;
+	void startInactivityDetection(float period, float checkPeriod);
 	void clearBundles(void);
 	void clearState(bool warnOnDiscard = false);
 	bool initialize(ACE_INET_Addr* addr = NULL);
 	bool finalise(void);
 	void destroy(void);
 	void reset(ACE_Event_Handler* pEndPoint, bool warnOnDiscard);
+
 	inline void add_delayed_channel(void);
 	void process_packets(Messages* pMsgHandlers);
 

@@ -6,8 +6,8 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
 //ACE_PoolPtr_Getter(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
-ACE_PoolPtr_Declare(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
-ACE_PoolPtr_Declare(Channel_Pool, Channel, ACE_Null_Mutex);
+//ACE_PoolPtr_Declare(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
+//ACE_PoolPtr_Declare(Channel_Pool, Channel, ACE_Null_Mutex);
 
 int TCP_Acceptor_Handler::open(const ACE_INET_Addr &listen_addr)
 {
@@ -65,6 +65,32 @@ int TCP_Acceptor_Handler::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close
 	return 0;
 }
 
+int TCP_SOCK_Handler::handle_timeout(const ACE_Time_Value &current_time, const void* act)
+{
+	TRACE("TCP_SOCK_Handler::handle_timeout()");
+
+	time_t epoch = ( (timespec_t) current_time ).tv_sec;
+	ACE_DEBUG(( LM_INFO,
+		ACE_TEXT("%M::TCP_SOCK_Handler::handle_timeout(%s)\n"),
+		ACE_OS::ctime(&epoch) ));
+
+	switch( *( (int*) act ) )
+	{
+		case Channel::TIMEOUT_INACTIVITY_CHECK:
+		{
+			if( timestamp() - pChannel_->lastRecvTime_ > pChannel_->inactivityExceptionPeriod_ )
+			{
+				networkInterface_->on_channel_timeout(pChannel_);
+			}
+			break;
+		}
+		default:
+			break;
+	}
+
+	TRACE_RETURN(0);
+}
+
 bool TCP_SOCK_Handler::process_send(Channel* pChannel)
 {
 	TRACE(" TCP_SOCK_Handler::process_send()");
@@ -88,9 +114,10 @@ int TCP_SOCK_Handler::open(void)
 int TCP_SOCK_Handler::handle_close(ACE_HANDLE, ACE_Reactor_Mask mask)
 {
 	if( mask == ACE_Event_Handler::WRITE_MASK ) return 0;
+	if( mask == ACE_Event_Handler::TIMER_MASK ) return 0;
+
 	this->reactor()->remove_handler(this, mask);
 	this->sock_.close();
-	//this->output_queue_.flush();
 	TCP_SOCK_Handler_Pool->Dtor(this);
 	return 0;
 }

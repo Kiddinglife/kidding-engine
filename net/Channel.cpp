@@ -43,11 +43,11 @@ sending_(false),
 isCondemn_(false),
 proxyID_(0),
 strextra_(),
+timerID_(-1),
 channelType_(CHANNEL_NORMAL),
 componentID_(UNKNOWN_COMPONENT_TYPE),
 pMsgs_(NULL)
 {
-	intrusive_add_ref(this);
 	clearBundles();
 	initialize();
 }
@@ -123,6 +123,20 @@ void Channel::clearBundles(void)
 	bundles_.clear();
 
 	TRACE_RETURN_VOID();
+}
+
+void Channel::startInactivityDetection(float period, float checkPeriod)
+{
+	if( timerID_ != -1 ) this->pEndPoint_->reactor()->cancel_timer(timerID_);
+
+	if( period > 0.f )
+	{
+		inactivityExceptionPeriod_ = period * stampsPerSecond();
+		lastRecvTime_ = timestamp();
+		ACE_Time_Value interval(0, checkPeriod * 1000000);
+		timerID_ = this->pEndPoint_->reactor()->schedule_timer(pEndPoint_,
+			(void*) TIMEOUT_INACTIVITY_CHECK, ACE_Time_Value::zero, interval);
+	}
 }
 
 bool Channel::initialize(ACE_INET_Addr* addr)
