@@ -1113,15 +1113,19 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 		intrbuffer,
 		intwbuffer);
 
-	ACE_Time_Value tv;
-	in.handle_timeout(tv, 0);
-
+	//ACE_Time_Value tv;
+	//in.handle_timeout(tv, 0);
 	ACE_INET_Addr addr(20006, "192.168.2.47");
 	TCP_SOCK_Handler dg(&in);
+	dg.reactor(pDispatcher.rec);
+
 	Channel tcpchannel(&in, &dg);
+	dg.pChannel_ = &tcpchannel;
+
 	Messages msgs;
 
 	in.register_channel(&tcpchannel);
+
 	in.channel(addr);
 	in.channel(dg.get_handle());
 	in.process_all_channels_packets(&msgs);
@@ -1135,7 +1139,19 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	delay.send_delayed_channel(&tcpchannel);
 	delay.process();
 	delay.fini(&pDispatcher);
+
+	pDispatcher.startLoop();
 }
+#include "net\networkinterface.h"
+#include "net\channel.h"
+#include "net\delayedchannelhandler.h"
+
+//#include "net\Nub.h"
+//TEST(NubTest, start_loop)
+//{
+//	Nub nub;
+//	nub.startLoop();
+//}
 
 //#include "net\PacketReader.h"
 //#include "net\NetworkInterface.h"

@@ -83,27 +83,6 @@ void Channel::reset(ACE_Event_Handler* pEndPoint, bool warnOnDiscard)
 	pEndPoint_ = pEndPoint;
 }
 
-int Channel::handle_timeout(const ACE_Time_Value &current_time, const void *act)
-{
-	TRACE("Channel::handle_timeout()");
-
-	switch( *( (int*) act ) )
-	{
-		case TIMEOUT_INACTIVITY_CHECK:
-		{
-			if( timestamp() - lastRecvTime_ > inactivityExceptionPeriod_ )
-			{
-				pNetworkInterface_->on_channel_timeout(this);
-			}
-			break;
-		}
-		default:
-			break;
-	}
-
-	TRACE_RETURN(0);
-}
-
 const char * Channel::c_str() const
 {
 	//TRACE("Channel::c_str()");
@@ -131,9 +110,10 @@ void Channel::startInactivityDetection(float period, float checkPeriod)
 
 	if( period > 0.f )
 	{
-		inactivityExceptionPeriod_ = period * stampsPerSecond();
+		inactivityExceptionPeriod_ = (ACE_UINT64) ( period * stampsPerSecond() );
 		lastRecvTime_ = timestamp();
-		ACE_Time_Value interval(0, checkPeriod * 1000000);
+		ACE_Time_Value interval;
+		interval.set_msec(( ACE_UINT64(checkPeriod * 1000) ));
 		timerID_ = this->pEndPoint_->reactor()->schedule_timer(pEndPoint_,
 			(void*) TIMEOUT_INACTIVITY_CHECK, ACE_Time_Value::zero, interval);
 	}
@@ -141,15 +121,15 @@ void Channel::startInactivityDetection(float period, float checkPeriod)
 
 bool Channel::initialize(ACE_INET_Addr* addr)
 {
-	TRACE("Channel::initialize_udp_sock_handler()");
+	TRACE("Channel::initialize()");
 
 	if( protocolType_ == PROTOCOL_UDP )
 	{
 		pEndPoint_ = UDP_SOCK_Handler_Pool->Ctor(*addr, pNetworkInterface_);
 		( (UDP_SOCK_Handler*) pEndPoint_ )->pChannel_ = this;
 	}
-	//startInactivityDetection(( traits_ == INTERNAL ) ? g_channelInternalTimeout :
-	//	g_channelExternalTimeout);
+
+	startInactivityDetection(( channelScope_ == INTERNAL ) ? g_channelInternalTimeout : g_channelExternalTimeout);
 
 	TRACE_RETURN(true);
 }

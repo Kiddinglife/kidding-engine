@@ -13,11 +13,6 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-class ErrorReporter;
-class EventPoller;
-class Task;
-class Tasks;
-
 struct Nub
 {
 	public:

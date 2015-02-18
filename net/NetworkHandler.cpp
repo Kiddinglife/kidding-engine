@@ -70,11 +70,12 @@ int TCP_SOCK_Handler::handle_timeout(const ACE_Time_Value &current_time, const v
 	TRACE("TCP_SOCK_Handler::handle_timeout()");
 
 	time_t epoch = ( (timespec_t) current_time ).tv_sec;
+
 	ACE_DEBUG(( LM_INFO,
 		ACE_TEXT("%M::TCP_SOCK_Handler::handle_timeout(%s)\n"),
 		ACE_OS::ctime(&epoch) ));
 
-	switch( *( (int*) act ) )
+	switch( (int) act )
 	{
 		case Channel::TIMEOUT_INACTIVITY_CHECK:
 		{
@@ -113,8 +114,16 @@ int TCP_SOCK_Handler::open(void)
 
 int TCP_SOCK_Handler::handle_close(ACE_HANDLE, ACE_Reactor_Mask mask)
 {
-	if( mask == ACE_Event_Handler::WRITE_MASK ) return 0;
-	if( mask == ACE_Event_Handler::TIMER_MASK ) return 0;
+	ACE_DEBUG(( LM_INFO, ACE_TEXT("%M::TCP_SOCK_Handler::handle_close(%d)\n"), mask ));
+
+	if( mask == ACE_Event_Handler::WRITE_MASK )
+		return 0;
+
+	if( mask == ACE_Event_Handler::TIMER_MASK )
+	{
+		ACE_DEBUG(( LM_INFO, ACE_TEXT("%M::TCP_SOCK_Handler::handle_close::TIMER_MASK\n") ));
+		return 0;
+	}
 
 	this->reactor()->remove_handler(this, mask);
 	this->sock_.close();
