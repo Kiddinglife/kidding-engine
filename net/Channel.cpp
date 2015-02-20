@@ -76,8 +76,8 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 
 			for( ; iter != recvPackets_[i].end(); ++iter )
 			{
-					if( ( *iter )->length() > 0 ) hasDiscard++;
-					Packet_Pool->Dtor(( *iter ));
+				if( ( *iter )->length() > 0 ) hasDiscard++;
+				Packet_Pool->Dtor(( *iter ));
 			}
 
 			if( hasDiscard > 0 && warnOnDiscard )
@@ -153,9 +153,33 @@ void Channel::reset(ACE_Event_Handler* pEndPoint, bool warnOnDiscard)
 
 const char * Channel::c_str() const
 {
-	//TRACE("Channel::c_str()");
-	//TRACE_RETURN("Channel::c_str()");
-	return "channael::c_str()";
+	TRACE("Channel::c_str()");
+
+	static char dodgyString[MAX_BUF] = { "None" };
+	static ACE_INET_Addr addr;
+	char tdodgyString[MAX_BUF] = { 0 };
+
+	if( pEndPoint_ )
+	{
+		if( protocolType_ == PROTOCOL_TCP )
+		{
+			( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.get_remote_addr(addr);
+
+		} else
+		{
+			( (UDP_SOCK_Handler*) pEndPoint_ )->sock_.get_local_addr(addr);
+		}
+
+		addr.addr_to_string(tdodgyString, MAX_BUF);
+		kbe_snprintf(
+			dodgyString,
+			MAX_BUF,
+			"Addr(%s), channelId_(%d), isCondemn_(%d), isDestroyed_(%d)\n",
+			tdodgyString, channelId_,
+			isCondemn_, isDestroyed_);
+	}
+
+	TRACE_RETURN(dodgyString);
 }
 
 void Channel::clearBundles(void)
