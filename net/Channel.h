@@ -139,8 +139,11 @@ struct Channel
 
 	const char*  c_str(void) const;
 	void startInactivityDetection(float period, float checkPeriod = 1.0f);
+
+	int get_bundles_length(void);
 	void clearBundles(void);
 	void clear_channel(bool warnOnDiscard = false);
+
 	bool initialize(ACE_INET_Addr* addr = NULL);
 	bool finalise(void);
 	void destroy(void);

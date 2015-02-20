@@ -57,6 +57,17 @@ Channel::~Channel()
 	clear_channel(false);
 }
 
+int Channel::get_bundles_length(void)
+{
+	int len = 0;
+	Bundles::iterator iter = bundles_.begin();
+	for( ; iter != bundles_.end(); ++iter )
+	{
+		len += ( *iter )->get_packets_length();
+	}
+	return len;
+}
+
 void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 {
 	TRACE("Channel::clear_channe()");
@@ -208,6 +219,10 @@ void Channel::startInactivityDetection(float period, float checkPeriod)
 	}
 }
 
+/**
+ * addr != null udp
+ * addr == null tcp
+ */
 bool Channel::initialize(ACE_INET_Addr* addr)
 {
 	TRACE("Channel::initialize()");
@@ -223,6 +238,9 @@ bool Channel::initialize(ACE_INET_Addr* addr)
 	TRACE_RETURN(true);
 }
 
+/**
+ * depreted use clear_channel() to rese this channel for reuse
+ */
 bool Channel::finalise(void)
 {
 	TRACE("Channel::finalise()");
@@ -239,9 +257,19 @@ bool Channel::finalise(void)
 	TRACE_RETURN(true);
 }
 
+
 void Channel::destroy(void)
 {
 	TRACE("Channel::destroy()");
+	if( isDestroyed_ )
+	{
+		ACE_DEBUG(( LM_CRITICAL, "is channel has Destroyed!\n" ));
+		return;
+	}
+
+	clear_channel();
+	isDestroyed_ = true;
+
 	TRACE_RETURN_VOID();
 }
 

@@ -1122,6 +1122,7 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	Channel tcpchannel(&in, &dg);
 	dg.pChannel_ = &tcpchannel;
 	std::cout << "tcpchannel.c_str();\n" <<  tcpchannel.c_str();
+	std::cout << "tcpchannel.get_bundles_length();\n" << tcpchannel.get_bundles_length();
 	Messages msgs;
 
 	in.register_channel(&tcpchannel);
