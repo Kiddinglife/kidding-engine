@@ -150,6 +150,7 @@ struct Channel
 	void reset(ACE_Event_Handler* pEndPoint, bool warnOnDiscard);
 
 	inline void add_delayed_channel(void);
+	void hand_shake(void);
 	void process_packets(Messages* pMsgHandlers);
 
 	void send(Bundle * pBundle = NULL);

@@ -57,6 +57,45 @@ Channel::~Channel()
 	clear_channel(false);
 }
 
+void Channel::hand_shake(void)
+{
+	TRACE("Channel::hand_shake()");
+
+	static RecvPackets::iterator packetIter;
+	static Packet* pPacket;
+
+	if( recvPackets_[recvPacketIndex_].size() > 0 )
+	{
+		pPacketReader_ = PacketReader_Pool->Ctor(this);
+
+		packetIter = recvPackets_[recvPacketIndex_].begin();
+		pPacket = ( *packetIter );
+
+		//// 此处判定是否为websocket或者其他协议的握手
+		//if( html5::WebSocketProtocol::isWebSocketProtocol(pPacket) )
+		//{
+		//	channelType_ = CHANNEL_WEB;
+		//	if( html5::WebSocketProtocol::handshake(this, pPacket) )
+		//	{
+		//		if( pPacket->length() == 0 )
+		//		{
+		//			bufferedReceives_[bufferedReceivesIdx_].erase(packetIter);
+		//		}
+
+		//		pPacketReader_ = new HTML5PacketReader(this);
+		//		pFilter_ = new HTML5PacketFilter(this);
+		//		DEBUG_MSG(fmt::format("Channel::handshake: websocket({}) successfully!\n", this->c_str()));
+		//		return;
+		//	} else
+		//	{
+		//		DEBUG_MSG(fmt::format("Channel::handshake: websocket({}) error!\n", this->c_str()));
+		//	}
+		//}
+	}
+
+	TRACE_RETURN_VOID();
+}
+
 int Channel::get_bundles_length(void)
 {
 	int len = 0;
