@@ -35,7 +35,7 @@ numBytesSent_(0),
 numBytesReceived_(0),
 lastTickBytesReceived_(0),
 lastTickBytesSent_(0),
-pFilter_(NULL),
+canFilterPacket_(false),
 pEndPoint_(endpoint /*NULL*/),
 //pPacketReceiver_(NULL),
 //pPacketSender_(NULL),
@@ -373,9 +373,29 @@ void Channel::send(Bundle * pBundle)
 			for( ; iter1 != pakcets.end(); ++iter1 )
 			{
 				/*	reason = processPacket(pChannel, ( *iter1 ));*/
-				if( pFilter_ )
+
+				/// filter the packet
+				if( canFilterPacket_ )
 				{
-					reason = REASON_SUCCESS;
+					//filter_packet();
+				}
+
+				/// process filtered packets
+				if( protocolType_ == PROTOCOL_TCP )
+				{
+					if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
+					size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
+
+					if( sent_cnt == -1 )
+						ACE_ERROR(( LM_ERROR,
+						ACE_TEXT("(%P|%t) %p\n"),
+						ACE_TEXT("send") ));
+					else
+						( *iter1 )->buff->rd_ptr(sent_cnt);
+
+				} else
+				{
+
 				}
 
 				if( reason != REASON_SUCCESS )

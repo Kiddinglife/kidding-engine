@@ -61,7 +61,7 @@ struct Channel
 	//PacketSender*				          pPacketSender_;
 
 	//@TO-DO need create struct PacketFilter
-	PacketFilter*				             pFilter_;
+	bool				                          canFilterPacket_;
 
 	/// 可以指定通道使用某些特定的消息
 	/// can designate the channel to use some specific msgs
