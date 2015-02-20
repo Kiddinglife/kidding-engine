@@ -387,23 +387,65 @@ void Channel::send(Bundle * pBundle)
 					size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
 
 					if( sent_cnt == -1 )
-						ACE_ERROR(( LM_ERROR,
-						ACE_TEXT("(%P|%t) %p\n"),
-						ACE_TEXT("send") ));
-					else
+					{
+						reason = checkSocketErrors();
+					} else
+					{
 						( *iter1 )->buff->rd_ptr(sent_cnt);
+						bool sent_completely = ( *iter1 )->length() == 0;
+						on_packet_sent(sent_cnt, sent_completely);
+					}
 
 				} else
 				{
-
+					/// TO-DO
 				}
 
 				if( reason != REASON_SUCCESS )
+				{
 					break;
-				else
+				} else
+				{
 					Packet_Pool->Dtor(( *iter1 ));
+				}
+			} /// This packet is done
+
+			/// All packets in this bundle are sent completely and so recycle it
+			if( reason == REASON_SUCCESS )
+			{
+				pakcets.clear();
+				BundlePool->Dtor(( *iter ));
+			} else
+			{
+				/// there are packets that are not sent, we first clear the sent ones from this bundle
+				pakcets.erase(pakcets.begin(), iter1);
+				/// then we laso clear this bundle
+				bundles_.erase(bundles_.begin(), iter);
+
+				if( reason == REASON_RESOURCE_UNAVAILABLE )
+				{
+					ACE_DEBUG(( LM_WARNING,
+						"%M::CHANNEL::send(%s)::Transmit queue full, waiting for"
+						"space(kbengine.xml->channelCommon->writeBufferSize->{%s})...\n",
+						reasonToString(checkSocketErrors()),
+						( channelScope_ == INTERNAL ? "internal" : "external" ) ));
+				} else
+				{
+					/*pNetworkInterface_->deregister_channel(this);*/
+					if( !isCondemn_ ) isCondemn_ = true;
+					ACE_DEBUG(( LM_ERROR,
+						"Channel::condemn[{%@}]: channel({%s}).\n", this, this->c_str() ));
+					//if( !isDestroyed_ ) destroy();
+					//clear_channel();
+					//Channel_Pool->Dtor(this);
+				}
+				return;
 			}
 		}
+
+		/// All bundles are done 
+		bundles_.clear();
+		sending_ = false;
 
 		// 如果不能立即发送到系统缓冲区，那么交给poller处理
 		if( bundles_.size() && !isCondemn_ && !isDestroyed_ )
@@ -468,5 +510,12 @@ void Channel::process_send()
 	TRACE("Channel::process_send()");
 	TRACE_RETURN_VOID();
 }
+
+void Channel::on_packet_sent(int bytes_cnt, bool is_sent_completely)
+{
+	TRACE(" Channel::on_packet_sent");
+	TRACE_RETURN_VOID();
+}
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

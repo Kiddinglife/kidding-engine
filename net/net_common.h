@@ -187,6 +187,22 @@ enum Reason
 	REASON_CHANNEL_CONDEMN = -14	 ///< condemn error.
 };
 
+inline Reason checkSocketErrors()
+{
+	Reason reason;
+	switch( kbe_lasterror() )
+	{
+		case ECONNREFUSED:	reason = REASON_NO_SUCH_PORT; break;
+		case EWOULDBLOCK:   reason = REASON_RESOURCE_UNAVAILABLE; break;
+		case EAGAIN:		        reason = REASON_RESOURCE_UNAVAILABLE; break;
+		case EPIPE:			        reason = REASON_CLIENT_DISCONNECTED; break;
+		case ECONNRESET:	    reason = REASON_CLIENT_DISCONNECTED; break;
+		case ENOBUFS:		        reason = REASON_TRANSMIT_QUEUE_FULL; break;
+		default:			                reason = REASON_GENERAL_NETWORK; break;
+	}
+	return reason;
+}
+
 inline const char* reasonToString(Reason reason)
 {
 	const char* reasons[ ] =
