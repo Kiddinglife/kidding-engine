@@ -35,7 +35,7 @@ numBytesSent_(0),
 numBytesReceived_(0),
 lastTickBytesReceived_(0),
 lastTickBytesSent_(0),
-pFilter_(pFilter),
+pFilter_(NULL),
 pEndPoint_(endpoint /*NULL*/),
 //pPacketReceiver_(NULL),
 //pPacketSender_(NULL),
@@ -110,6 +110,7 @@ int Channel::get_bundles_length(void)
 void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 {
 	TRACE("Channel::clear_channe()");
+
 	/// Stop Inactivity Detection
 	if( timerID_ != -1 && pEndPoint_ ) pEndPoint_->reactor()->cancel_timer(timerID_);
 
@@ -157,23 +158,21 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 	recvPacketIndex_ = 0;
 
 	/// clear the pendpoint
-	if( !isDestroyed_ )
+	if( protocolType_ == PROTOCOL_TCP )
 	{
-		if( protocolType_ == PROTOCOL_TCP )
-		{
-			if( sending_ ) sending_ = false;
+		if( sending_ ) sending_ = false;
 
-			if( pNetworkInterface_ )
-			{
-				pNetworkInterface_->on_channel_left(this);
-			}
-		} else if( protocolType_ == PROTOCOL_UDP )
+		if( pNetworkInterface_ )
 		{
-			/// 由于pEndPoint通常由外部给入，必须释放，频道重新激活时会重新赋值
-			pEndPoint_->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
+			pNetworkInterface_->on_channel_left(this);
 		}
-		pEndPoint_ = NULL;
+	} else if( protocolType_ == PROTOCOL_UDP )
+	{
+		/// 由于pEndPoint通常由外部给入，必须释放，频道重新激活时会重新赋值
+		pEndPoint_->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
 	}
+
+	pEndPoint_ = NULL;
 
 	if( pPacketReader_ )
 	{
@@ -300,13 +299,13 @@ bool Channel::finalise(void)
 void Channel::destroy(void)
 {
 	TRACE("Channel::destroy()");
+
 	if( isDestroyed_ )
 	{
-		ACE_DEBUG(( LM_CRITICAL, "is channel has Destroyed!\n" ));
+		ACE_DEBUG(( LM_CRITICAL, "channel has been Destroyed!\n" ));
 		return;
 	}
 
-	clear_channel();
 	isDestroyed_ = true;
 
 	TRACE_RETURN_VOID();
@@ -350,7 +349,41 @@ void Channel::send(Bundle * pBundle)
 
 	if( !sending_ )
 	{
-		protocolType_ == PROTOCOL_TCP ? ( (TCP_SOCK_Handler*) pEndPoint_ )->process_send(this) : ( (UDP_SOCK_Handler*) pEndPoint_ )->process_send(this);
+		//protocolType_ == PROTOCOL_TCP ? ( (TCP_SOCK_Handler*) pEndPoint_ )->process_send(this) : ( (UDP_SOCK_Handler*) pEndPoint_ )->process_send(this);
+
+		/// check if this channel has been condemed
+		if( isCondemn_ )
+		{
+			pNetworkInterface_->deregister_channel(this);
+
+			if( !isDestroyed_ )
+			{
+				destroy();
+				Channel_Pool->Dtor(this);
+			}
+			return;
+		}
+
+		Reason reason = REASON_SUCCESS;
+		Channel::Bundles::iterator iter = bundles_.begin();
+		for( ; iter != bundles_.end(); ++iter )
+		{
+			Bundle::Packets& pakcets = ( *iter )->packets_;
+			Bundle::Packets::iterator iter1 = pakcets.begin();
+			for( ; iter1 != pakcets.end(); ++iter1 )
+			{
+				/*	reason = processPacket(pChannel, ( *iter1 ));*/
+				if( pFilter_ )
+				{
+					reason = REASON_SUCCESS;
+				}
+
+				if( reason != REASON_SUCCESS )
+					break;
+				else
+					Packet_Pool->Dtor(( *iter1 ));
+			}
+		}
 
 		// 如果不能立即发送到系统缓冲区，那么交给poller处理
 		if( bundles_.size() && !isCondemn_ && !isDestroyed_ )
@@ -407,6 +440,12 @@ void Channel::send(Bundle * pBundle)
 			}
 		}
 	}
+	TRACE_RETURN_VOID();
+}
+
+void Channel::process_send()
+{
+	TRACE("Channel::process_send()");
 	TRACE_RETURN_VOID();
 }
 NETWORK_NAMESPACE_END_DECL

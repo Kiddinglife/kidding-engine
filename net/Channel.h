@@ -61,7 +61,7 @@ struct Channel
 	//PacketSender*				          pPacketSender_;
 
 	//@TO-DO need create struct PacketFilter
-	PacketFilterPtr				          pFilter_;
+	PacketFilter*				             pFilter_;
 
 	/// 可以指定通道使用某些特定的消息
 	/// can designate the channel to use some specific msgs
@@ -154,6 +154,7 @@ struct Channel
 	void process_packets(Messages* pMsgHandlers);
 
 	void send(Bundle * pBundle = NULL);
+	void process_send(void);
 };
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
