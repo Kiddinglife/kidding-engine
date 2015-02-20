@@ -18,7 +18,7 @@ struct PacketFilter;
 
 typedef ACE_Refcounted_Auto_Ptr<PacketFilter, ACE_Null_Mutex> PacketFilterPtr;
 
-struct Channel 
+struct Channel
 {
 	/// INTERNAL describes the properties of channel from server to server.
 	/// EXTERNAL describes the properties of a channel from client to server.
@@ -73,7 +73,7 @@ struct Channel
 
 	/// 接收到的所有包的集合：the container for the received packets
 	typedef std::vector<Packet*> RecvPackets;
-	RecvPackets                           recvPackets[2];
+	RecvPackets                           recvPackets_[2];
 
 	ChannelScope                        channelScope_;
 	ChannelType				              channelType_;
@@ -140,7 +140,7 @@ struct Channel
 	const char*  c_str(void) const;
 	void startInactivityDetection(float period, float checkPeriod = 1.0f);
 	void clearBundles(void);
-	void clearState(bool warnOnDiscard = false);
+	void clear_channel(bool warnOnDiscard = false);
 	bool initialize(ACE_INET_Addr* addr = NULL);
 	bool finalise(void);
 	void destroy(void);

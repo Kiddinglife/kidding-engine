@@ -54,15 +54,80 @@ pMsgs_(NULL)
 
 Channel::~Channel()
 {
-	finalise();
+	clear_channel(false);
 }
 
-void Channel::clearState(bool warnOnDiscard /*=false*/)
+void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 {
-	/// clear the buffered recv packets
+	/// Stop Inactivity Detection
+	if( timerID_ != -1 && pEndPoint_ ) pEndPoint_->reactor()->cancel_timer(timerID_);
+
+	/// clear the bundles
+	this->clearBundles();
+
+	/// clear the unprocessed recv packets
 	for( int i = 0; i < 2; ++i )
 	{
+		if( recvPackets_[i].size() > 0 )
+		{
+			RecvPackets::iterator iter = recvPackets_[i].begin();
+			int hasDiscard = 0;
 
+			for( ; iter != recvPackets_[i].end(); ++iter )
+			{
+					if( ( *iter )->length() > 0 ) hasDiscard++;
+					Packet_Pool->Dtor(( *iter ));
+			}
+
+			if( hasDiscard > 0 && warnOnDiscard )
+			{
+				ACE_DEBUG(( LM_WARNING,
+					"Channel::clear_channel( {%s} ): "
+					"Discarding {%d} buffered packet(s)\n",
+					this->c_str(), hasDiscard ));
+			}
+
+			recvPackets_[i].clear();
+		}
+	}
+
+	/// reset all variables values
+	lastRecvTime_ = ::timestamp();
+	isDestroyed_ = false;
+	isCondemn_ = false;
+	numPacketsSent_ = 0;
+	numPacketsReceived_ = 0;
+	numBytesSent_ = 0;
+	numBytesReceived_ = 0;
+	lastTickBytesReceived_ = 0;
+	proxyID_ = 0;
+	strextra_ = "";
+	channelType_ = CHANNEL_NORMAL;
+	recvPacketIndex_ = 0;
+
+	/// clear the pendpoint
+	if( !isDestroyed_ )
+	{
+		if( protocolType_ == PROTOCOL_TCP )
+		{
+			if( sending_ ) sending_ = false;
+
+			if( pNetworkInterface_ )
+			{
+				pNetworkInterface_->on_channel_left(this);
+			}
+		} else if( protocolType_ == PROTOCOL_UDP )
+		{
+			/// 由于pEndPoint通常由外部给入，必须释放，频道重新激活时会重新赋值
+			pEndPoint_->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
+		}
+		pEndPoint_ = NULL;
+	}
+
+	if( pPacketReader_ )
+	{
+		PacketReader_Pool->Dtor(pPacketReader_);
+		pPacketReader_ = NULL;
 	}
 }
 
@@ -79,7 +144,7 @@ void Channel::reset(ACE_Event_Handler* pEndPoint, bool warnOnDiscard)
 	/// let pNetworkInterface_ the handle irself in next tick 
 	if( pNetworkInterface_ ) pNetworkInterface_->send_delayed_channel(this);
 
-	this->clearState(warnOnDiscard);
+	this->clear_channel(warnOnDiscard);
 	pEndPoint_ = pEndPoint;
 }
 
@@ -138,10 +203,7 @@ bool Channel::finalise(void)
 {
 	TRACE("Channel::finalise()");
 
-	if( pNetworkInterface_ != NULL && pEndPoint_ != NULL && !isDestroyed_ )
-	{
-		pNetworkInterface_->on_channel_left(this);
-	}
+	this->clear_channel();
 
 	if( pPacketReader_ )
 	{
@@ -149,8 +211,6 @@ bool Channel::finalise(void)
 		pPacketReader_ = NULL;
 	}
 
-	if( protocolType_ == PROTOCOL_UDP )
-		pEndPoint_->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
 
 	TRACE_RETURN(true);
 }
