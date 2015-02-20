@@ -356,18 +356,55 @@ void Channel::send(Bundle * pBundle)
 		if( bundles_.size() && !isCondemn_ && !isDestroyed_ )
 		{
 			sending_ = true;
-			pNetworkInterface_->nub_->rec->register_handler(pEndPoint_, ACE_Event_Handler::WRITE_MASK);
+			pEndPoint_->reactor()->register_handler(pEndPoint_, ACE_Event_Handler::WRITE_MASK);
 		}
 	}
 
 	if( g_sendWindowMessagesOverflowCritical > 0 &&
 		bundles_count > g_sendWindowMessagesOverflowCritical )
 	{
-		if( channelScope_ == EXTERNAL)
-		{ 
+		if( channelScope_ == EXTERNAL )
+		{
+			ACE_DEBUG(( LM_WARNING,
+				"Channel::send[{%@}]: external channel({%s}), "
+				"send window has overflowed({%d} > {%d}).\n",
+				this, c_str(),
+				bundles_count,
+				g_sendWindowMessagesOverflowCritical ));
+
+			if( g_extSendWindowMessagesOverflow > 0 &&
+				bundles_count > g_extSendWindowMessagesOverflow )
+			{
+				isCondemn_ = true;
+				ACE_DEBUG(( LM_ERROR,
+					"Channel::send[{%@}]: external channel({%s}),\n"
+					"send window has overflowed({%d} > {%d}),\n"
+					"Try adjusting the kbengine_defs.xml->windowOverflow->send.\n"
+					"This channel is condemn{%d} now.\n",
+					this, c_str(), bundles_count, g_extSendWindowMessagesOverflow, isCondemn_ ));
+			}
 		} else
 		{
-
+			if( g_intSendWindowMessagesOverflow > 0 &&
+				bundles_count > g_intSendWindowMessagesOverflow )
+			{
+				isCondemn_ = true;
+				ACE_DEBUG(( LM_ERROR,
+					"Channel::send[{%@}]: internal channel({%s}), \n"
+					"send window has overflowed({%d} > {%d}).\n"
+					"This channel is condemn{%d} now.\n",
+					this, c_str(),
+					bundles_count, g_intSendWindowMessagesOverflow,
+					isCondemn_ ));
+			} else
+			{
+				ACE_DEBUG(( LM_WARNING,
+					"Channel::send[{%@}]: internal channel({%s}), "
+					"send window has overflowed({%d} > {%d}).\n",
+					this, c_str(),
+					bundles_count,
+					g_sendWindowMessagesOverflowCritical ));
+			}
 		}
 	}
 	TRACE_RETURN_VOID();
