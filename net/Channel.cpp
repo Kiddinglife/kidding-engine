@@ -360,6 +360,16 @@ void Channel::send(Bundle * pBundle)
 		}
 	}
 
+	if( g_sendWindowMessagesOverflowCritical > 0 &&
+		bundles_count > g_sendWindowMessagesOverflowCritical )
+	{
+		if( channelScope_ == EXTERNAL)
+		{ 
+		} else
+		{
+
+		}
+	}
 	TRACE_RETURN_VOID();
 }
 NETWORK_NAMESPACE_END_DECL

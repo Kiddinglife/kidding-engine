@@ -36,8 +36,43 @@ std::ofstream normal(( n + ".log" ).c_str());
 
 static  std::ofstream packetlogos("packetlogs.log");
 
-void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
-	Message* pCurrMsgHandler, size_t length, const char* addr)
+float                            g_channelInternalTimeout = 60.f;
+float                            g_channelExternalTimeout = 60.f;
+ACE_INT8                     g_channelExternalEncryptType = 0;
+ACE_UINT32                 g_SOMAXCONN = 1024;
+
+// network stats
+ACE_UINT64					g_numPacketsSent = 0;
+ACE_UINT64					g_numPacketsReceived = 0;
+ACE_UINT64					g_numBytesSent = 0;
+ACE_UINT64					g_numBytesReceived = 0;
+
+/// windows
+ACE_UINT32					g_receiveWindowMessagesOverflowCritical = 32;
+ACE_UINT32					g_intReceiveWindowMessagesOverflow = 65535;
+ACE_UINT32					g_extReceiveWindowMessagesOverflow = 256;
+ACE_UINT32					g_intReceiveWindowBytesOverflow = 0;
+ACE_UINT32					g_extReceiveWindowBytesOverflow = 65535;
+
+ACE_UINT32					g_sendWindowMessagesOverflowCritical = 32;
+ACE_UINT32					g_intSendWindowMessagesOverflow = 65535;
+ACE_UINT32					g_extSendWindowMessagesOverflow = 256;
+ACE_UINT32					g_intSendWindowBytesOverflow = 0;
+ACE_UINT32					g_extSendWindowBytesOverflow = 65535;
+
+// channel timeout retry 
+ACE_UINT32					g_intReSendInterval = 10;
+ACE_UINT32					g_intReSendRetries = 0;
+ACE_UINT32					g_extReSendInterval = 10;
+ACE_UINT32					g_extReSendRetries = 3;
+
+
+void TRACE_MESSAGE_PACKET(
+	bool isrecv,
+	Packet* pPacket,
+	Message* pCurrMsgHandler,
+	size_t length,
+	const char* addr)
 {
 	TRACE("TRACE_MESSAGE_PACKET");
 	//if( !g_trace_packet )	return;
@@ -88,31 +123,6 @@ void TRACE_MESSAGE_PACKET(bool isrecv, Packet* pPacket,
 
 	TRACE_RETURN_VOID();
 }
-
-float g_channelInternalTimeout = 60.f;
-float g_channelExternalTimeout = 60.f;
-
-ACE_INT8 g_channelExternalEncryptType = 0;
-
-ACE_UINT32 g_SOMAXCONN = 1024;
-
-// network stats
-ACE_UINT64						g_numPacketsSent = 0;
-ACE_UINT64						g_numPacketsReceived = 0;
-ACE_UINT64						g_numBytesSent = 0;
-ACE_UINT64						g_numBytesReceived = 0;
-
-ACE_UINT32						g_receiveWindowMessagesOverflowCritical = 32;
-ACE_UINT32						g_intReceiveWindowMessagesOverflow = 65535;
-ACE_UINT32						g_extReceiveWindowMessagesOverflow = 256;
-ACE_UINT32						g_intReceiveWindowBytesOverflow = 0;
-ACE_UINT32						g_extReceiveWindowBytesOverflow = 65535;
-
-// Í¨µÀ·¢ËÍ³¬Ê±ÖØÊÔ
-ACE_UINT32						g_intReSendInterval = 10;
-ACE_UINT32						g_intReSendRetries = 0;
-ACE_UINT32						g_extReSendInterval = 10;
-ACE_UINT32						g_extReSendRetries = 3;
 
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

@@ -243,11 +243,17 @@ extern ACE_INT8 g_channelExternalEncryptType;
 		Network::g_channelInternalTimeout = -1.0f;}	
 
 /*包接收窗口溢出*/
-extern ACE_UINT32 g_receiveWindowMessagesOverflowCritical;
-extern ACE_UINT32 g_intReceiveWindowMessagesOverflow;
-extern ACE_UINT32 g_extReceiveWindowMessagesOverflow;
-extern ACE_UINT32 g_intReceiveWindowBytesOverflow;
-extern ACE_UINT32 g_extReceiveWindowBytesOverflow;
+extern ACE_UINT32                      g_receiveWindowMessagesOverflowCritical;
+extern ACE_UINT32                      g_intReceiveWindowMessagesOverflow;
+extern ACE_UINT32                      g_extReceiveWindowMessagesOverflow;
+extern ACE_UINT32                      g_intReceiveWindowBytesOverflow;
+extern ACE_UINT32                      g_extReceiveWindowBytesOverflow;
+
+extern ACE_UINT32						g_sendWindowMessagesOverflowCritical;
+extern ACE_UINT32						g_intSendWindowMessagesOverflow;
+extern ACE_UINT32						g_extSendWindowMessagesOverflow;
+extern ACE_UINT32						g_intSendWindowBytesOverflow;
+extern ACE_UINT32						g_extSendWindowBytesOverflow;
 //channel =============================================== 
 
 
