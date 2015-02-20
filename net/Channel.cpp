@@ -171,12 +171,9 @@ const char * Channel::c_str() const
 		}
 
 		addr.addr_to_string(tdodgyString, MAX_BUF);
-		kbe_snprintf(
-			dodgyString,
-			MAX_BUF,
+		kbe_snprintf(dodgyString, MAX_BUF,
 			"Addr(%s), channelId_(%d), isCondemn_(%d), isDestroyed_(%d)\n",
-			tdodgyString, channelId_,
-			isCondemn_, isDestroyed_);
+			tdodgyString, channelId_, isCondemn_, isDestroyed_);
 	}
 
 	TRACE_RETURN(dodgyString);
