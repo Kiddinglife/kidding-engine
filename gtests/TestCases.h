@@ -1140,7 +1140,7 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	delay.process();
 	delay.fini(&pDispatcher);
 
-	pDispatcher.startLoop();
+	//pDispatcher.startLoop();
 }
 #include "net\networkinterface.h"
 #include "net\channel.h"

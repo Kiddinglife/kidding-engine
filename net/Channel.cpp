@@ -59,6 +59,7 @@ Channel::~Channel()
 
 void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 {
+	TRACE("Channel::clear_channe()");
 	/// Stop Inactivity Detection
 	if( timerID_ != -1 && pEndPoint_ ) pEndPoint_->reactor()->cancel_timer(timerID_);
 
@@ -129,6 +130,8 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 		PacketReader_Pool->Dtor(pPacketReader_);
 		pPacketReader_ = NULL;
 	}
+
+	TRACE_RETURN_VOID();
 }
 
 void Channel::add_delayed_channel(void)
