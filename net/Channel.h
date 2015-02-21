@@ -153,6 +153,8 @@ struct Channel
 	void hand_shake(void);
 	void process_packets(Messages* pMsgHandlers);
 	void on_packet_sent(int bytes_cnt, bool is_sent_completely);
+	void Channel::update_recv_window(Packet* pPacket);
+	void Channel::on_packet_received(int bytes);
 	void send(Bundle * pBundle = NULL);
 	bool process_send(void);
 	inline void on_error(void);

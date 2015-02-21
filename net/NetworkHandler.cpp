@@ -137,6 +137,7 @@ int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)
 
 int TCP_SOCK_Handler::handle_output(ACE_HANDLE fd)
 {
+	pChannel_->process_send();
 	return 0;
 }
 

@@ -1143,7 +1143,7 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	delay.process();
 	delay.fini(&pDispatcher);
 
-	Bundle_Pool->Dtor(bundle);
+	//Bundle_Pool->Dtor(bundle);
 
 	//pDispatcher.startLoop();
 }

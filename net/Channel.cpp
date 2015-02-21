@@ -6,8 +6,8 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-ACE_PoolPtr_Getter(BundlePool, Bundle, ACE_Null_Mutex);
-ACE_PoolPtr_Getter(PacketSender_Pool, PacketSender, ACE_Null_Mutex);
+//ACE_PoolPtr_Getter(BundlePool, Bundle, ACE_Null_Mutex);
+//ACE_PoolPtr_Getter(PacketSender_Pool, PacketSender, ACE_Null_Mutex);
 
 Channel::
 Channel(
@@ -235,7 +235,7 @@ void Channel::clearBundles(void)
 	Bundles::iterator iter = bundles_.begin();
 	for( ; iter != bundles_.end(); ++iter )
 	{
-		BundlePool->Dtor(( *iter ));
+		Bundle_Pool->Dtor(( *iter ));
 	}
 	bundles_.clear();
 
@@ -295,7 +295,6 @@ bool Channel::finalise(void)
 	TRACE_RETURN(true);
 }
 
-
 void Channel::destroy(void)
 {
 	TRACE("Channel::destroy()");
@@ -326,7 +325,7 @@ void Channel::send(Bundle * pBundle)
 	{
 		ACE_DEBUG(( LM_ERROR, "Channel::send({%s}): channel has destroyed.\n", this->c_str() ));
 		clearBundles();
-		if( pBundle ) BundlePool->Dtor(pBundle);
+		if( pBundle ) Bundle_Pool->Dtor(pBundle);
 		return;
 	}
 
@@ -336,7 +335,7 @@ void Channel::send(Bundle * pBundle)
 			"Channel::send: is error, reason={%s}, from {%s}.\n", reasonToString(REASON_CHANNEL_CONDEMN),
 			c_str() ));
 		clearBundles();
-		if( pBundle ) BundlePool->Dtor(pBundle);
+		if( pBundle ) Bundle_Pool->Dtor(pBundle);
 		return;
 	}
 
@@ -478,8 +477,9 @@ bool Channel::process_send()
 		/// All packets in this bundle are sent completely and so recycle it
 		if( reason == REASON_SUCCESS )
 		{
+			ACE_DEBUG(( LM_DEBUG, "Reason == REASON_SUCCESS\n" ));
 			pakcets.clear();
-			BundlePool->Dtor(( *iter ));
+			Bundle_Pool->Dtor(( *iter ));
 		} else
 		{
 			/// there are packets that are not sent, we first clear the sent ones from this bundle
@@ -535,6 +535,42 @@ void Channel::on_bundles_sent_completely()
 	}
 	TRACE_RETURN_VOID();
 }
+
+void Channel::on_packet_received(int bytes)
+{
+	lastRecvTime_ = timestamp();
+	++numPacketsReceived_;
+	++g_numPacketsReceived;
+
+	numBytesReceived_ += bytes;
+	lastTickBytesReceived_ += bytes;
+	g_numBytesReceived += bytes;
+
+	if( this->protocolType_ == EXTERNAL )
+	{
+		if( g_extReceiveWindowBytesOverflow > 0 &&
+			lastTickBytesReceived_ >= g_extReceiveWindowBytesOverflow )
+		{
+			ACE_DEBUG(( LM_ERROR,
+				"Channel::onPacketReceived[{%@}]: external channel({%s}), bufferedBytes has overflowed"
+				"({%d} > {%d}), Try adjusting the kbengine_defs.xml->windowOverflow->receive.\n",
+				( void* )this, this->c_str(), lastTickBytesReceived_, g_extReceiveWindowBytesOverflow ));
+
+			this->set_channel_condem();
+		}
+	} else
+	{
+		if( g_intReceiveWindowBytesOverflow > 0 &&
+			lastTickBytesReceived_ >= g_intReceiveWindowBytesOverflow )
+		{
+			ACE_DEBUG(( LM_WARNING,
+				"Channel::onPacketReceived[{%@}]: internal channel({%s}),"
+				"bufferedBytes has overflowed({%d} > {%d}).\n",
+				( void* )this, this->c_str(), lastTickBytesReceived_, g_intReceiveWindowBytesOverflow ));
+		}
+	}
+}
+
 void Channel::on_packet_sent(int bytes_cnt, bool is_sent_completely)
 {
 	TRACE(" Channel::on_packet_sent");
@@ -574,6 +610,43 @@ void Channel::on_packet_sent(int bytes_cnt, bool is_sent_completely)
 	}
 
 	TRACE_RETURN_VOID();
+}
+
+void Channel::update_recv_window(Packet* pPacket)
+{
+	recvPackets_[recvPacketIndex_].push_back(pPacket);
+	size_t size = recvPackets_[recvPacketIndex_].size();
+
+	if( g_receiveWindowMessagesOverflowCritical > 0 &&
+		size > g_receiveWindowMessagesOverflowCritical )
+	{
+		if( this->protocolType_ == EXTERNAL )
+		{
+			if( g_extReceiveWindowMessagesOverflow > 0 &&
+				size > g_extReceiveWindowMessagesOverflow )
+			{
+				ACE_DEBUG(( LM_ERROR,
+					"%M::Channel::addReceiveWindow[%@}]: external channel({%s}), receive window has overflowed({%d} > {%d}), Try adjusting the kbengine_defs.xml->receiveWindowOverflow.\n",
+					( void* )this, this->c_str(), size, g_extReceiveWindowMessagesOverflow ));
+
+				this->set_channel_condem();
+			} else
+			{
+				ACE_DEBUG(( LM_WARNING,
+					"Channel::addReceiveWindow[{%@}]: external channel({%s}), receive window has overflowed({%d} > {%d}).\n",
+					( void* )this, this->c_str(), size, g_receiveWindowMessagesOverflowCritical ));
+			}
+		} else
+		{
+			if( g_intReceiveWindowMessagesOverflow > 0 &&
+				size > g_intReceiveWindowMessagesOverflow )
+			{
+				ACE_DEBUG(( LM_WARNING,
+					"Channel::addReceiveWindow[{:p}]: internal channel({}), receive window has overflowed({} > {}).\n",
+					( void* )this, this->c_str(), size, g_intReceiveWindowMessagesOverflow ));
+			}
+		}
+	}
 }
 
 NETWORK_NAMESPACE_END_DECL
