@@ -45,8 +45,8 @@ PacketReader::~PacketReader()
 //{
 //	TRACE("PacketReader::processMessages()");
 //	if( !pFragmentPacket_ ) pFragmentPacket_ = Packet_Pool->Ctor();
-//	Bundle::Packets::iterator iter = pBundle->packets_.begin();
-//	for( ; iter != pBundle->packets_.end(); iter++ )
+//	Bundle::Packets::iterator iter = pBundle->packets.begin();
+//	for( ; iter != pBundle->packets.end(); iter++ )
 //	{
 //		/// make this param globl in this class scope to improve the efficienc
 //		pCurrPacket_ = ( *iter );
@@ -389,12 +389,12 @@ PacketReader::~PacketReader()
 //	pFragmentPacket_ = NULL;
 //	TRACE_RETURN_VOID();
 //}
-void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packets_)
+void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packets)
 {
 	TRACE("PacketReader::processMessages()");
 	if( !pFragmentPacket_ ) pFragmentPacket_ = Packet_Pool->Ctor();
-	Bundle::Packets::iterator iter = packets_.begin();
-	for( ; iter != packets_.end(); iter++ )
+	Bundle::Packets::iterator iter = packets.begin();
+	for( ; iter != packets.end(); iter++ )
 	{
 		/// make this param globl in this class scope to improve the efficienc
 		pCurrPacket_ = ( *iter );
@@ -758,7 +758,7 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 	}
 
 	/// all receive buffer data are done and so we clear them from vector
-	packets_.clear();
+	packets.clear();
 
 	TRACE_RETURN_VOID();
 }

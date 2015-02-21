@@ -342,14 +342,7 @@ void Channel::process_packets(Messages* pMsgHandlers)
 	ACE_UINT8 idx = recvPacketIndex_;
 	recvPacketIndex_ = 1 - recvPacketIndex_;
 
-	RecvPackets::iterator packetIter = recvPackets_[idx].begin();
-	for( ; packetIter != recvPackets_[idx].end(); ++packetIter )
-	{
-		Packet* pPacket = ( *packetIter );
-		pPacketReader_->processMessages(pMsgHandlers, pPacket);
-		RECLAIM_PACKET(pPacket->isTCPPacket(), pPacket);
-	}
-	pPacketReader_->processMessages(pMsgHandlers, )
+	pPacketReader_->processMessages(pMsgHandlers, recvPackets_[recvPacketIndex_]);
 
 	TRACE_RETURN_VOID();
 }
