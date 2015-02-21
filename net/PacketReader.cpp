@@ -393,7 +393,7 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 {
 	TRACE("PacketReader::processMessages()");
 	if( !pFragmentPacket_ ) pFragmentPacket_ = Packet_Pool->Ctor();
-	Bundle::Packets::iterator iter = packets.begin();
+	Channel::RecvPackets::iterator iter = packets.begin();
 	for( ; iter != packets.end(); iter++ )
 	{
 		/// make this param globl in this class scope to improve the efficienc

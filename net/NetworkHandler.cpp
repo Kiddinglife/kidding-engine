@@ -57,6 +57,8 @@ int TCP_Acceptor_Handler::handle_input(ACE_HANDLE fd)
 
 int TCP_Acceptor_Handler::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
 {
+	/// reactor will call remove_handler and then call this method anf the 
+	//  this->acceptor_.get_handle() must be = ACE_INVALID_HANDLE so this handle the delte accptor
 	if( this->acceptor_.get_handle() != ACE_INVALID_HANDLE )
 	{
 		this->reactor()->remove_handler(this, close_mask);

@@ -143,7 +143,11 @@ struct TCP_Acceptor_Handler : public ACE_Event_Handler
 	{
 	}
 
-	virtual ~TCP_Acceptor_Handler() { this->handle_close(ACE_INVALID_HANDLE, 0); }
+	virtual ~TCP_Acceptor_Handler()
+	{
+		this->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ACCEPT_MASK |
+			ACE_Event_Handler::DONT_CALL);
+	}
 
 	int open(const ACE_INET_Addr &listen_addr);
 

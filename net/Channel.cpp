@@ -63,8 +63,9 @@ void Channel::hand_shake(void)
 
 	if( recvPackets_[recvPacketIndex_].size() > 0 )
 	{
-		pPacketReader_ = PacketReader_Pool->Ctor(this);
 
+		pPacketReader_ = PacketReader_Pool->Ctor(this);
+		ACE_DEBUG(( LM_DEBUG, "%M::pPacketReader_ = PacketReader_Pool->Ctor(this);" ));
 		packetIter = recvPackets_[recvPacketIndex_].begin();
 		pPacket = ( *packetIter );
 
@@ -262,13 +263,13 @@ bool Channel::initialize(ACE_INET_Addr* addr)
 {
 	TRACE("Channel::initialize()");
 
-	if( protocolType_ == PROTOCOL_UDP )
+	if( protocolType_ == PROTOCOL_UDP && addr )
 	{
 		pEndPoint_ = UDP_SOCK_Handler_Pool->Ctor(*addr, pNetworkInterface_);
 		( (UDP_SOCK_Handler*) pEndPoint_ )->pChannel_ = this;
 	}
 
-	hand_shake();
+	//hand_shake();
 
 	startInactivityDetection(( channelScope_ == INTERNAL ) ? g_channelInternalTimeout : g_channelExternalTimeout);
 
@@ -336,13 +337,13 @@ void Channel::process_packets(Messages* pMsgHandlers)
 		return;
 	}
 
-	if( pPacketReader_ ) hand_shake();
+	if( !pPacketReader_ ) hand_shake();
 
 	/// always use the other index 0 or 1
 	ACE_UINT8 idx = recvPacketIndex_;
 	recvPacketIndex_ = 1 - recvPacketIndex_;
 
-	pPacketReader_->processMessages(pMsgHandlers, recvPackets_[recvPacketIndex_]);
+	pPacketReader_->processMessages(pMsgHandlers, recvPackets_[idx]);
 
 	TRACE_RETURN_VOID();
 }
