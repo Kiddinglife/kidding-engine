@@ -4,6 +4,7 @@
 #include "Packet.h"
 #include "NetworkHandler.h"
 #include "Channel.h"
+#include "Bundle.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -21,6 +22,7 @@ ACE_PoolPtr_Getter(Channel_Pool, Channel, ACE_Null_Mutex);
 ACE_PoolPtr_Getter(PacketReader_Pool, PacketReader, ACE_Null_Mutex);
 ACE_PoolPtr_Getter(UDP_SOCK_Handler_Pool, UDP_SOCK_Handler, ACE_Null_Mutex);
 ACE_PoolPtr_Getter(Packet_Pool, Packet, ACE_Null_Mutex);
+ACE_PoolPtr_Getter(Bundle_Pool, Bundle, ACE_Null_Mutex);
 
 bool g_debugEntity = false;
 bool g_appPublish = 1;

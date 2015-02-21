@@ -1124,7 +1124,9 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	std::cout << "tcpchannel.c_str();\n" << tcpchannel.c_str();
 	std::cout << "tcpchannel.get_bundles_length();\n" << tcpchannel.get_bundles_length();
 	Messages msgs;
-
+#include "net\net_common.h"
+	Bundle* bundle = Bundle_Pool->Ctor();
+	tcpchannel.send(bundle);
 	in.register_channel(&tcpchannel);
 
 	in.channel(addr);
@@ -1141,6 +1143,7 @@ TEST(NetworkInterfaceTest, get_ip_addr_str)
 	delay.process();
 	delay.fini(&pDispatcher);
 
+	Bundle_Pool->Dtor(bundle);
 
 	//pDispatcher.startLoop();
 }

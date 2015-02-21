@@ -39,7 +39,7 @@ canFilterPacket_(false),
 pEndPoint_(endpoint /*NULL*/),
 //pPacketReceiver_(NULL),
 //pPacketSender_(NULL),
-sending_(false),
+is_notified_send_(false),
 isCondemn_(false),
 proxyID_(0),
 strextra_(),
@@ -160,7 +160,7 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 	/// clear the pendpoint
 	if( protocolType_ == PROTOCOL_TCP )
 	{
-		if( sending_ ) sending_ = false;
+		if( is_notified_send_ ) is_notified_send_ = false;
 
 		if( pNetworkInterface_ )
 		{
@@ -347,110 +347,13 @@ void Channel::send(Bundle * pBundle)
 	size_t bundles_count = bundles_.size();
 	if( !bundles_count ) return;
 
-	if( !sending_ )
+	if( !is_notified_send_ )
 	{
-		//protocolType_ == PROTOCOL_TCP ? ( (TCP_SOCK_Handler*) pEndPoint_ )->process_send(this) : ( (UDP_SOCK_Handler*) pEndPoint_ )->process_send(this);
-
-		/// check if this channel has been condemed
-		if( isCondemn_ )
-		{
-			pNetworkInterface_->deregister_channel(this);
-
-			if( !isDestroyed_ )
-			{
-				destroy();
-				Channel_Pool->Dtor(this);
-			}
-			return;
-		}
-
-		Reason reason = REASON_SUCCESS;
-		Channel::Bundles::iterator iter = bundles_.begin();
-		for( ; iter != bundles_.end(); ++iter )
-		{
-			Bundle::Packets& pakcets = ( *iter )->packets_;
-			Bundle::Packets::iterator iter1 = pakcets.begin();
-			for( ; iter1 != pakcets.end(); ++iter1 )
-			{
-				/*	reason = processPacket(pChannel, ( *iter1 ));*/
-
-				/// filter the packet
-				if( canFilterPacket_ )
-				{
-					//filter_packet();
-				}
-
-				/// process filtered packets
-				if( protocolType_ == PROTOCOL_TCP )
-				{
-					if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
-					size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
-
-					if( sent_cnt == -1 )
-					{
-						reason = checkSocketErrors();
-					} else
-					{
-						( *iter1 )->buff->rd_ptr(sent_cnt);
-						bool sent_completely = ( *iter1 )->length() == 0;
-						on_packet_sent(sent_cnt, sent_completely);
-					}
-
-				} else
-				{
-					/// TO-DO
-				}
-
-				if( reason != REASON_SUCCESS )
-				{
-					break;
-				} else
-				{
-					Packet_Pool->Dtor(( *iter1 ));
-				}
-			} /// This packet is done
-
-			/// All packets in this bundle are sent completely and so recycle it
-			if( reason == REASON_SUCCESS )
-			{
-				pakcets.clear();
-				BundlePool->Dtor(( *iter ));
-			} else
-			{
-				/// there are packets that are not sent, we first clear the sent ones from this bundle
-				pakcets.erase(pakcets.begin(), iter1);
-				/// then we laso clear this bundle
-				bundles_.erase(bundles_.begin(), iter);
-
-				if( reason == REASON_RESOURCE_UNAVAILABLE )
-				{
-					ACE_DEBUG(( LM_WARNING,
-						"%M::CHANNEL::send(%s)::Transmit queue full, waiting for"
-						"space(kbengine.xml->channelCommon->writeBufferSize->{%s})...\n",
-						reasonToString(checkSocketErrors()),
-						( channelScope_ == INTERNAL ? "internal" : "external" ) ));
-				} else
-				{
-					/*pNetworkInterface_->deregister_channel(this);*/
-					if( !isCondemn_ ) isCondemn_ = true;
-					ACE_DEBUG(( LM_ERROR,
-						"Channel::condemn[{%@}]: channel({%s}).\n", this, this->c_str() ));
-					//if( !isDestroyed_ ) destroy();
-					//clear_channel();
-					//Channel_Pool->Dtor(this);
-				}
-				return;
-			}
-		}
-
-		/// All bundles are done 
-		bundles_.clear();
-		sending_ = false;
-
+		process_send();
 		// 如果不能立即发送到系统缓冲区，那么交给poller处理
 		if( bundles_.size() && !isCondemn_ && !isDestroyed_ )
 		{
-			sending_ = true;
+			is_notified_send_ = true;
 			pEndPoint_->reactor()->register_handler(pEndPoint_, ACE_Event_Handler::WRITE_MASK);
 		}
 	}
@@ -505,15 +408,171 @@ void Channel::send(Bundle * pBundle)
 	TRACE_RETURN_VOID();
 }
 
-void Channel::process_send()
+void Channel::on_error(void)
 {
-	TRACE("Channel::process_send()");
-	TRACE_RETURN_VOID();
+	pNetworkInterface_->deregister_channel(this);
+	if( !isDestroyed_ )
+	{
+		destroy();
+		Channel_Pool->Dtor(this);
+	}
 }
 
+bool Channel::process_send()
+{
+	TRACE("Channel::process_send()");
+
+	/// check if this channel has been condemed
+	if( isCondemn_ )
+	{
+		if( is_notified_send_ ) this->on_error();
+		return false;
+	}
+
+	Reason reason = REASON_SUCCESS;
+	Channel::Bundles::iterator iter = bundles_.begin();
+	for( ; iter != bundles_.end(); ++iter )
+	{
+		Bundle::Packets& pakcets = ( *iter )->packets_;
+		Bundle::Packets::iterator iter1 = pakcets.begin();
+		for( ; iter1 != pakcets.end(); ++iter1 )
+		{
+			/// process this packet starts
+
+			/// filter the packet
+			if( canFilterPacket_ )
+			{
+				//filter_packet();
+			}
+
+			/// process filtered packets
+			if( protocolType_ == PROTOCOL_TCP )
+			{
+				if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
+				size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
+
+				if( sent_cnt == -1 )
+				{
+					reason = checkSocketErrors();
+				} else
+				{
+					( *iter1 )->buff->rd_ptr(sent_cnt);
+					bool sent_completely = ( *iter1 )->length() == 0;
+					on_packet_sent(sent_cnt, sent_completely);
+				}
+
+			} else
+			{
+				/// TO-DO
+			}
+
+			if( reason != REASON_SUCCESS )
+			{
+				break;
+			} else
+			{
+				Packet_Pool->Dtor(( *iter1 ));
+			}
+		} /// process this packet ends
+
+		/// All packets in this bundle are sent completely and so recycle it
+		if( reason == REASON_SUCCESS )
+		{
+			pakcets.clear();
+			BundlePool->Dtor(( *iter ));
+		} else
+		{
+			/// there are packets that are not sent, we first clear the sent ones from this bundle
+			pakcets.erase(pakcets.begin(), iter1);
+			/// then we laso clear this bundle
+			bundles_.erase(bundles_.begin(), iter);
+
+			if( reason == REASON_RESOURCE_UNAVAILABLE )
+			{
+				ACE_DEBUG(( LM_WARNING,
+					"%M::CHANNEL::send(%s)::Transmit queue full, waiting for"
+					"space(kbengine.xml->channelCommon->writeBufferSize->{%s})...\n",
+					reasonToString(checkSocketErrors()),
+					( channelScope_ == INTERNAL ? "internal" : "external" ) ));
+			} else
+			{
+				//this->dispatcher().errorReporter().reportException(reason, pEndpoint_->addr());
+				if( is_notified_send_ )
+				{
+					this->on_error();
+				} else
+				{
+					set_channel_condem();
+				}
+			}
+			return false;
+		}
+	}
+
+	/// All bundles are done 
+	bundles_.clear();
+	if( is_notified_send_ ) this->on_bundles_sent_completely();
+
+	TRACE_RETURN(true);
+}
+
+void Channel::set_channel_condem()
+{
+	isCondemn_ = true;
+	ACE_DEBUG(( LM_ERROR,
+		"Channel::condemn[{%@}]: channel({%s}).\n", this, this->c_str() ));
+}
+
+void Channel::on_bundles_sent_completely()
+{
+	TRACE(" Channel::on_sent_completely");
+	ACE_ASSERT(bundles_.size() == 0 && is_notified_send_);
+	if( is_notified_send_ )
+	{
+		is_notified_send_ = false;
+		pEndPoint_->reactor()->remove_handler(pEndPoint_,
+			ACE_Event_Handler::DONT_CALL | ACE_Event_Handler::WRITE_MASK);
+	}
+	TRACE_RETURN_VOID();
+}
 void Channel::on_packet_sent(int bytes_cnt, bool is_sent_completely)
 {
 	TRACE(" Channel::on_packet_sent");
+
+	if( is_sent_completely )
+	{
+		++numPacketsSent_;
+		++g_numPacketsSent;
+	}
+
+	numBytesSent_ += bytes_cnt;
+	g_numBytesSent += bytes_cnt;
+	lastTickBytesSent_ += bytes_cnt;
+
+	if( this->protocolType_ == EXTERNAL )
+	{
+		if( g_extSendWindowBytesOverflow > 0 &&
+			lastTickBytesSent_ >= g_extSendWindowBytesOverflow )
+		{
+			ACE_DEBUG(( LM_ERROR,
+				"Channel::onPacketSent[{%@}]: external channel({%s}), bufferedBytes has overflowed"
+				"({%d} > {%d}), Try adjusting the kbengine_defs.xml->windowOverflow->receive.\n",
+				( void* )this, this->c_str(), lastTickBytesSent_, g_extSendWindowBytesOverflow ));
+
+			this->set_channel_condem();
+		}
+	} else
+	{
+		if( g_intSendWindowBytesOverflow > 0 &&
+			lastTickBytesSent_ >= g_intSendWindowBytesOverflow )
+		{
+			ACE_DEBUG(( LM_WARNING,
+				"Channel::onPacketSent[{%@}]: internal channel({%s}),"
+				"bufferedBytes has overflowed({%d} > {%d}).\n",
+				( void* )this, this->c_str(), lastTickBytesSent_, g_intSendWindowBytesOverflow ));
+		}
+	}
+
 	TRACE_RETURN_VOID();
 }
 

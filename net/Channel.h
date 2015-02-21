@@ -80,7 +80,7 @@ struct Channel
 	ProtocolType				          protocolType_;
 	ChannelID					          channelId_;
 	bool						                  isDestroyed_;
-	bool						                  sending_;
+	bool						                  is_notified_send_;
 
 	/// 如果为true，则该频道已经变得不合法
 	/// if true, this channel has become unusable
@@ -154,7 +154,10 @@ struct Channel
 	void process_packets(Messages* pMsgHandlers);
 	void on_packet_sent(int bytes_cnt, bool is_sent_completely);
 	void send(Bundle * pBundle = NULL);
-	void process_send(void);
+	bool process_send(void);
+	inline void on_error(void);
+	inline void on_bundles_sent_completely(void);
+	inline void Channel::set_channel_condem();
 };
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

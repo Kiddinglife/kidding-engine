@@ -4,6 +4,7 @@
 #include "ace\pre.h"
 #include "ace\SOCK_Stream.h"
 #include "ace\SOCK_Dgram.h"
+#include "common\common.h"
 #include "common\ace_object_pool.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
@@ -50,6 +51,9 @@ ACE_PoolPtr_Declare(UDP_SOCK_Handler_Pool, UDP_SOCK_Handler, ACE_Null_Mutex);
 
 struct Packet;
 ACE_PoolPtr_Declare(Packet_Pool, Packet, ACE_Null_Mutex);
+
+struct Bundle;
+ACE_PoolPtr_Declare(Bundle_Pool, Bundle, ACE_Null_Mutex);
 //========================================================
 
 //========================================================
