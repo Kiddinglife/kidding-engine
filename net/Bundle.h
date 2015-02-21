@@ -95,7 +95,7 @@ struct Bundle
 
 	Bundle(Channel * pChannel = NULL, ProtocolType pt = PROTOCOL_TCP);
 
-	~Bundle(void) { }
+	~Bundle();
 
 	/**
 	 * This method need to be called firstly before reading msg from packet
