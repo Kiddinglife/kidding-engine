@@ -389,12 +389,12 @@ PacketReader::~PacketReader()
 //	pFragmentPacket_ = NULL;
 //	TRACE_RETURN_VOID();
 //}
-void PacketReader::processMessages(Messages* pMsgs, Bundle* pBundle)
+void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packets_)
 {
 	TRACE("PacketReader::processMessages()");
 	if( !pFragmentPacket_ ) pFragmentPacket_ = Packet_Pool->Ctor();
-	Bundle::Packets::iterator iter = pBundle->packets_.begin();
-	for( ; iter != pBundle->packets_.end(); iter++ )
+	Bundle::Packets::iterator iter = packets_.begin();
+	for( ; iter != packets_.end(); iter++ )
 	{
 		/// make this param globl in this class scope to improve the efficienc
 		pCurrPacket_ = ( *iter );
@@ -758,7 +758,7 @@ void PacketReader::processMessages(Messages* pMsgs, Bundle* pBundle)
 	}
 
 	/// all receive buffer data are done and so we clear them from vector
-	pBundle->packets_.clear();
+	packets_.clear();
 
 	TRACE_RETURN_VOID();
 }

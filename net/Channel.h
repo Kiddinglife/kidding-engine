@@ -156,6 +156,9 @@ struct Channel
 	void Channel::update_recv_window(Packet* pPacket);
 	void Channel::on_packet_received(int bytes);
 	void send(Bundle * pBundle = NULL);
+	void tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundle);
+	void Channel::udp_send_single_bundle(UDP_SOCK_Handler* pEndpoint,
+		Bundle* pBundle, ACE_INET_Addr& addr);
 	bool process_send(void);
 	inline void on_error(void);
 	inline void on_bundles_sent_completely(void);

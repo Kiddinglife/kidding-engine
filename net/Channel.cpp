@@ -268,6 +268,8 @@ bool Channel::initialize(ACE_INET_Addr* addr)
 		( (UDP_SOCK_Handler*) pEndPoint_ )->pChannel_ = this;
 	}
 
+	hand_shake();
+
 	startInactivityDetection(( channelScope_ == INTERNAL ) ? g_channelInternalTimeout : g_channelExternalTimeout);
 
 	TRACE_RETURN(true);
@@ -310,6 +312,45 @@ void Channel::destroy(void)
 void Channel::process_packets(Messages* pMsgHandlers)
 {
 	TRACE("Channel::process_packets()");
+
+	this->lastTickBytesReceived_ = 0;
+	this->lastTickBytesSent_ = 0;
+
+	if( this->pMsgs_ != NULL )
+	{
+		pMsgHandlers = this->pMsgs_;
+	}
+
+	/// check to see if the current channel is avaiable to use
+	if( isDestroyed_ )
+	{
+		ACE_DEBUG(( LM_ERROR, "Channel::processPackets({%s}): channel[{:p}] is destroyed.\n",
+			this->c_str(), this ));
+		return;
+	}
+
+	if( isCondemn_ )
+	{
+		ACE_DEBUG(( LM_ERROR,
+			"Channel::processPackets({%s}): channel[{%@}] is condemn.\n", c_str(), this ));
+		return;
+	}
+
+	if( pPacketReader_ ) hand_shake();
+
+	/// always use the other index 0 or 1
+	ACE_UINT8 idx = recvPacketIndex_;
+	recvPacketIndex_ = 1 - recvPacketIndex_;
+
+	RecvPackets::iterator packetIter = recvPackets_[idx].begin();
+	for( ; packetIter != recvPackets_[idx].end(); ++packetIter )
+	{
+		Packet* pPacket = ( *packetIter );
+		pPacketReader_->processMessages(pMsgHandlers, pPacket);
+		RECLAIM_PACKET(pPacket->isTCPPacket(), pPacket);
+	}
+	pPacketReader_->processMessages(pMsgHandlers, )
+
 	TRACE_RETURN_VOID();
 }
 
@@ -340,8 +381,8 @@ void Channel::send(Bundle * pBundle)
 	if( pBundle ) bundles_.push_back(pBundle);
 
 	/// if no bundle to send, we just stop here
-	size_t bundles_count = bundles_.size();
-	if( !bundles_count ) return;
+	size_t bundles_cnt = bundles_.size();
+	if( !bundles_cnt ) return;
 
 	if( !is_notified_send_ )
 	{
@@ -355,7 +396,7 @@ void Channel::send(Bundle * pBundle)
 	}
 
 	if( g_sendWindowMessagesOverflowCritical > 0 &&
-		bundles_count > g_sendWindowMessagesOverflowCritical )
+		bundles_cnt > g_sendWindowMessagesOverflowCritical )
 	{
 		if( channelScope_ == EXTERNAL )
 		{
@@ -363,11 +404,11 @@ void Channel::send(Bundle * pBundle)
 				"Channel::send[{%@}]: external channel({%s}), "
 				"send window has overflowed({%d} > {%d}).\n",
 				this, c_str(),
-				bundles_count,
+				bundles_cnt,
 				g_sendWindowMessagesOverflowCritical ));
 
 			if( g_extSendWindowMessagesOverflow > 0 &&
-				bundles_count > g_extSendWindowMessagesOverflow )
+				bundles_cnt > g_extSendWindowMessagesOverflow )
 			{
 				isCondemn_ = true;
 				ACE_DEBUG(( LM_ERROR,
@@ -375,12 +416,12 @@ void Channel::send(Bundle * pBundle)
 					"send window has overflowed({%d} > {%d}),\n"
 					"Try adjusting the kbengine_defs.xml->windowOverflow->send.\n"
 					"This channel is condemn{%d} now.\n",
-					this, c_str(), bundles_count, g_extSendWindowMessagesOverflow, isCondemn_ ));
+					this, c_str(), bundles_cnt, g_extSendWindowMessagesOverflow, isCondemn_ ));
 			}
 		} else
 		{
 			if( g_intSendWindowMessagesOverflow > 0 &&
-				bundles_count > g_intSendWindowMessagesOverflow )
+				bundles_cnt > g_intSendWindowMessagesOverflow )
 			{
 				isCondemn_ = true;
 				ACE_DEBUG(( LM_ERROR,
@@ -388,7 +429,7 @@ void Channel::send(Bundle * pBundle)
 					"send window has overflowed({%d} > {%d}).\n"
 					"This channel is condemn{%d} now.\n",
 					this, c_str(),
-					bundles_count, g_intSendWindowMessagesOverflow,
+					bundles_cnt, g_intSendWindowMessagesOverflow,
 					isCondemn_ ));
 			} else
 			{
@@ -396,7 +437,7 @@ void Channel::send(Bundle * pBundle)
 					"Channel::send[{%@}]: internal channel({%s}), "
 					"send window has overflowed({%d} > {%d}).\n",
 					this, c_str(),
-					bundles_count,
+					bundles_cnt,
 					g_sendWindowMessagesOverflowCritical ));
 			}
 		}
@@ -644,6 +685,126 @@ void Channel::update_recv_window(Packet* pPacket)
 			}
 		}
 	}
+}
+
+void Channel::tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundle)
+{
+	Bundle::Packets::iterator iter = pBundle->packets_.begin();
+	for( ; iter != pBundle->packets_.end(); ++iter )
+	{
+		Packet* pPacket = ( *iter );
+		int retries = 0;
+		Reason reason;
+
+		while( true )
+		{
+			++retries;
+			int slen = pEndpoint->sock_.send(pPacket->buff->rd_ptr(),
+				pPacket->length());
+
+			if( slen > 0 )
+				pPacket->buff->rd_ptr(slen);
+
+			if( pPacket->length() > 0 )
+			{
+				reason = checkSocketErrors();
+
+				/* 如果发送出现错误那么我们可以继续尝试一次， 超过60次退出	*/
+				if( reason == REASON_NO_SUCH_PORT && retries <= 3 )
+				{
+					continue;
+				}
+
+				/* 如果系统发送缓冲已经满了，则我们等待10ms	*/
+				if( ( reason == REASON_RESOURCE_UNAVAILABLE || reason == REASON_GENERAL_NETWORK )
+					&& retries <= 60 )
+				{
+					ACE_DEBUG(( LM_WARNING, "{%s}: Transmit queue full, waiting for space... ({%d})\n",
+						__FUNCTION__, retries ));
+
+					//ep.waitSend();
+					fd_set	fds;
+					struct timeval tv = { 0, 10000 };
+					FD_ZERO(&fds);
+					ACE_SOCKET sock = ( (ACE_SOCKET) pEndpoint->get_handle() );
+					FD_SET(sock, &fds);
+					select(sock + 1, NULL, &fds, NULL, &tv);
+					continue;
+
+					if( retries > 60 && reason != REASON_SUCCESS )
+					{
+						ACE_ERROR_BREAK(( LM_ERROR,
+							"Bundle::basicSendWithRetries: packet discarded(reason={%s}).\n",
+							( reasonToString(reason) ) ));
+					}
+				}
+			} else
+			{
+				break;
+			}
+		}
+	}
+	pBundle->recycle_all_packets();
+}
+
+void Channel::udp_send_single_bundle(UDP_SOCK_Handler* pEndpoint, Bundle* pBundle, ACE_INET_Addr& addr)
+{
+	Bundle::Packets::iterator iter = pBundle->packets_.begin();
+	for( ; iter != pBundle->packets_.end(); ++iter )
+	{
+		Packet* pPacket = ( *iter );
+		int retries = 0;
+		Reason reason;
+
+		while( true )
+		{
+			++retries;
+			int slen = pEndpoint->sock_.send(pPacket->buff->rd_ptr(),
+				pPacket->length(), addr);
+
+			if( slen > 0 )
+				pPacket->buff->rd_ptr(slen);
+
+			if( pPacket->length() > 0 )
+			{
+				reason = checkSocketErrors();
+
+				/* 如果发送出现错误那么我们可以继续尝试一次， 超过60次退出	*/
+				if( reason == REASON_NO_SUCH_PORT && retries <= 3 )
+				{
+					continue;
+				}
+
+				/* 如果系统发送缓冲已经满了，则我们等待10ms	*/
+				if( ( reason == REASON_RESOURCE_UNAVAILABLE || reason == REASON_GENERAL_NETWORK )
+					&& retries <= 60 )
+				{
+					ACE_DEBUG(( LM_WARNING, "{%s}: Transmit queue full, waiting for space... ({%d})\n",
+						__FUNCTION__, retries ));
+
+					//ep.waitSend();
+					fd_set	fds;
+					struct timeval tv = { 0, 10000 };
+					FD_ZERO(&fds);
+					ACE_SOCKET sock = ( (ACE_SOCKET) pEndpoint->get_handle() );
+					FD_SET(sock, &fds);
+					select(sock + 1, NULL, &fds, NULL, &tv);
+					continue;
+
+					if( retries > 60 && reason != REASON_SUCCESS )
+					{
+						ACE_ERROR_BREAK(( LM_ERROR,
+							"Bundle::basicSendWithRetries: packet discarded(reason={%s}).\n",
+							( reasonToString(reason) ) ));
+					}
+				}
+			} else
+			{
+				break;
+			}
+		}
+	}
+	pBundle->recycle_all_packets();
 }
 
 NETWORK_NAMESPACE_END_DECL

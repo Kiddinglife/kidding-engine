@@ -43,6 +43,7 @@ struct PacketReader
 	PacketReader(Channel* pChannel = NULL);
 	virtual ~PacketReader();
 	void PacketReader::processMessages(Messages* pMsgHandlers, Bundle* pPacket);
+	void PacketReader::processMessages(Messages* pMsgHandlers, Channel::RecvPackets& packets_);
 };
 
 NETWORK_NAMESPACE_END_DECL
