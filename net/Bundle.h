@@ -34,12 +34,6 @@ if( in.length() == 0 )\
 	block->wr_ptr(packets_[0]->buff->wr_ptr());\
 }
 
-#define new_pCurrPacket(PACKET_TYPE)\
-ACE_PoolPtr_Getter(ObjPool, PACKET_TYPE, ACE_Null_Mutex);\
-this->pCurrPacket_ = ObjPool->Ctor();\
-this->pCurrPacket_->pBundle_ = this;         
-
-
 struct Bundle
 {
 	typedef std::vector<Packet*> Packets;

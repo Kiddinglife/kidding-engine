@@ -6,9 +6,6 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-//ACE_PoolPtr_Getter(BundlePool, Bundle, ACE_Null_Mutex);
-//ACE_PoolPtr_Getter(PacketSender_Pool, PacketSender, ACE_Null_Mutex);
-
 Channel::
 Channel(
 NetworkInterface* networkInterface,
