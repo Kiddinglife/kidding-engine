@@ -8,6 +8,7 @@
 #include "NetStats.h"
 #include "common\ace_object_pool.h"
 #include "Message.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
@@ -92,33 +93,7 @@ struct Bundle
 	/*用于读取包中的序列化数据 : used to read the data from the packets*/
 	ACE_InputCDR in;
 
-	Bundle(Channel * pChannel = NULL, ProtocolType pt = PROTOCOL_TCP) :
-		pChnnel_(pChannel),
-		pCurrPacket_(NULL),
-		numMessages_(0),
-		currMsgID_(0),
-		currMsgPacketCount_(0),
-		currMsgLength_(0),
-		currMsgType_(0),
-		currMsgLengthPos_(NULL),
-		currPacketPaddingBeforeEncrytypeField(0),
-		pt_(PROTOCOL_TCP),
-		pCurrMsg_(NULL),
-		reuse_(false),
-		currPacketMaxSize(pt == PROTOCOL_TCP ? TCP_PACKET_MAX_CHUNK_SIZE : UDP_PACKET_MAX_CHUNK_SIZE),
-		in((char*) NULL, 0)
-	{
-		// 如果使用了openssl加密通讯则我们保证一个包最大能被Blowfish::BLOCK_SIZE除尽
-		// 这样我们在加密一个满载包时不需要额外填充字节
-		/*ACE_DEBUG(( LM_DEBUG, "// 如果使用了openssl加密通讯则我们保证一个包最大能被Blowfish::BLOCK_SIZE除尽 \n" ));*/
-		if( g_channelExternalEncryptType)
-		{
-			//ACE_DEBUG(( LM_DEBUG, " currPacketMaxSize=%d \n", currPacketMaxSize ));
-			currPacketPaddingBeforeEncrytypeField = currPacketMaxSize % KBEBlowfish::BLOCK_SIZE;
-			currPacketMaxSize -= currPacketPaddingBeforeEncrytypeField;
-			//ACE_DEBUG(( LM_DEBUG, "After ajust, currPacketMaxSize=%d \n\n", currPacketMaxSize ));
-		}
-	}
+	Bundle(Channel * pChannel = NULL, ProtocolType pt = PROTOCOL_TCP);
 
 	~Bundle(void) { }
 
