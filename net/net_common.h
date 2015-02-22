@@ -36,6 +36,19 @@ namespace TCP
 {
 };
 
+enum RecvState
+{
+	RECV_STATE_INTERRUPT = -1,
+	RECV_STATE_BREAK = 0,
+	RECV_STATE_CONTINUE = 1
+};
+
+enum PACKET_RECEIVER_TYPE
+{
+	TCP_PACKET_RECEIVER = 0,
+	UDP_PACKET_RECEIVER = 1
+};
+
 //========================== Pools =========================
 struct TCP_SOCK_Handler;
 ACE_PoolPtr_Declare(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
@@ -206,6 +219,61 @@ inline Reason checkSocketErrors()
 	}
 	return reason;
 }
+
+inline RecvState checkSocketErrors(int len, bool expectingPacket)
+{
+	int err = kbe_lasterror();
+
+	// recv缓冲区已经无数据可读了
+	if( ( err == EAGAIN || err == EWOULDBLOCK ) && !expectingPacket )
+	{
+		return RecvState::RECV_STATE_BREAK;
+	}
+
+
+	if( err == EAGAIN ||							// 已经无数据可读了
+		err == ECONNREFUSED ||					// 连接被服务器拒绝
+		err == EHOSTUNREACH )						// 目的地址不可到达
+	{
+		//this->dispatcher().errorReporter().reportException(
+		//	REASON_NO_SUCH_PORT);
+		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
+			"Throwing REASON_NO_SUCH_PORT\n" ));
+		return RecvState::RECV_STATE_BREAK;
+	}
+
+	/*
+	存在的连接被远程主机强制关闭。通常原因为：远程主机上对等方应用程序突然停止运行，或远程主机重新启动，
+	或远程主机在远程方套接字上使用了“强制”关闭（参见setsockopt(SO_LINGER)）。
+	另外，在一个或多个操作正在进行时，如果连接因“keep-alive”活动检测到一个失败而中断，也可能导致此错误。
+	此时，正在进行的操作以错误码WSAENETRESET失败返回，后续操作将失败返回错误码WSAECONNRESET
+	*/
+
+	if( err == WSAECONNRESET )
+	{
+		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
+			"Throwing REASON_GENERAL_NETWORK - WSAECONNRESET\n" ));
+		return RecvState::RECV_STATE_INTERRUPT;
+	}
+
+	if( err == WSAECONNABORTED )
+	{
+		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
+			"Throwing REASON_GENERAL_NETWORK - WSAECONNABORTED\n" ));
+		return RecvState::RECV_STATE_INTERRUPT;
+	}
+
+	ACE_DEBUG(( LM_WARNING,
+		"TCPPacketReceiver::processPendingEvents: "
+		"Throwing REASON_GENERAL_NETWORK (%s), will continue the reactor\n",
+		kbe_strerror() ));
+
+	//this->dispatcher().errorReporter().reportException(
+	//	REASON_GENERAL_NETWORK);
+
+	return RecvState::RECV_STATE_CONTINUE;
+}
+
 
 inline const char* reasonToString(Reason reason)
 {

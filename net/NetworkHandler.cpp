@@ -132,9 +132,57 @@ int TCP_SOCK_Handler::handle_close(ACE_HANDLE, ACE_Reactor_Mask mask)
 	TCP_SOCK_Handler_Pool->Dtor(this);
 	return 0;
 }
+
 int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)
 {
-	return 0;
+	TRACE("TCP_SOCK_Handler::handle_input()");
+
+	TRACE_RETURN(0);
+	//return 0;
+}
+
+bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
+{
+	TRACE(" TCP_SOCK_Handler::process_recv");
+	if( pChannel_->isCondemn_ )
+	{
+		pChannel_->on_error();
+		TRACE_RETURN(false);
+	}
+
+	static Packet* pReceiveWindow = NULL;
+	pReceiveWindow = Packet_Pool->Ctor();
+
+	static int len;
+	len = sock_.recv(pReceiveWindow->buff->wr_ptr(),
+		pReceiveWindow->buff->size() - pReceiveWindow->buff->length());
+
+	if( len > 0 )
+	{
+		pReceiveWindow->buff->wr_ptr(len);
+		// 注意:必须在大于0的时候否则DEBUG_MSG将会导致WSAGetLastError返回0从而陷入死循环
+		ACE_DEBUG(( LM_DEBUG,
+			"%M::TCP_SOCK_Handler::handle_input: datasize={%d}, wpos={%d}.\n",
+			len, pReceiveWindow->buff->wr_ptr() ));
+	}
+
+	if( len < 0 )
+	{
+		Packet_Pool->Dtor(pReceiveWindow);
+		pChannel_->on_error();
+		static RecvState recv_state;
+		if( ( recv_state = checkSocketErrors(len, expectingPacket) ) == RecvState::RECV_STATE_INTERRUPT )
+		{
+			pChannel_->on_error();
+		}
+	}
+
+	if( len == 0 )
+	{
+
+	}
+
+	TRACE_RETURN(1);
 }
 
 int TCP_SOCK_Handler::handle_output(ACE_HANDLE fd)

@@ -3,20 +3,23 @@
 
 #include "ace\pre.h"
 #include "ace\Null_Mutex.h"
+//#include "common\ace_object_pool.h"
 #include "common\common.h"
-#include "common\ace_object_pool.h"
-#include "FixedMessages.h"
-#include "net\Packet.h"
+#include "net\net_common.h"
+#include "net\FixedMessages.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
 class KBE_MD5;
 struct Messages;
+struct FixedMessages;
+//struct Channel;
+//struct Packet;
+
 extern std::vector<Messages*>* gPtrMsgsPtrContainer;
 extern FixedMessages* gPtrFixedMsgs;
 
-struct Channel;
 
 struct ExposedMessageInfo
 {
@@ -120,8 +123,8 @@ struct Message
 	virtual void handle(Channel* pChannel, Packet* s)
 	{
 		TRACE("Message::handle()");
-		ACE_DEBUG(( LM_DEBUG,
-			"%M::Message::msg payload len(%d)\n", s->length() ));
+		//ACE_DEBUG(( LM_DEBUG,
+		//	"%M::Message::msg payload len(%d)\n", s->length() ));
 		pMsgArgs_->fetch_args_from(s);
 		// 将参数传给最终的接口
 		TRACE_RETURN_VOID();

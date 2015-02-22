@@ -4,10 +4,10 @@
 #include "ace\pre.h"
 #include "ace/CDR_Stream.h"
 #include "net_common.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-struct Bundle;
 struct Packet
 {
 	ACE_OutputCDR os;

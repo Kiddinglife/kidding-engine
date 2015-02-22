@@ -219,13 +219,12 @@ size_t Bundle::calculate_avaiable_space_of_curr_packet(size_t addsize, bool inse
 void Bundle::create_new_curr_packet(void)
 {
 	static MessageID msgid = 0;
-	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
 	if( pt_ == PROTOCOL_TCP )
 	{
-		this->pCurrPacket_ = pool->Ctor();
+		this->pCurrPacket_ = Packet_Pool->Ctor();
 	} else
 	{
-		this->pCurrPacket_ = pool->Ctor<MessageID, ProtocolType>(msgid, pt_);
+		this->pCurrPacket_ = Packet_Pool->Ctor(msgid, pt_);
 	}
 	this->pCurrPacket_->pBundle_ = this;
 	packets_.push_back(pCurrPacket_);

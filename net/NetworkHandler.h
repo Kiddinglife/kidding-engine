@@ -72,7 +72,7 @@ struct TCP_SOCK_Handler : public ACE_Event_Handler
 
 	int open(void);
 	bool process_send(Channel* pChannel);
-
+	bool process_recv(bool expectingPacket);
 	// Get this handler's I/O handle.
 	virtual ACE_HANDLE get_handle(void) const
 	{ return this->sock_.get_handle(); }

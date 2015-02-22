@@ -310,6 +310,30 @@ void Channel::destroy(void)
 	TRACE_RETURN_VOID();
 }
 
+bool Channel::process_recv(bool expectingPacket)
+{
+	TRACE("Channel::process_recv()");
+
+	if( isCondemn_ )
+	{
+		on_error();
+		TRACE_RETURN(false);
+	}
+
+	static MessageID msgid = 0;
+	static Packet* pReceiveWindow = NULL;
+
+	if( protocolType_ == PROTOCOL_TCP )
+	{
+		pReceiveWindow = Packet_Pool->Ctor();
+	} else
+	{
+		pReceiveWindow = Packet_Pool->Ctor(msgid, protocolType_);
+	}
+
+	TRACE_RETURN(true);
+}
+
 void Channel::process_packets(Messages* pMsgHandlers)
 {
 	TRACE("Channel::process_packets()");
