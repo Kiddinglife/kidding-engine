@@ -174,14 +174,24 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 		if( ( recv_state = checkSocketErrors(len, expectingPacket) ) == RecvState::RECV_STATE_INTERRUPT )
 		{
 			pChannel_->on_error();
+			TRACE_RETURN(false);
 		}
+		TRACE_RETURN(recv_state == RecvState::RECV_STATE_CONTINUE);
 	}
 
+	/// the client log off 
 	if( len == 0 )
 	{
-
+		Packet_Pool->Dtor(pReceiveWindow);
+		pChannel_->on_error();
+		TRACE_RETURN(false);
 	}
 
+	/// ==============processPacket starts===============
+	
+	///=============processPacket ends=================
+	//if( ret != REASON_SUCCESS )
+	//	this->dispatcher().errorReporter().reportException(ret, pEndpoint_->addr());
 	TRACE_RETURN(1);
 }
 
