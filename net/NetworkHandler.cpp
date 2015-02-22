@@ -136,7 +136,13 @@ int TCP_SOCK_Handler::handle_close(ACE_HANDLE, ACE_Reactor_Mask mask)
 int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)
 {
 	TRACE("TCP_SOCK_Handler::handle_input()");
-
+	if( this->process_recv(/*expectingPacket:*/true) )
+	{
+		while( this->process_recv(/*expectingPacket:*/false) )
+		{
+			/* pass */;
+		}
+	}
 	TRACE_RETURN(0);
 	//return 0;
 }
@@ -187,12 +193,34 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 		TRACE_RETURN(false);
 	}
 
-	/// ==============processPacket starts===============
-	
-	///=============processPacket ends=================
+	Reason ret  = process_recv_packet(pReceiveWindow);
+
 	//if( ret != REASON_SUCCESS )
 	//	this->dispatcher().errorReporter().reportException(ret, pEndpoint_->addr());
-	TRACE_RETURN(1);
+
+	TRACE_RETURN(true);
+}
+
+Reason TCP_SOCK_Handler::process_recv_packet(Packet * pPacket)
+{
+	TRACE("TCP_SOCK_Handler::process_recv_packet()");
+
+	pChannel_->on_packet_received(pPacket->length());
+
+	if( pChannel_->canFilterPacket_ )
+	{
+		// filter
+	}
+
+	// 如果为None， 则可能是被过滤器过滤掉了(过滤器正在按照自己的规则组包解密)
+	if( pPacket )
+	{
+		pChannel_->update_recv_window(pPacket);
+	}
+
+
+	//return REASON_SUCCESS;
+	TRACE_RETURN(REASON_SUCCESS);
 }
 
 int TCP_SOCK_Handler::handle_output(ACE_HANDLE fd)
