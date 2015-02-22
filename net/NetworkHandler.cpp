@@ -23,7 +23,6 @@ int TCP_Acceptor_Handler::open(const ACE_INET_Addr &listen_addr)
 int TCP_Acceptor_Handler::handle_input(ACE_HANDLE fd)
 {
 	TCP_SOCK_Handler* client = TCP_SOCK_Handler_Pool->Ctor();
-
 	if( this->acceptor_.accept(client->sock_) == -1 )
 	{
 		TCP_SOCK_Handler_Pool->Dtor(client);
@@ -136,6 +135,8 @@ int TCP_SOCK_Handler::handle_close(ACE_HANDLE, ACE_Reactor_Mask mask)
 int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)
 {
 	TRACE("TCP_SOCK_Handler::handle_input()");
+
+	/// this is to make the recv get error to reset the reactor
 	if( this->process_recv(/*expectingPacket:*/true) )
 	{
 		while( this->process_recv(/*expectingPacket:*/false) )
@@ -193,7 +194,7 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 		TRACE_RETURN(false);
 	}
 
-	Reason ret  = process_recv_packet(pReceiveWindow);
+	Reason ret = process_recv_packet(pReceiveWindow);
 
 	//if( ret != REASON_SUCCESS )
 	//	this->dispatcher().errorReporter().reportException(ret, pEndpoint_->addr());

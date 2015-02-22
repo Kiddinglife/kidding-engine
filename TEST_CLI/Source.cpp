@@ -1,14 +1,5 @@
-﻿#include <iostream>
-#include <time.h>
-#include <string>
-#include "gtest\gtest.h"
-#include "ace/Log_Msg.h"
-#include "ace/mytrace.h"
-#include  "ace/Refcounted_Auto_Ptr.h"
-#include "ace/Auto_Ptr.h"
-#include "common/ace_object_pool.h"
-#include "ace/ACE.h"
-#define ACE_NTRACE 1
+﻿#include "CLI_TestCases.h"
+#include "net\net_common.h"
 
 int main(int argc, char* argv[ ])
 {
@@ -25,9 +16,8 @@ int main(int argc, char* argv[ ])
 	| ACE_Log_Msg::MSG_CALLBACK | ACE_Log_Msg::CUSTOM,
 	logger_key);
 	*/
-	setlocale(LC_CTYPE, "");
-	std::ofstream os("kbe.log");
-	ACE_LOG_MSG->msg_ostream(&os, 0);
+	extern std::ofstream normal;
+	ACE_LOG_MSG->msg_ostream(&normal, 0);
 	ACE_LOG_MSG->open("kbengine tests", ACE_Log_Msg::STDERR | ACE_Log_Msg::OSTREAM);
 	TRACE("main");
 	testing::InitGoogleTest(&argc, argv);

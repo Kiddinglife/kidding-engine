@@ -10,13 +10,10 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-struct TimerHandle { };
 struct PacketReader;
 struct PacketReceiver;
 struct PacketSender;
 struct PacketFilter;
-
-typedef ACE_Refcounted_Auto_Ptr<PacketFilter, ACE_Null_Mutex> PacketFilterPtr;
 
 struct Channel
 {
@@ -40,21 +37,18 @@ struct Channel
 		TIMEOUT_INACTIVITY_CHECK
 	};
 
-	//@TO-DO 可能需要查看apg timer那个例子
-	TimerHandle					          inactivityTimerHandle_;
-
 	/// 该通道所需的网络接口
-	NetworkInterface*                  pNetworkInterface_;
+	NetworkInterface*                 pNetworkInterface_;
 
 	/// 该通道需要使用bundle来缓存接收和发送的消息
-	Bundle						              bundle_;
+	Bundle						             bundle_;
 
 	//@TO-DO need create struct PacketReader
-	PacketReader*				          pPacketReader_; //bufferedReceives_ 
+	PacketReader*				         pPacketReader_; //bufferedReceives_ 
 
 	//@TO-DO maybe can use ace_handle 
 	//ACE_SOCK*					          pEndPoint_;
-	ACE_Event_Handler*					  pEndPoint_;
+	ACE_Event_Handler*				 pEndPoint_;
 
 	//@TO-DO need create struct PacketReceiver
 	//PacketReceiver*				      pPacketReceiver_;
@@ -132,7 +126,7 @@ struct Channel
 		ACE_Event_Handler* endpoint = NULL,
 		ChannelScope traits = EXTERNAL,
 		ProtocolType pt = PROTOCOL_TCP,
-		PacketFilterPtr pFilter = PacketFilterPtr(NULL),
+		bool canFilterPacket = false,
 		ChannelID id = CHANNEL_ID_NULL);
 
 	virtual ~Channel(void);

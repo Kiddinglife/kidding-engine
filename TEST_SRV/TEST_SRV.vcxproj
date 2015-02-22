@@ -96,6 +96,9 @@
       <Project>{f13648cc-a1b0-40e6-9265-890cb5e1dab0}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SRV_TestCases.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
