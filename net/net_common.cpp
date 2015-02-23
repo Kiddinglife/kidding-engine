@@ -38,8 +38,8 @@ std::ofstream normal(( n + ".log" ).c_str());
 
 static  std::ofstream packetlogos("packetlogs.log");
 
-float                            g_channelInternalTimeout = 60.f;
-float                            g_channelExternalTimeout = 60.f;
+float                            g_channelInternalTimeout = 3.0f;
+float                            g_channelExternalTimeout = 3.0f;
 ACE_INT8                     g_channelExternalEncryptType = 0;
 ACE_UINT32                 g_SOMAXCONN = 1024;
 

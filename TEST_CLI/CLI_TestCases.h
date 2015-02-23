@@ -184,4 +184,9 @@ TEST(PacketReaderTests, ctor_dtor_test)
 				ACE_TEXT("log") ));
 		}
 	}
+
+	while( true )
+	{
+
+	}
 }

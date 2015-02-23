@@ -42,7 +42,7 @@ int TCP_Acceptor_Handler::handle_input(ACE_HANDLE fd)
 	}
 
 	Channel* pchannel = Channel_Pool->Ctor(networkInterface_, client, channelScope_);
-	pchannel = pchannel;
+	client->pChannel_ = pchannel;
 
 	if( !networkInterface_->register_channel(pchannel) )
 	{
@@ -72,17 +72,16 @@ int TCP_SOCK_Handler::handle_timeout(const ACE_Time_Value &current_time, const v
 
 	time_t epoch = ( (timespec_t) current_time ).tv_sec;
 
-	ACE_DEBUG(( LM_INFO,
-		ACE_TEXT("%M::TCP_SOCK_Handler::handle_timeout(%s)\n"),
-		ACE_OS::ctime(&epoch) ));
-
 	switch( (int) act )
 	{
 		case Channel::TIMEOUT_INACTIVITY_CHECK:
 		{
 			if( timestamp() - pChannel_->lastRecvTime_ > pChannel_->inactivityExceptionPeriod_ )
 			{
-				networkInterface_->on_channel_timeout(pChannel_);
+				ACE_DEBUG(( LM_INFO,
+					ACE_TEXT("%M::TCP_SOCK_Handler::handle_timeout(%s)\n"),
+					ACE_OS::ctime(&epoch) ));
+				pChannel_->pNetworkInterface_->on_channel_timeout(pChannel_);
 			}
 			break;
 		}
@@ -136,14 +135,25 @@ int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)
 {
 	TRACE("TCP_SOCK_Handler::handle_input()");
 
-	/// this is to make the recv get error to reset the reactor
-	if( this->process_recv(/*expectingPacket:*/true) )
+	const size_t INPUT_SIZE = 4096;
+	char buffer[INPUT_SIZE];
+	ssize_t recv_cnt, send_cnt;
+	if( ( recv_cnt = this->sock_.recv(buffer, sizeof(buffer)) ) <= 0 )
 	{
-		while( this->process_recv(/*expectingPacket:*/false) )
-		{
-			/* pass */;
-		}
+		ACE_DEBUG(( LM_DEBUG,
+			ACE_TEXT("(%P|%t) Connection closed\n") ));
+		return -1;
 	}
+
+	ACE_HEX_DUMP(( LM_DEBUG, buffer, recv_cnt ));
+	/// this is to make the recv get error to reset the reactor
+	//if( this->process_recv(/*expectingPacket:*/true) )
+	//{
+	//	while( this->process_recv(/*expectingPacket:*/false) )
+	//	{
+	//		/* pass */;
+	//	}
+	//}
 	TRACE_RETURN(0);
 	//return 0;
 }

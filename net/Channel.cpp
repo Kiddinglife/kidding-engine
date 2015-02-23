@@ -6,15 +6,14 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-Channel::
-Channel(
+Channel::Channel(
 NetworkInterface* networkInterface,
 ACE_Event_Handler* endpoint, //ACE_SOCK* endpoint,
 ChannelScope traits,
 ProtocolType pt,
 bool canFilterPacket,
-ChannelID id) :
-
+ChannelID id)
+:
 pNetworkInterface_(networkInterface),
 channelScope_(traits),
 protocolType_(pt),
@@ -58,35 +57,35 @@ void Channel::hand_shake(void)
 	static RecvPackets::iterator packetIter;
 	static Packet* pPacket;
 
-	if( recvPackets_[recvPacketIndex_].size() > 0 )
-	{
+	//if( recvPackets_[recvPacketIndex_].size() > 0 )
+	//{
 
-		pPacketReader_ = PacketReader_Pool->Ctor(this);
-		ACE_DEBUG(( LM_DEBUG, "%M::pPacketReader_ = PacketReader_Pool->Ctor(this);" ));
-		packetIter = recvPackets_[recvPacketIndex_].begin();
-		pPacket = ( *packetIter );
+	pPacketReader_ = PacketReader_Pool->Ctor(this);
+	ACE_DEBUG(( LM_DEBUG, "%M::pPacketReader_ = PacketReader_Pool->Ctor(this);" ));
+	//packetIter = recvPackets_[recvPacketIndex_].begin();
+	//pPacket = ( *packetIter );
 
-		//// 此处判定是否为websocket或者其他协议的握手
-		//if( html5::WebSocketProtocol::isWebSocketProtocol(pPacket) )
-		//{
-		//	channelType_ = CHANNEL_WEB;
-		//	if( html5::WebSocketProtocol::handshake(this, pPacket) )
-		//	{
-		//		if( pPacket->length() == 0 )
-		//		{
-		//			bufferedReceives_[bufferedReceivesIdx_].erase(packetIter);
-		//		}
+	//// 此处判定是否为websocket或者其他协议的握手
+	//if( html5::WebSocketProtocol::isWebSocketProtocol(pPacket) )
+	//{
+	//	channelType_ = CHANNEL_WEB;
+	//	if( html5::WebSocketProtocol::handshake(this, pPacket) )
+	//	{
+	//		if( pPacket->length() == 0 )
+	//		{
+	//			bufferedReceives_[bufferedReceivesIdx_].erase(packetIter);
+	//		}
 
-		//		pPacketReader_ = new HTML5PacketReader(this);
-		//		pFilter_ = new HTML5PacketFilter(this);
-		//		DEBUG_MSG(fmt::format("Channel::handshake: websocket({}) successfully!\n", this->c_str()));
-		//		return;
-		//	} else
-		//	{
-		//		DEBUG_MSG(fmt::format("Channel::handshake: websocket({}) error!\n", this->c_str()));
-		//	}
-		//}
-	}
+	//		pPacketReader_ = new HTML5PacketReader(this);
+	//		pFilter_ = new HTML5PacketFilter(this);
+	//		DEBUG_MSG(fmt::format("Channel::handshake: websocket({}) successfully!\n", this->c_str()));
+	//		return;
+	//	} else
+	//	{
+	//		DEBUG_MSG(fmt::format("Channel::handshake: websocket({}) error!\n", this->c_str()));
+	//	}
+	//}
+	//}
 
 	TRACE_RETURN_VOID();
 }
@@ -245,8 +244,8 @@ void Channel::startInactivityDetection(float period, float checkPeriod)
 	{
 		inactivityExceptionPeriod_ = (ACE_UINT64) ( period * stampsPerSecond() );
 		lastRecvTime_ = timestamp();
-		ACE_Time_Value interval;
-		interval.set_msec(( ACE_UINT64(checkPeriod * 1000) ));
+		ACE_Time_Value interval(checkPeriod, 0);
+	/*	interval.set_msec(( ACE_UINT64(checkPeriod * 1000) ));*/
 		timerID_ = this->pEndPoint_->reactor()->schedule_timer(pEndPoint_,
 			(void*) TIMEOUT_INACTIVITY_CHECK, ACE_Time_Value::zero, interval);
 	}

@@ -426,16 +426,18 @@ void NetworkInterface::on_channel_timeout(Channel* pChannel)
 {
 	TRACE("NetworkInterface::onChannelTimeOut()");
 
-	if( pChannelTimeOutHandler_ )
-	{
-		( *pChannelTimeOutHandler_ )( pChannel );
-	} else
-	{
-		ACE_ERROR(( LM_ERROR,
-			"NetworkInterface::onChannelTimeOut: "
-			"Channel {%s} timed out but no handler is registered.\n",
-			pChannel->c_str() ));
-	}
+	pChannel->pEndPoint_->reactor()->cancel_timer(pChannel->timerID_);
+
+	//if( pChannelTimeOutHandler_ )
+	//{
+	//	( *pChannelTimeOutHandler_ )( pChannel );
+	//} else
+	//{
+	//	ACE_ERROR(( LM_ERROR,
+	//		"NetworkInterface::onChannelTimeOut: "
+	//		"Channel {%s} timed out but no handler is registered.\n",
+	//		pChannel->c_str() ));
+	//}
 
 	TRACE_RETURN_VOID();
 }
