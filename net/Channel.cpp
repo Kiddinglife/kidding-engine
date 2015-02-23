@@ -245,7 +245,7 @@ void Channel::startInactivityDetection(float period, float checkPeriod)
 		inactivityExceptionPeriod_ = (ACE_UINT64) ( period * stampsPerSecond() );
 		lastRecvTime_ = timestamp();
 		ACE_Time_Value interval(checkPeriod, 0);
-	/*	interval.set_msec(( ACE_UINT64(checkPeriod * 1000) ));*/
+		/*	interval.set_msec(( ACE_UINT64(checkPeriod * 1000) ));*/
 		timerID_ = this->pEndPoint_->reactor()->schedule_timer(pEndPoint_,
 			(void*) TIMEOUT_INACTIVITY_CHECK, ACE_Time_Value::zero, interval);
 	}
@@ -666,6 +666,7 @@ void Channel::on_packet_sent(int bytes_cnt, bool is_sent_completely)
 
 void Channel::update_recv_window(Packet* pPacket)
 {
+	TRACE("Channel::update_recv_window(Packet* pPacket)");
 	recvPackets_[recvPacketIndex_].push_back(pPacket);
 	size_t size = recvPackets_[recvPacketIndex_].size();
 
@@ -699,6 +700,8 @@ void Channel::update_recv_window(Packet* pPacket)
 			}
 		}
 	}
+
+	TRACE_RETURN_VOID();
 }
 
 void Channel::tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundle)

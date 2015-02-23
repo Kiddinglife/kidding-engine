@@ -135,25 +135,25 @@ int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)
 {
 	TRACE("TCP_SOCK_Handler::handle_input()");
 
-	const size_t INPUT_SIZE = 4096;
-	char buffer[INPUT_SIZE];
-	ssize_t recv_cnt, send_cnt;
-	if( ( recv_cnt = this->sock_.recv(buffer, sizeof(buffer)) ) <= 0 )
-	{
-		ACE_DEBUG(( LM_DEBUG,
-			ACE_TEXT("(%P|%t) Connection closed\n") ));
-		return -1;
-	}
-
-	ACE_HEX_DUMP(( LM_DEBUG, buffer, recv_cnt ));
-	/// this is to make the recv get error to reset the reactor
-	//if( this->process_recv(/*expectingPacket:*/true) )
+	//const size_t INPUT_SIZE = 4096;
+	//char buffer[INPUT_SIZE];
+	//ssize_t recv_cnt, send_cnt;
+	//if( ( recv_cnt = this->sock_.recv(buffer, sizeof(buffer)) ) <= 0 )
 	//{
-	//	while( this->process_recv(/*expectingPacket:*/false) )
-	//	{
-	//		/* pass */;
-	//	}
+	//	ACE_DEBUG(( LM_DEBUG,
+	//		ACE_TEXT("(%P|%t) Connection closed\n") ));
+	//	return -1;
 	//}
+	//ACE_HEX_DUMP(( LM_DEBUG, buffer, recv_cnt ));
+
+	/// this is to make the recv get error to reset the reactor
+	if( this->process_recv(/*expectingPacket:*/true) )
+	{
+		while( this->process_recv(/*expectingPacket:*/false) )
+		{
+			/* pass */;
+		}
+	}
 	TRACE_RETURN(0);
 	//return 0;
 }

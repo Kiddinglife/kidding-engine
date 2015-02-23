@@ -165,6 +165,109 @@
 //}
 TEST(PacketReaderTests, ctor_dtor_test)
 {
+	struct msgarg : public MessageArgs
+	{
+		virtual MessageLength1 args_bytes_count(void)
+		{
+			return 12;
+		}
+		virtual void fetch_args_from(Packet* p)
+		{
+			INT32  para1 = *(INT32*) p->buff->rd_ptr();
+			p->buff->rd_ptr(4);
+			INT32  para2 = *(INT32*) p->buff->rd_ptr();
+			p->buff->rd_ptr(4);
+			INT32  para3 = *(INT32*) p->buff->rd_ptr();
+			ACE_DEBUG(( LM_DEBUG, "(%d)(%d)(%d)\n", para1, para2, para3 ));
+		}
+
+		virtual void add_args_to(Packet* p)
+		{
+		}
+	};
+
+	struct msgarg_variable : public MessageArgs
+	{
+		virtual MessageLength1 args_bytes_count(void)
+		{
+			return 0;
+		}
+		virtual void fetch_args_from(Packet* p)
+		{
+			for( int i = 0; i < 4; i++ )
+			{
+				INT64  para1 = *(INT64*) p->buff->rd_ptr();
+				p->buff->rd_ptr(8);
+				ACE_DEBUG(( LM_DEBUG, "(%d)", para1 ));
+			}
+
+			ACE_DEBUG(( LM_DEBUG, "\n" ));
+		}
+
+		virtual void add_args_to(Packet* p)
+		{
+		}
+	};
+
+	ACE_PoolPtr_Getter(pool, Bundle, ACE_Null_Mutex);
+	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
+	ACE_PoolPtr_Getter(poolmsgarg_variable, msgarg_variable, ACE_Null_Mutex);
+	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
+	ACE_PoolPtr_Getter(poolpacket, Packet, ACE_Null_Mutex);
+
+	Bundle* p = pool->Ctor();
+	Messages msgs;
+	msgarg* ag = poolmsgarg->Ctor();
+	msgarg_variable* ag_va = poolmsgarg_variable->Ctor();
+
+	/// first msg is fixed msg
+	Message* currhandler1 = poolmsg->Ctor();
+	//FixedMessages::MSGInfo info1 = { 1 };
+	//ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler1", info1));
+	msgs.add_msg("currhandler1", ag, NETWORK_FIXED_MESSAGE, currhandler1);
+	p->start_new_curr_message(currhandler1);
+	*p << (INT32) -7;
+	*p << (INT32) -7;
+	*p << (INT32) -7;
+	p->end_new_curr_message();
+	//p->dumpMsgs();
+
+	/// second msg is variable msg
+	Message* currhandler2 = poolmsg->Ctor();
+	msgs.add_msg("currhandler2", ag_va, NETWORK_VARIABLE_MESSAGE, currhandler2);
+	p->start_new_curr_message(currhandler2);
+	*p << (UINT64) 2;
+	*p << (UINT64) 2;
+	*p << (UINT64) 2;
+	*p << (UINT64) 2;
+	p->end_new_curr_message();
+	//p->dumpMsgs();
+
+	///// second msg is variable msg
+	Message* currhandler3 = poolmsg->Ctor();
+	msgs.add_msg("currhandler3", ag, NETWORK_FIXED_MESSAGE, currhandler3);
+	p->start_new_curr_message(currhandler3);
+	*p << (INT32) -7;
+	*p << (INT32) -7;
+	*p << (INT32) -7;
+	p->end_new_curr_message();
+	//p->dumpMsgs();
+
+	///// second msg is variable msg
+	Message* currhandler4 = poolmsg->Ctor();
+	msgs.add_msg("currhandler4", ag_va, NETWORK_VARIABLE_MESSAGE, currhandler4);
+	p->start_new_curr_message(currhandler4);
+	*p << (UINT64) 2;
+	*p << (UINT64) 2;
+	*p << (UINT64) 2;
+	*p << (UINT64) 2;
+	p->end_new_curr_message();
+
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////
+
+	g_channelExternalEncryptType = 0;
 	ACE_INET_Addr addr;
 	addr.set(20001, ACE_LOCALHOST);
 	ACE_SOCK_Connector logConnector;
@@ -183,10 +286,22 @@ TEST(PacketReaderTests, ctor_dtor_test)
 				ACE_TEXT("%p\n"),
 				ACE_TEXT("log") ));
 		}
-	}
 
-	while( true )
+	}
+	ssize_t recv_cnt, send_cnt;
+	Bundle::Packets::iterator iter = p->packets_.begin();
+	for( ; iter != p->packets_.end(); iter++ )
 	{
-
+		ACE_HEX_DUMP(( LM_DEBUG, ( *iter )->buff->rd_ptr(), ( *iter )->length() ));
+		send_cnt = log.send(( *iter )->buff->rd_ptr(), ( *iter )->length());
+		if( send_cnt == -1 && ACE_OS::last_error() != EWOULDBLOCK )
+			ACE_ERROR(( LM_ERROR,
+			ACE_TEXT("(%P|%t) %p\n"),
+			ACE_TEXT("send") ),
+			0);
+		Sleep(1000);
 	}
+
+	pool->Dtor(p);
+	Sleep(1000);
 }
