@@ -160,7 +160,9 @@ int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)
 
 bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 {
-	TRACE(" TCP_SOCK_Handler::process_recv");
+	TRACE(" TCP_SOCK_Handler::process_recv()");
+	ACE_DEBUG(( LM_DEBUG, "%M::expectingPacket = %s\n",
+		expectingPacket ? "true" : "false" ));
 	if( pChannel_->isCondemn_ )
 	{
 		pChannel_->on_error();
@@ -186,7 +188,6 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 	if( len < 0 )
 	{
 		Packet_Pool->Dtor(pReceiveWindow);
-		pChannel_->on_error();
 		static RecvState recv_state;
 		if( ( recv_state = checkSocketErrors(len, expectingPacket) ) == RecvState::RECV_STATE_INTERRUPT )
 		{
