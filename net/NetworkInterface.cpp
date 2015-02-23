@@ -420,12 +420,17 @@ Channel * NetworkInterface::channel(ACE_HANDLE handle)
 void NetworkInterface::on_channel_left(Channel* pChannel)
 {
 	TRACE("NetworkInterface::onChannelGone()");
+	// channel dtor has been called so we cannot call it again
+	/// thisi is the last chance for us to do some clear works the pchannel is valid
+	/// at this moment
 	TRACE_RETURN_VOID();
 }
 void NetworkInterface::on_channel_timeout(Channel* pChannel)
 {
 	TRACE("NetworkInterface::onChannelTimeOut()");
-	Channel_Pool->Dtor(pChannel);
+	//Channel_Pool->Dtor(pChannel); should use this one but for test we use the secpnd one 
+	/// tp cancel the timer
+	pChannel->pEndPoint_->reactor()->cancel_timer(pChannel->timerID_);
 	//if( pChannelTimeOutHandler_ )
 	//{
 	//	( *pChannelTimeOutHandler_ )( pChannel );

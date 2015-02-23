@@ -145,7 +145,7 @@ struct Channel
 
 	inline void add_delayed_channel(void);
 	void hand_shake(void);
-	bool process_recv(bool expectingPacket);
+	//bool process_recv(bool expectingPacket);
 	void process_packets(Messages* pMsgHandlers);
 	void on_packet_sent(int bytes_cnt, bool is_sent_completely);
 	void Channel::update_recv_window(Packet* pPacket);

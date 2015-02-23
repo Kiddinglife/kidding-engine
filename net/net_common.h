@@ -27,6 +27,7 @@ NETWORK_NAMESPACE_BEGIN_DECL
 //	typedef  UDP_TYPE  tcp_upd_type;
 //};
 
+
 namespace UDP /*以后扩展用*/
 {
 #define PACKET_MAX_SIZE_UDP					1472 
@@ -48,6 +49,7 @@ enum PACKET_RECEIVER_TYPE
 	TCP_PACKET_RECEIVER = 0,
 	UDP_PACKET_RECEIVER = 1
 };
+
 
 //========================== Pools =========================
 struct TCP_SOCK_Handler;
@@ -150,7 +152,7 @@ typedef ACE_UINT16	PacketLength;//最大65535
 #define ENCRYPTTION_WASTAGE_SIZE			    (1 + 7) /// 加密额外存储的信息占用字节(长度+填充)
 
 #define PACKET_MAX_SIZE						        1500
-#define PACKET_MAX_SIZE_TCP					    50//1460 
+#define PACKET_MAX_SIZE_TCP					    1460 
 #define PACKET_MAX_SIZE_UDP					    1472
 #define PACKET_LENGTH_BYTE_SIZE				    sizeof(PacketLength)
 
@@ -227,6 +229,7 @@ inline RecvState checkSocketErrors(int len, bool expectingPacket)
 	// recv缓冲区已经无数据可读了
 	if( ( err == EAGAIN || err == EWOULDBLOCK ) && !expectingPacket )
 	{
+		ACE_DEBUG(( LM_DEBUG, "%M::Return RecvState::RECV_STATE_BREAK\n" ));
 		return RecvState::RECV_STATE_BREAK;
 	}
 
@@ -270,7 +273,7 @@ inline RecvState checkSocketErrors(int len, bool expectingPacket)
 
 	//this->dispatcher().errorReporter().reportException(
 	//	REASON_GENERAL_NETWORK);
-
+	ACE_DEBUG(( LM_DEBUG, "%M::Return RecvState::RECV_STATE_CONTINUE\n" ));
 	return RecvState::RECV_STATE_CONTINUE;
 }
 

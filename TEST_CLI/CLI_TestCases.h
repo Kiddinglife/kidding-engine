@@ -12,251 +12,36 @@
 #include "net\Message.h"
 #include "net\PacketReader.h"
 #include "net\NetworkInterface.h"
-
-//TEST(PacketReaderTests, ctor_dtor_test)
-//{
-//	struct msgarg : public MessageArgs
-//	{
-//		virtual MessageLength1 args_bytes_count(void)
-//		{
-//			return 12;
-//		}
-//		virtual void fetch_args_from(Packet* p)
-//		{
-//			INT32  para1 = *(INT32*) p->buff->rd_ptr();
-//			p->buff->rd_ptr(4);
-//			INT32  para2 = *(INT32*) p->buff->rd_ptr();
-//			p->buff->rd_ptr(4);
-//			INT32  para3 = *(INT32*) p->buff->rd_ptr();
-//			ACE_DEBUG(( LM_DEBUG, "(%d)(%d)(%d)\n", para1, para2, para3 ));
-//		}
-//
-//		virtual void add_args_to(Packet* p)
-//		{
-//		}
-//	};
-//
-//	struct msgarg_variable : public MessageArgs
-//	{
-//		virtual MessageLength1 args_bytes_count(void)
-//		{
-//			return 0;
-//		}
-//		virtual void fetch_args_from(Packet* p)
-//		{
-//			for( int i = 0; i < 4; i++ )
-//			{
-//				INT64  para1 = *(INT64*) p->buff->rd_ptr();
-//				p->buff->rd_ptr(8);
-//				ACE_DEBUG(( LM_DEBUG, "(%d)", para1 ));
-//			}
-//
-//			ACE_DEBUG(( LM_DEBUG, "\n" ));
-//		}
-//
-//		virtual void add_args_to(Packet* p)
-//		{
-//		}
-//	};
-//
-//	g_channelExternalEncryptType = 0;
-//
-//	Nub              pDispatcher;
-//
-//	ACE_INT32     extlisteningPort_min = 20001;
-//	ACE_INT32     extlisteningPort_max = 20005;
-//	const char *    extlisteningInterface = "192.168.2.47";
-//	//const char *    extlisteningInterface = "";
-//	//const char *    extlisteningInterface = "127.0.0.1";
-//	//const char *    extlisteningInterface = USE_KBEMACHINED;
-//	ACE_UINT32   extrbuffer = 512;
-//	ACE_UINT32   extwbuffer = 512;
-//	ACE_INT32      intlisteningPort = 20006;
-//	const char *    intlisteningInterface = "192.168.2.47";
-//	ACE_UINT32   intrbuffer = 512;
-//	ACE_UINT32   intwbuffer = 512;
-//
-//	NetworkInterface in(&pDispatcher,
-//		extlisteningPort_min,
-//		extlisteningPort_max,
-//		extlisteningInterface,
-//		extrbuffer,
-//		extwbuffer,
-//		intlisteningPort,
-//		intlisteningInterface,
-//		intrbuffer,
-//		intwbuffer);
-//
-//	ACE_INET_Addr addr(20006, "192.168.2.47");
-//	TCP_SOCK_Handler dg(&in);
-//	dg.reactor(pDispatcher.rec);
-//
-//	Channel channel(&in, &dg);
-//	dg.pChannel_ = &channel;
-//
-//	in.register_channel(&channel);
-//
-//	ACE_PoolPtr_Getter(pool, Bundle, ACE_Null_Mutex);
-//	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
-//	ACE_PoolPtr_Getter(poolmsgarg_variable, msgarg_variable, ACE_Null_Mutex);
-//	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
-//	ACE_PoolPtr_Getter(poolpacket, Packet, ACE_Null_Mutex);
-//
-//	Bundle* p = pool->Ctor();
-//	Messages msgs;
-//	msgarg* ag = poolmsgarg->Ctor();
-//	msgarg_variable* ag_va = poolmsgarg_variable->Ctor();
-//
-//	/// first msg is fixed msg
-//	Message* currhandler1 = poolmsg->Ctor();
-//	//FixedMessages::MSGInfo info1 = { 1 };
-//	//ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler1", info1));
-//	msgs.add_msg("currhandler1", ag, NETWORK_FIXED_MESSAGE, currhandler1);
-//	p->start_new_curr_message(currhandler1);
-//	*p << (INT32) -7;
-//	*p << (INT32) -7;
-//	*p << (INT32) -7;
-//	p->end_new_curr_message();
-//	//p->dumpMsgs();
-//
-//	/// second msg is variable msg
-//	Message* currhandler2 = poolmsg->Ctor();
-//	msgs.add_msg("currhandler2", ag_va, NETWORK_VARIABLE_MESSAGE, currhandler2);
-//	p->start_new_curr_message(currhandler2);
-//	*p << (UINT64) 2;
-//	*p << (UINT64) 2;
-//	*p << (UINT64) 2;
-//	*p << (UINT64) 2;
-//	p->end_new_curr_message();
-//	//p->dumpMsgs();
-//
-//	///// second msg is variable msg
-//	Message* currhandler3 = poolmsg->Ctor();
-//	msgs.add_msg("currhandler3", ag, NETWORK_FIXED_MESSAGE, currhandler3);
-//	p->start_new_curr_message(currhandler3);
-//	*p << (INT32) -7;
-//	*p << (INT32) -7;
-//	*p << (INT32) -7;
-//	p->end_new_curr_message();
-//	//p->dumpMsgs();
-//
-//	///// second msg is variable msg
-//	Message* currhandler4 = poolmsg->Ctor();
-//	msgs.add_msg("currhandler4", ag_va, NETWORK_VARIABLE_MESSAGE, currhandler4);
-//	p->start_new_curr_message(currhandler4);
-//	*p << (UINT64) 2;
-//	*p << (UINT64) 2;
-//	*p << (UINT64) 2;
-//	*p << (UINT64) 2;
-//	p->end_new_curr_message();
-//
-//	Bundle::Packets::iterator iter = p->packets_.begin();
-//	for( ; iter != p->packets_.end(); iter++ )
-//	{
-//		channel.recvPackets_[channel.recvPacketIndex_].push_back(( *iter ));
-//	}
-//	channel.process_packets(&msgs);
-//
-//	//PacketReader pr(&channel);
-//	//pr.processMessages(&msgs, p->packets_);
-//
-//	pool->Dtor(p);
-//
-//}
+#include "net\Message.h"
 TEST(PacketReaderTests, ctor_dtor_test)
 {
-	struct msgarg : public MessageArgs
-	{
-		virtual MessageLength1 args_bytes_count(void)
-		{
-			return 12;
-		}
-		virtual void fetch_args_from(Packet* p)
-		{
-			INT32  para1 = *(INT32*) p->buff->rd_ptr();
-			p->buff->rd_ptr(4);
-			INT32  para2 = *(INT32*) p->buff->rd_ptr();
-			p->buff->rd_ptr(4);
-			INT32  para3 = *(INT32*) p->buff->rd_ptr();
-			ACE_DEBUG(( LM_DEBUG, "(%d)(%d)(%d)\n", para1, para2, para3 ));
-		}
 
-		virtual void add_args_to(Packet* p)
-		{
-		}
-	};
+	inport_msgs();
 
-	struct msgarg_variable : public MessageArgs
-	{
-		virtual MessageLength1 args_bytes_count(void)
-		{
-			return 0;
-		}
-		virtual void fetch_args_from(Packet* p)
-		{
-			for( int i = 0; i < 4; i++ )
-			{
-				INT64  para1 = *(INT64*) p->buff->rd_ptr();
-				p->buff->rd_ptr(8);
-				ACE_DEBUG(( LM_DEBUG, "(%d)", para1 ));
-			}
-
-			ACE_DEBUG(( LM_DEBUG, "\n" ));
-		}
-
-		virtual void add_args_to(Packet* p)
-		{
-		}
-	};
-
-	ACE_PoolPtr_Getter(pool, Bundle, ACE_Null_Mutex);
-	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
-	ACE_PoolPtr_Getter(poolmsgarg_variable, msgarg_variable, ACE_Null_Mutex);
-	ACE_PoolPtr_Getter(poolmsg, Message, ACE_Null_Mutex);
-	ACE_PoolPtr_Getter(poolpacket, Packet, ACE_Null_Mutex);
-
-	Bundle* p = pool->Ctor();
-	Messages msgs;
-	msgarg* ag = poolmsgarg->Ctor();
-	msgarg_variable* ag_va = poolmsgarg_variable->Ctor();
-
-	/// first msg is fixed msg
-	Message* currhandler1 = poolmsg->Ctor();
-	//FixedMessages::MSGInfo info1 = { 1 };
-	//ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->infomap_.insert(pair<std::string, FixedMessages::MSGInfo>("currhandler1", info1));
-	msgs.add_msg("currhandler1", ag, NETWORK_FIXED_MESSAGE, currhandler1);
-	p->start_new_curr_message(currhandler1);
+	Bundle* p = Bundle_Pool->Ctor();
+	p->start_new_curr_message(g_msgs.find(1));
 	*p << (INT32) -7;
 	*p << (INT32) -7;
 	*p << (INT32) -7;
 	p->end_new_curr_message();
-	//p->dumpMsgs();
 
 	/// second msg is variable msg
-	Message* currhandler2 = poolmsg->Ctor();
-	msgs.add_msg("currhandler2", ag_va, NETWORK_VARIABLE_MESSAGE, currhandler2);
-	p->start_new_curr_message(currhandler2);
+	p->start_new_curr_message(g_msgs.find(2));
 	*p << (UINT64) 2;
 	*p << (UINT64) 2;
 	*p << (UINT64) 2;
 	*p << (UINT64) 2;
 	p->end_new_curr_message();
-	//p->dumpMsgs();
 
 	///// second msg is variable msg
-	Message* currhandler3 = poolmsg->Ctor();
-	msgs.add_msg("currhandler3", ag, NETWORK_FIXED_MESSAGE, currhandler3);
-	p->start_new_curr_message(currhandler3);
+	p->start_new_curr_message(g_msgs.find(3));
 	*p << (INT32) -7;
 	*p << (INT32) -7;
 	*p << (INT32) -7;
 	p->end_new_curr_message();
-	//p->dumpMsgs();
 
 	///// second msg is variable msg
-	Message* currhandler4 = poolmsg->Ctor();
-	msgs.add_msg("currhandler4", ag_va, NETWORK_VARIABLE_MESSAGE, currhandler4);
-	p->start_new_curr_message(currhandler4);
+	p->start_new_curr_message(g_msgs.find(4));
 	*p << (UINT64) 2;
 	*p << (UINT64) 2;
 	*p << (UINT64) 2;
@@ -266,7 +51,6 @@ TEST(PacketReaderTests, ctor_dtor_test)
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
-
 	g_channelExternalEncryptType = 0;
 	ACE_INET_Addr addr;
 	addr.set(20001, ACE_LOCALHOST);
@@ -299,9 +83,23 @@ TEST(PacketReaderTests, ctor_dtor_test)
 			ACE_TEXT("(%P|%t) %p\n"),
 			ACE_TEXT("send") ),
 			0);
-		Sleep(1000);
 	}
 
-	pool->Dtor(p);
-	Sleep(1000);
+	Bundle_Pool->Dtor(p);
+
+	ACE_Time_Value wait(3);
+	Packet* pReceiveWindow = pReceiveWindow = Packet_Pool->Ctor();
+	size_t len = log.recv(pReceiveWindow->buff->wr_ptr(),
+		pReceiveWindow->buff->size(), &wait);
+	if( len > 0 )
+	{
+		pReceiveWindow->buff->wr_ptr(len);
+		// 注意:必须在大于0的时候否则DEBUG_MSG将会导致WSAGetLastError返回0从而陷入死循环
+		ACE_DEBUG(( LM_DEBUG,
+			"%M::TCP_SOCK_Handler::process_recv(): datasize={%d}, wpos={%d}.\n",
+			len, pReceiveWindow->buff->wr_ptr() ));
+	}
+	ACE_HEX_DUMP(( LM_DEBUG, pReceiveWindow->buff->rd_ptr(), pReceiveWindow->buff->length() ));
+	Packet_Pool->Dtor(pReceiveWindow);
+	log.close();
 }

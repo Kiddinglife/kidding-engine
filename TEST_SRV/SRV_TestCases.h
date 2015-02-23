@@ -12,51 +12,11 @@
 #include "net\PacketReader.h"
 #include "net\NetworkInterface.h"
 
+using namespace ACE_KBE_VERSIONED_NAMESPACE_NAME;
+using namespace NETWORK;
+
 TEST(PacketReaderTests, ctor_dtor_test)
 {
-	struct msgarg : public MessageArgs
-	{
-		virtual MessageLength1 args_bytes_count(void)
-		{
-			return 12;
-		}
-		virtual void fetch_args_from(Packet* p)
-		{
-			INT32  para1 = *(INT32*) p->buff->rd_ptr();
-			p->buff->rd_ptr(4);
-			INT32  para2 = *(INT32*) p->buff->rd_ptr();
-			p->buff->rd_ptr(4);
-			INT32  para3 = *(INT32*) p->buff->rd_ptr();
-			ACE_DEBUG(( LM_DEBUG, "(%d)(%d)(%d)\n", para1, para2, para3 ));
-		}
-
-		virtual void add_args_to(Packet* p)
-		{
-		}
-	};
-
-	struct msgarg_variable : public MessageArgs
-	{
-		virtual MessageLength1 args_bytes_count(void)
-		{
-			return 0;
-		}
-		virtual void fetch_args_from(Packet* p)
-		{
-			for( int i = 0; i < 4; i++ )
-			{
-				INT64  para1 = *(INT64*) p->buff->rd_ptr();
-				p->buff->rd_ptr(8);
-				ACE_DEBUG(( LM_DEBUG, "(%d)", para1 ));
-			}
-
-			ACE_DEBUG(( LM_DEBUG, "\n" ));
-		}
-
-		virtual void add_args_to(Packet* p)
-		{
-		}
-	};
 
 	g_channelExternalEncryptType = 0;
 
@@ -85,6 +45,12 @@ TEST(PacketReaderTests, ctor_dtor_test)
 		intlisteningInterface,
 		intrbuffer,
 		intwbuffer);
+
+	inport_msgs();
+	//g_msgs.add_msg("currhandler1", new msgarg, NETWORK_FIXED_MESSAGE, new Message);
+	//g_msgs.add_msg("currhandler2", new msgarg_variable, NETWORK_VARIABLE_MESSAGE, new Message);
+	//g_msgs.add_msg("currhandler3", new msgarg, NETWORK_FIXED_MESSAGE, new Message);
+	//g_msgs.add_msg("currhandler4", new msgarg_variable, NETWORK_VARIABLE_MESSAGE, new Message);
 
 	pDispatcher.startLoop();
 }

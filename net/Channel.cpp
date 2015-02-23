@@ -1,6 +1,5 @@
 ﻿#include "Channel.h"
 #include "net\NetworkInterface.h"
-#include "net\PacketSender.h"
 #include "net\PacketReader.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
@@ -306,29 +305,29 @@ void Channel::destroy(void)
 	TRACE_RETURN_VOID();
 }
 
-bool Channel::process_recv(bool expectingPacket)
-{
-	TRACE("Channel::process_recv()");
-
-	if( isCondemn_ )
-	{
-		on_error();
-		TRACE_RETURN(false);
-	}
-
-	static MessageID msgid = 0;
-	static Packet* pReceiveWindow = NULL;
-
-	if( protocolType_ == PROTOCOL_TCP )
-	{
-		pReceiveWindow = Packet_Pool->Ctor();
-	} else
-	{
-		pReceiveWindow = Packet_Pool->Ctor(msgid, protocolType_);
-	}
-
-	TRACE_RETURN(true);
-}
+//bool Channel::process_recv(bool expectingPacket)
+//{
+//	TRACE("Channel::process_recv()");
+//
+//	if( isCondemn_ )
+//	{
+//		on_error();
+//		TRACE_RETURN(false);
+//	}
+//
+//	static MessageID msgid = 0;
+//	static Packet* pReceiveWindow = NULL;
+//
+//	if( protocolType_ == PROTOCOL_TCP )
+//	{
+//		pReceiveWindow = Packet_Pool->Ctor();
+//	} else
+//	{
+//		pReceiveWindow = Packet_Pool->Ctor(msgid, protocolType_);
+//	}
+//
+//	TRACE_RETURN(true);
+//}
 
 void Channel::process_packets(Messages* pMsgHandlers)
 {
@@ -459,12 +458,16 @@ void Channel::send(Bundle * pBundle)
 	TRACE_RETURN_VOID();
 }
 
+/**
+ * This method is called when the user lofs off or some network errors happens
+ * Here we only
+ */
 void Channel::on_error(void)
 {
-	pNetworkInterface_->deregister_channel(this);
 	if( !isDestroyed_ )
 	{
 		destroy();
+		pNetworkInterface_->deregister_channel(this);
 		Channel_Pool->Dtor(this);
 	}
 }
@@ -669,7 +672,10 @@ void Channel::update_recv_window(Packet* pPacket)
 	TRACE("Channel::update_recv_window(Packet* pPacket)");
 	recvPackets_[recvPacketIndex_].push_back(pPacket);
 	size_t size = recvPackets_[recvPacketIndex_].size();
-
+	if( size )
+	{
+		this->process_packets(&g_msgs);
+	}
 	if( g_receiveWindowMessagesOverflowCritical > 0 &&
 		size > g_receiveWindowMessagesOverflowCritical )
 	{

@@ -17,13 +17,17 @@ namespace TCP
 {
 }
 
+//////////////////////////////////// Pools //////////////////////////////////////////////////
 ACE_PoolPtr_Getter(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
 ACE_PoolPtr_Getter(Channel_Pool, Channel, ACE_Null_Mutex);
 ACE_PoolPtr_Getter(PacketReader_Pool, PacketReader, ACE_Null_Mutex);
 ACE_PoolPtr_Getter(UDP_SOCK_Handler_Pool, UDP_SOCK_Handler, ACE_Null_Mutex);
 ACE_PoolPtr_Getter(Packet_Pool, Packet, ACE_Null_Mutex);
 ACE_PoolPtr_Getter(Bundle_Pool, Bundle, ACE_Null_Mutex);
+///////////////////////////////////////////////////////////////////////////////////////////////
 
+
+///////////////////////////////////////// Debug ///////////////////////////////////////////////
 bool g_debugEntity = false;
 bool g_appPublish = 1;
 
@@ -37,6 +41,8 @@ static std::string n(name);
 std::ofstream normal(( n + ".log" ).c_str());
 
 static  std::ofstream packetlogos("packetlogs.log");
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 float                            g_channelInternalTimeout = 3.0f;
 float                            g_channelExternalTimeout = 3.0f;

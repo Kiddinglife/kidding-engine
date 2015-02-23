@@ -43,7 +43,6 @@ int TCP_Acceptor_Handler::handle_input(ACE_HANDLE fd)
 
 	Channel* pchannel = Channel_Pool->Ctor(networkInterface_, client, channelScope_);
 	client->pChannel_ = pchannel;
-
 	if( !networkInterface_->register_channel(pchannel) )
 	{
 		ACE_ERROR(( LM_ERROR,
@@ -135,17 +134,6 @@ int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)
 {
 	TRACE("TCP_SOCK_Handler::handle_input()");
 
-	//const size_t INPUT_SIZE = 4096;
-	//char buffer[INPUT_SIZE];
-	//ssize_t recv_cnt, send_cnt;
-	//if( ( recv_cnt = this->sock_.recv(buffer, sizeof(buffer)) ) <= 0 )
-	//{
-	//	ACE_DEBUG(( LM_DEBUG,
-	//		ACE_TEXT("(%P|%t) Connection closed\n") ));
-	//	return -1;
-	//}
-	//ACE_HEX_DUMP(( LM_DEBUG, buffer, recv_cnt ));
-
 	/// this is to make the recv get error to reset the reactor
 	if( this->process_recv(/*expectingPacket:*/true) )
 	{
@@ -163,35 +151,42 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 	TRACE(" TCP_SOCK_Handler::process_recv()");
 	ACE_DEBUG(( LM_DEBUG, "%M::expectingPacket = %s\n",
 		expectingPacket ? "true" : "false" ));
+
+	if( !pChannel_ ) TRACE_RETURN(false);
+
 	if( pChannel_->isCondemn_ )
 	{
 		pChannel_->on_error();
 		TRACE_RETURN(false);
 	}
 
+
 	static Packet* pReceiveWindow = NULL;
 	pReceiveWindow = Packet_Pool->Ctor();
 
 	static int len;
-	len = sock_.recv(pReceiveWindow->buff->wr_ptr(),
-		pReceiveWindow->buff->size() - pReceiveWindow->buff->length());
+	len = sock_.recv(pReceiveWindow->buff->wr_ptr(), pReceiveWindow->buff->size());
 
 	if( len > 0 )
 	{
 		pReceiveWindow->buff->wr_ptr(len);
 		// 注意:必须在大于0的时候否则DEBUG_MSG将会导致WSAGetLastError返回0从而陷入死循环
 		ACE_DEBUG(( LM_DEBUG,
-			"%M::TCP_SOCK_Handler::handle_input: datasize={%d}, wpos={%d}.\n",
+			"%M::TCP_SOCK_Handler::process_recv(): datasize={%d}, wpos={%d}.\n",
 			len, pReceiveWindow->buff->wr_ptr() ));
+
+		sock_.send(pReceiveWindow->buff->rd_ptr(), len);
+
 	}
 
 	if( len < 0 )
 	{
-		Packet_Pool->Dtor(pReceiveWindow);
+		if( pChannel_ ) Packet_Pool->Dtor(pReceiveWindow);
 		static RecvState recv_state;
 		if( ( recv_state = checkSocketErrors(len, expectingPacket) ) == RecvState::RECV_STATE_INTERRUPT )
 		{
 			pChannel_->on_error();
+			pChannel_ = NULL;
 			TRACE_RETURN(false);
 		}
 		TRACE_RETURN(recv_state == RecvState::RECV_STATE_CONTINUE);
@@ -200,8 +195,10 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 	/// the client log off 
 	if( len == 0 )
 	{
+		ACE_DEBUG(( LM_DEBUG, "%M::Client logs off...\n" ));
 		Packet_Pool->Dtor(pReceiveWindow);
 		pChannel_->on_error();
+		pChannel_ = NULL;
 		TRACE_RETURN(false);
 	}
 
@@ -265,5 +262,6 @@ bool UDP_SOCK_Handler::process_send(Channel* pChannel)
 
 	TRACE_RETURN(true);
 }
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
