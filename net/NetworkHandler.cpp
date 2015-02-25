@@ -15,7 +15,6 @@ int TCP_Acceptor_Handler::open(const ACE_INET_Addr &listen_addr)
 	return this->reactor()->register_handler(this, ACE_Event_Handler::ACCEPT_MASK);
 }
 
-//@TO-DO
 int TCP_Acceptor_Handler::handle_input(ACE_HANDLE fd)
 {
 	TCP_SOCK_Handler* client = TCP_SOCK_Handler_Pool->Ctor();
@@ -193,7 +192,17 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 		TRACE_RETURN(false);
 	}
 
-	Reason ret = process_recv_packet(pReceiveWindow);
+	/*Reason ret = process_recv_packet(pReceiveWindow);*/
+	pChannel_->on_packet_received(pReceiveWindow->length());
+	if( pChannel_->canFilterPacket_ )
+	{
+		// filter
+	}
+	// 如果为None， 则可能是被过滤器过滤掉了(过滤器正在按照自己的规则组包解密)
+	if( pReceiveWindow )
+	{
+		pChannel_->update_recv_window(pReceiveWindow);
+	}///
 
 	//if( ret != REASON_SUCCESS )
 	//	this->dispatcher().errorReporter().reportException(ret, pEndpoint_->addr());

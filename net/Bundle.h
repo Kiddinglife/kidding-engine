@@ -81,7 +81,7 @@ struct Bundle
 	/*当前msg的处理函数 : the current msg's handler */
 	Message* pCurrMsg_;
 
-	/*是否重用该bundle : whether to reuse this bundle */
+	/*@Unused 是否重用该bundle : whether to reuse this bundle */
 	bool reuse_;
 
 	/*用于读取包中的序列化数据 : used to read the data from the packets*/
@@ -214,8 +214,6 @@ struct Bundle
 	* whether to send this bundle or not after finishing handling the current msg
 	* when true, it will initialize all the memebers related the current msg at the end of this call
 	* 该参数用于表明是否该方法调用结束后发送该bundle，若为真，该方法会将当前包加入到发送队列中去
-	* \n
-	* @retvalue void
 	*
 	* @ChangeLog
 	* 11: 26 AM, 12/01/2015 :: Change from [void fill_curr_msg_len_field(bool issend = true)]
@@ -225,15 +223,13 @@ struct Bundle
 	void end_new_curr_message();
 
 	/**
+	* @Unused 
 	* @Brief
 	* 该方法在该bundle发送后会被回掉，当reuse为真时, 该方法直接返回，
 	* 该bundle所有的状态信息都维持不变。包括 当前包，当前处理的消息以及包容器
 	* This inline mothod is call back after this bundle gets sent.
 	* when reuse = true, we do nothing but return so that all the states of this bundle
 	* will remain unchanged including the current msg, current packet and the container
-	* \n
-	* @para void
-	* @retvalue void
 	*/
 	inline void on_send_completed(void);
 

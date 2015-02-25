@@ -31,7 +31,7 @@ using namespace std;
 #include "ace/Array_Map.h"
 #endif
 
-ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL /////////////////////////////////////////////////////////////
+ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 #define NEW_POOL_OBJECT(TYPE) TYPE::ObjPool().createObject();
 #define OBJECT_POOL_INIT_SIZE	16
@@ -730,6 +730,6 @@ class ACEPoolObject_Auto_Ptr
 ACE_PoolPtr_Getter(objPoolPtr, ObjectType, LockerType);\
 ACEPoolObject_Auto_Ptr<ObjectType, LockerType> autoptr(objPoolPtr->Ctor())
 
-ACE_KBE_END_VERSIONED_NAMESPACE_DECL //////////////////////////////////////////////////////////////////
+ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include "ace/post.h"
 #endif

@@ -20,8 +20,6 @@ protocolType_(pt),
 channelId_(id),
 inactivityExceptionPeriod_(0),
 lastRecvTime_(0),
-bundle_(),
-recvPacketIndex_(0),
 pPacketReader_(NULL),
 isDestroyed_(false),
 numPacketsSent_(0),
@@ -112,29 +110,26 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 	this->clearBundles();
 
 	/// clear the unprocessed recv packets
-	for( int i = 0; i < 2; ++i )
+	if( recvPackets_.size() > 0 )
 	{
-		if( recvPackets_[i].size() > 0 )
+		RecvPackets::iterator iter = recvPackets_.begin();
+		int hasDiscard = 0;
+
+		for( ; iter != recvPackets_.end(); ++iter )
 		{
-			RecvPackets::iterator iter = recvPackets_[i].begin();
-			int hasDiscard = 0;
-
-			for( ; iter != recvPackets_[i].end(); ++iter )
-			{
-				if( ( *iter )->length() > 0 ) hasDiscard++;
-				Packet_Pool->Dtor(( *iter ));
-			}
-
-			if( hasDiscard > 0 && warnOnDiscard )
-			{
-				ACE_DEBUG(( LM_WARNING,
-					"Channel::clear_channel( {%s} ): "
-					"Discarding {%d} buffered packet(s)\n",
-					this->c_str(), hasDiscard ));
-			}
-
-			recvPackets_[i].clear();
+			if( ( *iter )->length() > 0 ) hasDiscard++;
+			Packet_Pool->Dtor(( *iter ));
 		}
+
+		if( hasDiscard > 0 && warnOnDiscard )
+		{
+			ACE_DEBUG(( LM_WARNING,
+				"Channel::clear_channel( {%s} ): "
+				"Discarding {%d} buffered packet(s)\n",
+				this->c_str(), hasDiscard ));
+		}
+
+		recvPackets_.clear();
 	}
 
 	lastRecvTime_ = ::timestamp();
@@ -182,18 +177,6 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 void Channel::add_delayed_channel(void)
 {
 	pNetworkInterface_->add_delayed_channel(this);
-}
-
-void Channel::reset(ACE_Event_Handler* pEndPoint, bool warnOnDiscard)
-{
-	/// if adrr does not change, we do not change it
-	if( pEndPoint == pEndPoint_ ) return;
-
-	/// let pNetworkInterface_ the handle irself in next tick 
-	if( pNetworkInterface_ ) pNetworkInterface_->send_delayed_channel(this);
-
-	this->clear_channel(warnOnDiscard);
-	pEndPoint_ = pEndPoint;
 }
 
 const char * Channel::c_str() const
@@ -267,7 +250,7 @@ bool Channel::initialize(ACE_INET_Addr* addr)
 		( (UDP_SOCK_Handler*) pEndPoint_ )->pChannel_ = this;
 	}
 
-	//hand_shake();
+	hand_shake();
 
 	startInactivityDetection(( channelScope_ == INTERNAL ) ? g_channelInternalTimeout : g_channelExternalTimeout);
 
@@ -308,30 +291,6 @@ void Channel::destroy(void)
 	TRACE_RETURN_VOID();
 }
 
-//bool Channel::process_recv(bool expectingPacket)
-//{
-//	TRACE("Channel::process_recv()");
-//
-//	if( isCondemn_ )
-//	{
-//		on_error();
-//		TRACE_RETURN(false);
-//	}
-//
-//	static MessageID msgid = 0;
-//	static Packet* pReceiveWindow = NULL;
-//
-//	if( protocolType_ == PROTOCOL_TCP )
-//	{
-//		pReceiveWindow = Packet_Pool->Ctor();
-//	} else
-//	{
-//		pReceiveWindow = Packet_Pool->Ctor(msgid, protocolType_);
-//	}
-//
-//	TRACE_RETURN(true);
-//}
-
 void Channel::process_packets(Messages* pMsgHandlers)
 {
 	TRACE("Channel::process_packets()");
@@ -359,13 +318,10 @@ void Channel::process_packets(Messages* pMsgHandlers)
 		return;
 	}
 
-	if( !pPacketReader_ ) hand_shake();
+	ACE_TEST_ASSERT(pPacketReader_ != NULL);
+	//hand_shake();
 
-	/// always use the other index 0 or 1
-	ACE_UINT8 idx = recvPacketIndex_;
-	recvPacketIndex_ = 1 - recvPacketIndex_;
-
-	pPacketReader_->processMessages(pMsgHandlers, recvPackets_[idx]);
+	pPacketReader_->processMessages(pMsgHandlers, recvPackets_);
 
 	TRACE_RETURN_VOID();
 }
@@ -675,12 +631,18 @@ void Channel::on_packet_sent(int bytes_cnt, bool is_sent_completely)
 void Channel::update_recv_window(Packet* pPacket)
 {
 	TRACE("Channel::update_recv_window(Packet* pPacket)");
-	recvPackets_[recvPacketIndex_].push_back(pPacket);
-	size_t size = recvPackets_[recvPacketIndex_].size();
+
+	static size_t size = 0;
+
+	recvPackets_.push_back(pPacket);
+	size = recvPackets_.size();
+
+	///@Test
 	if( size )
 	{
 		this->process_packets(&TESTMSG::messageHandlers);
-	}
+	}///
+
 	if( g_receiveWindowMessagesOverflowCritical > 0 &&
 		size > g_receiveWindowMessagesOverflowCritical )
 	{
