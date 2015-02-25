@@ -1,6 +1,7 @@
 ﻿#include "Channel.h"
 #include "net\NetworkInterface.h"
 #include "net\PacketReader.h"
+#include "net\TestMsgs.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -674,7 +675,7 @@ void Channel::update_recv_window(Packet* pPacket)
 	size_t size = recvPackets_[recvPacketIndex_].size();
 	if( size )
 	{
-		this->process_packets(&g_msgs);
+		this->process_packets(&TESTMSG::messageHandlers);
 	}
 	if( g_receiveWindowMessagesOverflowCritical > 0 &&
 		size > g_receiveWindowMessagesOverflowCritical )

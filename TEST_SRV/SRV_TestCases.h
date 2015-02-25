@@ -11,12 +11,12 @@
 #include "net\Message.h"
 #include "net\PacketReader.h"
 #include "net\NetworkInterface.h"
-
-using namespace ACE_KBE_VERSIONED_NAMESPACE_NAME;
-using namespace NETWORK;
+#include "net\Message_Defs.h"
+#include "net\TestMsgs.h"
 
 TEST(PacketReaderTests, ctor_dtor_test)
 {
+	ACE_TEST_ASSERT(TESTMSG::pmsg1 != NULL);
 
 	g_channelExternalEncryptType = 0;
 
@@ -45,12 +45,6 @@ TEST(PacketReaderTests, ctor_dtor_test)
 		intlisteningInterface,
 		intrbuffer,
 		intwbuffer);
-
-	inport_msgs();
-	//g_msgs.add_msg("currhandler1", new msgarg, NETWORK_FIXED_MESSAGE, new Message);
-	//g_msgs.add_msg("currhandler2", new msgarg_variable, NETWORK_VARIABLE_MESSAGE, new Message);
-	//g_msgs.add_msg("currhandler3", new msgarg, NETWORK_FIXED_MESSAGE, new Message);
-	//g_msgs.add_msg("currhandler4", new msgarg_variable, NETWORK_VARIABLE_MESSAGE, new Message);
 
 	pDispatcher.startLoop();
 }

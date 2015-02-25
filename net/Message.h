@@ -16,7 +16,8 @@ class KBE_MD5;
 struct Messages;
 struct FixedMessages;
 
-extern std::vector<Messages*>* gPtrMsgsPtrContainer;
+//extern std::vector<Messages*>* gPtrMsgsPtrContainer;
+extern std::vector<Messages*> gPtrMsgsPtrContainer;
 extern FixedMessages* gPtrFixedMsgs;
 
 struct ExposedMessageInfo
@@ -147,7 +148,8 @@ struct Messages
 		/// 从xml文档中读取固定消息配置
 		gPtrFixedMsgs->loadConfig("server/messages_fixed.xml");
 		///将该msgs添加到g_pMessagesContainer中去
-		gPtrMsgsPtrContainer->push_back(this);
+		gPtrMsgsPtrContainer.push_back(this);
+		//gPtrMsgsPtrContainer->push_back(this);
 
 	}
 
@@ -186,51 +188,51 @@ struct Messages
 };
 
 ////////////////////////////// For Test Use //////////////////////////////////////////
-extern Messages g_msgs;
-void inport_msgs();
-struct msgarg : public MessageArgs
-{
-	//virtual MessageLength1 msgarg::args_bytes_count();
-	//void msgarg::fetch_args_from(Packet* p);
-	//void msgarg::add_args_to(Packet* p);
-	MessageLength1 msgarg::args_bytes_count()
-	{
-		return 12;
-	}
-	void msgarg::fetch_args_from(Packet* p)
-	{
-		INT32  para1 = *(INT32*) p->buff->rd_ptr();
-		p->buff->rd_ptr(4);
-		INT32  para2 = *(INT32*) p->buff->rd_ptr();
-		p->buff->rd_ptr(4);
-		INT32  para3 = *(INT32*) p->buff->rd_ptr();
-		ACE_DEBUG(( LM_DEBUG, "(%d)(%d)(%d)\n", para1, para2, para3 ));
-	}
-	void msgarg::add_args_to(Packet* p)
-	{
-	}
-};
-struct msgarg_variable : public MessageArgs
-{
-	MessageLength1 msgarg_variable::args_bytes_count(void)
-	{
-		return 0;
-	}
-	void msgarg_variable::fetch_args_from(Packet* p)
-	{
-		for( int i = 0; i < 4; i++ )
-		{
-			INT64  para1 = *(INT64*) p->buff->rd_ptr();
-			p->buff->rd_ptr(8);
-			ACE_DEBUG(( LM_DEBUG, "(%d)", para1 ));
-		}
-
-		ACE_DEBUG(( LM_DEBUG, "\n" ));
-	}
-	void msgarg_variable::add_args_to(Packet* p)
-	{
-	}
-};
+//extern Messages g_msgs;
+//void inport_msgs();
+//struct msgarg : public MessageArgs
+//{
+//	//virtual MessageLength1 msgarg::args_bytes_count();
+//	//void msgarg::fetch_args_from(Packet* p);
+//	//void msgarg::add_args_to(Packet* p);
+//	MessageLength1 msgarg::args_bytes_count()
+//	{
+//		return 12;
+//	}
+//	void msgarg::fetch_args_from(Packet* p)
+//	{
+//		INT32  para1 = *(INT32*) p->buff->rd_ptr();
+//		p->buff->rd_ptr(4);
+//		INT32  para2 = *(INT32*) p->buff->rd_ptr();
+//		p->buff->rd_ptr(4);
+//		INT32  para3 = *(INT32*) p->buff->rd_ptr();
+//		ACE_DEBUG(( LM_DEBUG, "(%d)(%d)(%d)\n", para1, para2, para3 ));
+//	}
+//	void msgarg::add_args_to(Packet* p)
+//	{
+//	}
+//};
+//struct msgarg_variable : public MessageArgs
+//{
+//	MessageLength1 msgarg_variable::args_bytes_count(void)
+//	{
+//		return 0;
+//	}
+//	void msgarg_variable::fetch_args_from(Packet* p)
+//	{
+//		for( int i = 0; i < 4; i++ )
+//		{
+//			INT64  para1 = *(INT64*) p->buff->rd_ptr();
+//			p->buff->rd_ptr(8);
+//			ACE_DEBUG(( LM_DEBUG, "(%d)", para1 ));
+//		}
+//
+//		ACE_DEBUG(( LM_DEBUG, "\n" ));
+//	}
+//	void msgarg_variable::add_args_to(Packet* p)
+//	{
+//	}
+//};
 
 //extern  msgarg* ag;
 //extern msgarg_variable* ag_va;

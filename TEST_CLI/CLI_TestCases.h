@@ -13,39 +13,46 @@
 #include "net\PacketReader.h"
 #include "net\NetworkInterface.h"
 #include "net\Message.h"
+#include "net\TestMsgs.h"
+
 TEST(PacketReaderTests, ctor_dtor_test)
 {
 
-	inport_msgs();
+	//inport_msgs();
 
+	//Bundle* p = Bundle_Pool->Ctor();
+	//p->start_new_curr_message(g_msgs.find(1));
+	//*p << (INT32) -7;
+	//*p << (INT32) -7;
+	//*p << (INT32) -7;
+	//p->end_new_curr_message();
+
+	///// second msg is variable msg
+	//p->start_new_curr_message(g_msgs.find(2));
+	//*p << (UINT64) 2;
+	//*p << (UINT64) 2;
+	//*p << (UINT64) 2;
+	//*p << (UINT64) 2;
+	//p->end_new_curr_message();
+
+	/////// second msg is variable msg
+	//p->start_new_curr_message(g_msgs.find(3));
+	//*p << (INT32) -7;
+	//*p << (INT32) -7;
+	//*p << (INT32) -7;
+	//p->end_new_curr_message();
+
+	/////// second msg is variable msg
+	//p->start_new_curr_message(g_msgs.find(4));
+	//*p << (UINT64) 2;
+	//*p << (UINT64) 2;
+	//*p << (UINT64) 2;
+	//*p << (UINT64) 2;
+	//p->end_new_curr_message();
+	ACE_TEST_ASSERT(TESTMSG::pmsg1 != NULL);
 	Bundle* p = Bundle_Pool->Ctor();
-	p->start_new_curr_message(g_msgs.find(1));
-	*p << (INT32) -7;
-	*p << (INT32) -7;
-	*p << (INT32) -7;
-	p->end_new_curr_message();
-
-	/// second msg is variable msg
-	p->start_new_curr_message(g_msgs.find(2));
-	*p << (UINT64) 2;
-	*p << (UINT64) 2;
-	*p << (UINT64) 2;
-	*p << (UINT64) 2;
-	p->end_new_curr_message();
-
-	///// second msg is variable msg
-	p->start_new_curr_message(g_msgs.find(3));
-	*p << (INT32) -7;
-	*p << (INT32) -7;
-	*p << (INT32) -7;
-	p->end_new_curr_message();
-
-	///// second msg is variable msg
-	p->start_new_curr_message(g_msgs.find(4));
-	*p << (UINT64) 2;
-	*p << (UINT64) 2;
-	*p << (UINT64) 2;
-	*p << (UINT64) 2;
+	p->start_new_curr_message(TESTMSG::pmsg1);
+	*p << (ACE_UINT64) 1000;
 	p->end_new_curr_message();
 
 

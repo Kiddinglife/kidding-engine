@@ -4,20 +4,11 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-//msgarg* ag = NULL;
-//msgarg_variable* ag_va = NULL;
-///// first msg is fixed msg
-//Message* currhandler1 = NULL;
-///// second msg is variable msg
-//Message* currhandler2 = NULL;
-/////// second msg is variable msg
-//Message* currhandler3 = NULL;
-/////// second msg is variable msg
-//Message* currhandler4 = NULL;
-
 Messages* Messages::staticMsgsPtr = NULL;
-std::vector<Messages*>* gPtrMsgsPtrContainer = new std::vector < Messages* >();
+//std::vector<Messages*>* gPtrMsgsPtrContainer = NULL;
+std::vector<Messages*> gPtrMsgsPtrContainer;
 FixedMessages* gPtrFixedMsgs = NULL;
+
 /**
  * @TO-DO
  */
@@ -109,50 +100,16 @@ Message* Messages::find(MessageID msgID)
 void Messages::finalise(void)
 {
 	SAFE_RELEASE(gPtrFixedMsgs);
-	SAFE_RELEASE(gPtrMsgsPtrContainer);
+	//SAFE_RELEASE(gPtrMsgsPtrContainer);
 }
 /////////////////////////////////////// For Test Use Globals ///////////////////////////////
-Messages g_msgs;
-void inport_msgs()
-{
-	g_msgs.add_msg("currhandler1", new msgarg, NETWORK_FIXED_MESSAGE, new Message);
-	g_msgs.add_msg("currhandler2", new msgarg_variable, NETWORK_VARIABLE_MESSAGE, new Message);
-	g_msgs.add_msg("currhandler3", new msgarg, NETWORK_FIXED_MESSAGE, new Message);
-	g_msgs.add_msg("currhandler4", new msgarg_variable, NETWORK_VARIABLE_MESSAGE, new Message);
-}
-//MessageLength1 msgarg::args_bytes_count()
+//Messages g_msgs;
+//void inport_msgs()
 //{
-//	return 12;
-//}
-//void msgarg::fetch_args_from(Packet* p)
-//{
-//	INT32  para1 = *(INT32*) p->buff->rd_ptr();
-//	p->buff->rd_ptr(4);
-//	INT32  para2 = *(INT32*) p->buff->rd_ptr();
-//	p->buff->rd_ptr(4);
-//	INT32  para3 = *(INT32*) p->buff->rd_ptr();
-//	ACE_DEBUG(( LM_DEBUG, "(%d)(%d)(%d)\n", para1, para2, para3 ));
-//}
-//void msgarg::add_args_to(Packet* p)
-//{
-//}
-//MessageLength1 msgarg_variable::args_bytes_count(void)
-//{
-//	return 0;
-//}
-//void msgarg_variable::fetch_args_from(Packet* p)
-//{
-//	for( int i = 0; i < 4; i++ )
-//	{
-//		INT64  para1 = *(INT64*) p->buff->rd_ptr();
-//		p->buff->rd_ptr(8);
-//		ACE_DEBUG(( LM_DEBUG, "(%d)", para1 ));
-//	}
-//
-//	ACE_DEBUG(( LM_DEBUG, "\n" ));
-//}
-//void msgarg_variable::add_args_to(Packet* p)
-//{
+//	g_msgs.add_msg("currhandler1", new msgarg, NETWORK_FIXED_MESSAGE, new Message);
+//	g_msgs.add_msg("currhandler2", new msgarg_variable, NETWORK_VARIABLE_MESSAGE, new Message);
+//	g_msgs.add_msg("currhandler3", new msgarg, NETWORK_FIXED_MESSAGE, new Message);
+//	g_msgs.add_msg("currhandler4", new msgarg_variable, NETWORK_VARIABLE_MESSAGE, new Message);
 //}
 //////////////////////////////////////////////////////////////////////////////////////////////
 NETWORK_NAMESPACE_END_DECL
