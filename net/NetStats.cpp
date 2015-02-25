@@ -22,7 +22,7 @@ NETWORK_NAMESPACE_BEGIN_DECL
 */
 void NetStats::trackMessage(OPTION op, Message* msg, ACE_UINT32 size)
 {
-	//TRACE("NetStats :: trackMessage");
+	TRACE("%M::NetStats :: trackMessage()");
 	if( op == SEND )
 	{
 		msg->send_size_ += size;
@@ -41,7 +41,7 @@ void NetStats::trackMessage(OPTION op, Message* msg, ACE_UINT32 size)
 		else
 			( *iter )->onRecvMessage(msg, size);
 	}
-	//TRACE_RETURN_VOID();
+	TRACE_RETURN_VOID();
 }
 
 NETWORK_NAMESPACE_END_DECL

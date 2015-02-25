@@ -1,9 +1,9 @@
 ﻿#ifndef ACE_KBE_VERSIONED_NAMESPACE_H_
 #define ACE_KBE_VERSIONED_NAMESPACE_H_
 
-#ifndef CONFIG_H_
-# error This header is only meant to be included by or after "ace/config-lite.h".
-#endif  /* !ACE_CONFIG_LITE_H */
+//#ifndef CONFIG_H_
+//# error This header is only meant to be included by or after "ace/config-lite.h".
+//#endif  /* !ACE_CONFIG_LITE_H */
 
 //defined in custom.h
 #if defined (ACE_KBE_HAS_VERSIONED_NAMESPACE) && ACE_KBE_HAS_VERSIONED_NAMESPACE == 1 
@@ -19,12 +19,10 @@
 
 #define ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL namespace ACE_KBE_VERSIONED_NAMESPACE_NAME { 
 
-#define ACE_KBE_END_VERSIONED_NAMESPACE_DECL  } \
-    using namespace ACE_KBE_VERSIONED_NAMESPACE_NAME; 
+#define ACE_KBE_END_VERSIONED_NAMESPACE_DECL  };  using namespace ACE_KBE_VERSIONED_NAMESPACE_NAME; 
 
 #define NETWORK_NAMESPACE_BEGIN_DECL namespace NETWORK {
-#define NETWORK_NAMESPACE_END_DECL }\
-using namespace NETWORK;
+#define NETWORK_NAMESPACE_END_DECL }; using namespace NETWORK;
 #else
 # define ACE_KBE_VERSIONED_NAMESPACE_NAME
 # define ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL

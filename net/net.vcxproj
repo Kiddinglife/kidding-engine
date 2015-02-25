@@ -95,13 +95,12 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Address.h" />
     <ClInclude Include="Bundle.h" />
     <ClInclude Include="Channel.h" />
     <ClInclude Include="DelayedChannelHandler.h" />
-    <ClInclude Include="Endpoint.h" />
     <ClInclude Include="FixedMessages.h" />
     <ClInclude Include="Message.h" />
+    <ClInclude Include="Message_Defs.h" />
     <ClInclude Include="NetStats.h" />
     <ClInclude Include="NetworkHandler.h" />
     <ClInclude Include="NetworkInterface.h" />
@@ -109,15 +108,13 @@
     <ClInclude Include="Nub.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="PacketReader.h" />
-    <ClInclude Include="PacketReceiver.h" />
-    <ClInclude Include="PacketSender.h" />
+    <ClInclude Include="Packet_Filter.h" />
+    <ClInclude Include="TestMsgs.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Address.cpp" />
     <ClCompile Include="Bundlle.cpp" />
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="DelayedChannelHandler.cpp" />
-    <ClCompile Include="Endpoint.cpp" />
     <ClCompile Include="FixedMessages.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="NetStats.cpp" />
@@ -126,8 +123,8 @@
     <ClCompile Include="net_common.cpp" />
     <ClCompile Include="Nub.cpp" />
     <ClCompile Include="PacketReader.cpp" />
-    <ClCompile Include="PacketReceiver.cpp" />
-    <ClCompile Include="PacketSender.cpp" />
+    <ClCompile Include="Packet_Filter.cpp" />
+    <ClCompile Include="TestMsgs.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

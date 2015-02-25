@@ -2,41 +2,77 @@
 #define NET_COMMON_H_
 
 #include "ace\pre.h"
-#include "ace/SOCK_Stream.h"
+#include "ace\SOCK_Stream.h"
 #include "ace\SOCK_Dgram.h"
 #include "common\common.h"
-
+#include "common\ace_object_pool.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-template <typename SOCK_TYPE>
-struct SOCK_TYPE_TRAITS
-{
-	typedef typename SOCK_TYPE::sock_type  sock_type;//定义一个traits实现  
-	typedef typename SOCK_TYPE::tcp_upd_type  tcp_upd_type;//定义一个traits实现
-};
-struct TCP_TYPE
-{
-	typedef  ACE_SOCK_Stream sock_type;
-	typedef  TCP_TYPE  tcp_upd_type;
-};
-struct UDP_TYPE
-{
-	typedef ACE_SOCK_Dgram sock_type;
-	typedef  UDP_TYPE  tcp_upd_type;
-};
+//template <typename SOCK_TYPE>
+//struct SOCK_TYPE_TRAITS
+//{
+//	typedef typename SOCK_TYPE::sock_type  sock_type;//定义一个traits实现  
+//	typedef typename SOCK_TYPE::tcp_upd_type  tcp_upd_type;//定义一个traits实现
+//};
+//struct TCP_TYPE
+//{
+//	typedef  ACE_SOCK_Stream sock_type;
+//	typedef  TCP_TYPE  tcp_upd_type;
+//};
+//struct UDP_TYPE
+//{
+//	typedef ACE_SOCK_Dgram sock_type;
+//	typedef  UDP_TYPE  tcp_upd_type;
+//};
+
 
 namespace UDP /*以后扩展用*/
 {
-
 #define PACKET_MAX_SIZE_UDP					1472 
-}
+};
 
 namespace TCP
 {
+};
 
-}
+enum RecvState
+{
+	RECV_STATE_INTERRUPT = -1,
+	RECV_STATE_BREAK = 0,
+	RECV_STATE_CONTINUE = 1
+};
+
+enum PACKET_RECEIVER_TYPE
+{
+	TCP_PACKET_RECEIVER = 0,
+	UDP_PACKET_RECEIVER = 1
+};
+
+////////////////////////////////////////// Globals //////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+//========================== Pools =========================
+struct TCP_SOCK_Handler;
+ACE_PoolPtr_Declare(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
+
+struct Channel;
+ACE_PoolPtr_Declare(Channel_Pool, Channel, ACE_Null_Mutex);
+
+struct PacketReader;
+ACE_PoolPtr_Declare(PacketReader_Pool, PacketReader, ACE_Null_Mutex);
+
+struct UDP_SOCK_Handler;
+ACE_PoolPtr_Declare(UDP_SOCK_Handler_Pool, UDP_SOCK_Handler, ACE_Null_Mutex);
+
+struct Packet;
+ACE_PoolPtr_Declare(Packet_Pool, Packet, ACE_Null_Mutex);
+
+struct Bundle;
+ACE_PoolPtr_Declare(Bundle_Pool, Bundle, ACE_Null_Mutex);
+//========================================================
+
 //========================================================
 /*这个开关设置数据包是否总是携带长度信息， 这样在某些前端进行耦合时提供一些便利
 如果为false则一些固定长度的数据包不携带长度信息， 由对端自行解析*/
@@ -118,7 +154,7 @@ typedef ACE_UINT16	PacketLength;//最大65535
 #define ENCRYPTTION_WASTAGE_SIZE			    (1 + 7) /// 加密额外存储的信息占用字节(长度+填充)
 
 #define PACKET_MAX_SIZE						        1500
-#define PACKET_MAX_SIZE_TCP					    50//1460 
+#define PACKET_MAX_SIZE_TCP					    1460 
 #define PACKET_MAX_SIZE_UDP					    1472
 #define PACKET_LENGTH_BYTE_SIZE				    sizeof(PacketLength)
 
@@ -171,6 +207,78 @@ enum Reason
 	REASON_HTML5_ERROR = -13,		 ///< html5 error.
 	REASON_CHANNEL_CONDEMN = -14	 ///< condemn error.
 };
+
+inline Reason checkSocketErrors()
+{
+	Reason reason;
+	switch( kbe_lasterror() )
+	{
+		case ECONNREFUSED:	reason = REASON_NO_SUCH_PORT; break;
+		case EWOULDBLOCK:   reason = REASON_RESOURCE_UNAVAILABLE; break;
+		case EAGAIN:		        reason = REASON_RESOURCE_UNAVAILABLE; break;
+		case EPIPE:			        reason = REASON_CLIENT_DISCONNECTED; break;
+		case ECONNRESET:	    reason = REASON_CLIENT_DISCONNECTED; break;
+		case ENOBUFS:		        reason = REASON_TRANSMIT_QUEUE_FULL; break;
+		default:			                reason = REASON_GENERAL_NETWORK; break;
+	}
+	return reason;
+}
+
+inline RecvState checkSocketErrors(int len, bool expectingPacket)
+{
+	int err = kbe_lasterror();
+
+	// recv缓冲区已经无数据可读了
+	if( ( err == EAGAIN || err == EWOULDBLOCK ) && !expectingPacket )
+	{
+		ACE_DEBUG(( LM_DEBUG, "%M::Return RecvState::RECV_STATE_BREAK\n" ));
+		return RecvState::RECV_STATE_BREAK;
+	}
+
+
+	if( err == EAGAIN ||							// 已经无数据可读了
+		err == ECONNREFUSED ||					// 连接被服务器拒绝
+		err == EHOSTUNREACH )						// 目的地址不可到达
+	{
+		//this->dispatcher().errorReporter().reportException(
+		//	REASON_NO_SUCH_PORT);
+		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
+			"Throwing REASON_NO_SUCH_PORT\n" ));
+		return RecvState::RECV_STATE_BREAK;
+	}
+
+	/*
+	存在的连接被远程主机强制关闭。通常原因为：远程主机上对等方应用程序突然停止运行，或远程主机重新启动，
+	或远程主机在远程方套接字上使用了“强制”关闭（参见setsockopt(SO_LINGER)）。
+	另外，在一个或多个操作正在进行时，如果连接因“keep-alive”活动检测到一个失败而中断，也可能导致此错误。
+	此时，正在进行的操作以错误码WSAENETRESET失败返回，后续操作将失败返回错误码WSAECONNRESET
+	*/
+
+	if( err == WSAECONNRESET )
+	{
+		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
+			"Throwing REASON_GENERAL_NETWORK - WSAECONNRESET\n" ));
+		return RecvState::RECV_STATE_INTERRUPT;
+	}
+
+	if( err == WSAECONNABORTED )
+	{
+		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
+			"Throwing REASON_GENERAL_NETWORK - WSAECONNABORTED\n" ));
+		return RecvState::RECV_STATE_INTERRUPT;
+	}
+
+	ACE_DEBUG(( LM_WARNING,
+		"TCPPacketReceiver::processPendingEvents: "
+		"Throwing REASON_GENERAL_NETWORK (%s), will continue the reactor\n",
+		kbe_strerror() ));
+
+	//this->dispatcher().errorReporter().reportException(
+	//	REASON_GENERAL_NETWORK);
+	ACE_DEBUG(( LM_DEBUG, "%M::Return RecvState::RECV_STATE_CONTINUE\n" ));
+	return RecvState::RECV_STATE_CONTINUE;
+}
+
 
 inline const char* reasonToString(Reason reason)
 {
@@ -228,11 +336,17 @@ extern ACE_INT8 g_channelExternalEncryptType;
 		Network::g_channelInternalTimeout = -1.0f;}	
 
 /*包接收窗口溢出*/
-extern ACE_UINT32 g_receiveWindowMessagesOverflowCritical;
-extern ACE_UINT32 g_intReceiveWindowMessagesOverflow;
-extern ACE_UINT32 g_extReceiveWindowMessagesOverflow;
-extern ACE_UINT32 g_intReceiveWindowBytesOverflow;
-extern ACE_UINT32 g_extReceiveWindowBytesOverflow;
+extern ACE_UINT32                      g_receiveWindowMessagesOverflowCritical;
+extern ACE_UINT32                      g_intReceiveWindowMessagesOverflow;
+extern ACE_UINT32                      g_extReceiveWindowMessagesOverflow;
+extern ACE_UINT32                      g_intReceiveWindowBytesOverflow;
+extern ACE_UINT32                      g_extReceiveWindowBytesOverflow;
+
+extern ACE_UINT32						g_sendWindowMessagesOverflowCritical;
+extern ACE_UINT32						g_intSendWindowMessagesOverflow;
+extern ACE_UINT32						g_extSendWindowMessagesOverflow;
+extern ACE_UINT32						g_intSendWindowBytesOverflow;
+extern ACE_UINT32						g_extSendWindowBytesOverflow;
 //channel =============================================== 
 
 
@@ -297,6 +411,8 @@ inline int setbuffersize(int optname, int size, ACE_SOCK& mSockIO)
 {
 	return mSockIO.set_option(SOL_SOCKET, optname, &size, sizeof(size));
 }
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
+#include "ace\post.h"
 #endif

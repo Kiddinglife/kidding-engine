@@ -5,18 +5,17 @@
 #include "ace\Refcounted_Auto_Ptr.h"
 #include "common\ace_object_pool.h"
 #include "Bundle.h"
+#include "ace\Event_Handler.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-struct TimerHandle { };
 struct PacketReader;
 struct PacketReceiver;
 struct PacketSender;
 struct PacketFilter;
-typedef ACE_Refcounted_Auto_Ptr<PacketFilter, ACE_Null_Mutex> PacketFilterPtr;
 
-struct Channel // : public TimerHandler, public RefCountable, public PoolObject
+struct Channel
 {
 	/// INTERNAL describes the properties of channel from server to server.
 	/// EXTERNAL describes the properties of a channel from client to server.
@@ -33,41 +32,49 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 		PACKET_IS_CORRUPT
 	};
 
-	//@TO-DO 可能需要查看apg timer那个例子
-	TimerHandle					          inactivityTimerHandle_;
+	enum TimeOutType
+	{
+		TIMEOUT_INACTIVITY_CHECK
+	};
 
 	/// 该通道所需的网络接口
-	NetworkInterface*                  pNetworkInterface_;
+	NetworkInterface*                 pNetworkInterface_;
 
 	/// 该通道需要使用bundle来缓存接收和发送的消息
-	Bundle						              bundle_;
+	Bundle						             bundle_;
 
 	//@TO-DO need create struct PacketReader
-	PacketReader*				          pPacketReader_; //bufferedReceives_ 
+	PacketReader*				         pPacketReader_; //bufferedReceives_ 
 
 	//@TO-DO maybe can use ace_handle 
-	ACE_SOCK*					          pEndPoint_;
+	//ACE_SOCK*					          pEndPoint_;
+	ACE_Event_Handler*				 pEndPoint_;
 
 	//@TO-DO need create struct PacketReceiver
-	PacketReceiver*				      pPacketReceiver_;
-	PacketSender*				          pPacketSender_;
+	//PacketReceiver*				      pPacketReceiver_;
+	//PacketSender*				          pPacketSender_;
+
 	//@TO-DO need create struct PacketFilter
-	PacketFilterPtr				          pFilter_;
+	bool				                          canFilterPacket_;
 
 	/// 可以指定通道使用某些特定的消息
 	/// can designate the channel to use some specific msgs
 	Messages*                              pMsgs_;
 
+	/// bundles in this channel
+	typedef std::vector<Bundle*> Bundles;
+	Bundles                                  bundles_;
+
 	/// 接收到的所有包的集合：the container for the received packets
 	typedef std::vector<Packet*> RecvPackets;
-	RecvPackets                           recvPackets[2];
+	RecvPackets                           recvPackets_[2];
 
 	ChannelScope                        channelScope_;
 	ChannelType				              channelType_;
 	ProtocolType				          protocolType_;
 	ChannelID					          channelId_;
 	bool						                  isDestroyed_;
-	bool						                  sending_;
+	bool						                  is_notified_send_;
 
 	/// 如果为true，则该频道已经变得不合法
 	/// if true, this channel has become unusable
@@ -83,6 +90,9 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	/// 扩展用, for extension
 	std::string					              strextra_;
 
+	/// tinmer id
+	long                                       timerID_;
+
 	ACE_UINT64						      inactivityExceptionPeriod_;
 	ACE_UINT64                           lastRecvTime_;
 	ACE_UINT32                           winSize_;
@@ -97,36 +107,57 @@ struct Channel // : public TimerHandler, public RefCountable, public PoolObject
 	ACE_UINT32                           lastTickBytesSent_;
 
 	/// Reference count.
-	int ref_count_;
+	//int ref_count_;
 
-	static void intrusive_add_ref(Channel* channel)
-	{
-		++channel->ref_count_;
-	}
+	//static void intrusive_add_ref(Channel* channel)
+	//{
+	//	++channel->ref_count_;
+	//}
 
-	static void intrusive_remove_ref(Channel* channel)
-	{
-		--channel->ref_count_;
-		ACE_ASSERT(channel->ref_count_ >= 0 && "RefCountable:ref_count_ maybe a error!");
-		if( !channel->ref_count_ ) delete channel;
-	}
+	//static void intrusive_remove_ref(Channel* channel)
+	//{
+	//	--channel->ref_count_;
+	//	ACE_ASSERT(channel->ref_count_ >= 0 && "RefCountable:ref_count_ maybe a error!");
+	//	if( !channel->ref_count_ ) delete channel;
+	//}
+
 
 	Channel(NetworkInterface* networkInterface = NULL,
-		ACE_SOCK* endpoint = NULL,
+		ACE_Event_Handler* endpoint = NULL,
 		ChannelScope traits = EXTERNAL,
 		ProtocolType pt = PROTOCOL_TCP,
-		PacketFilterPtr pFilter = PacketFilterPtr(NULL),
+		bool canFilterPacket = false,
 		ChannelID id = CHANNEL_ID_NULL);
 
-	virtual ~Channel(void) { }
+	virtual ~Channel(void);
 
 	const char*  c_str(void) const;
+	void startInactivityDetection(float period, float checkPeriod = 1.0f);
 
-	void clearBundle(void);
-	bool initialize(void);
+	int get_bundles_length(void);
+	void clearBundles(void);
+	void clear_channel(bool warnOnDiscard = false);
+
+	bool initialize(ACE_INET_Addr* addr = NULL);
+	bool finalise(void);
 	void destroy(void);
+	void reset(ACE_Event_Handler* pEndPoint, bool warnOnDiscard);
 
+	inline void add_delayed_channel(void);
+	void hand_shake(void);
+	//bool process_recv(bool expectingPacket);
 	void process_packets(Messages* pMsgHandlers);
+	void on_packet_sent(int bytes_cnt, bool is_sent_completely);
+	void Channel::update_recv_window(Packet* pPacket);
+	void Channel::on_packet_received(int bytes);
+	void send(Bundle * pBundle = NULL);
+	void tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundle);
+	void Channel::udp_send_single_bundle(UDP_SOCK_Handler* pEndpoint,
+		Bundle* pBundle, ACE_INET_Addr& addr);
+	bool process_send(void);
+	inline void on_error(void);
+	inline void on_bundles_sent_completely(void);
+	inline void Channel::set_channel_condem();
 };
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

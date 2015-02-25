@@ -3,6 +3,7 @@
 
 #include "ace\pre.h"
 #include "net_common.h"
+#include <unordered_map>
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -17,7 +18,7 @@ struct FixedMessages
 	{
 		MessageID msgid;
 	};
-	
+
 	typedef std::tr1::unordered_map<std::string, MSGInfo> MSGINFO_MAP;
 	MSGINFO_MAP infomap_;
 	bool loaded_;

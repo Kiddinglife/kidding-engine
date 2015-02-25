@@ -6,29 +6,29 @@ NETWORK_NAMESPACE_BEGIN_DECL
 /**
  * ctor creates external and internal listenning socket both are tcp
  */
-NetworkInterface::NetworkInterface(
-Nub* pDispatcher,
-ACE_INT16 extlisteningPort_min,
-ACE_INT16 extlisteningPort_max,
-const char * extlisteningInterface,
-ACE_UINT32 extrbuffer,
-ACE_UINT32 extwbuffer,
-ACE_INT16 intlisteningPort,
-const char * intlisteningInterface,
-ACE_UINT32 intrbuffer,
-ACE_UINT32 intwbuffer) :
-
-ACE_Event_Handler(),
-channelMap_(),
-nub_(pDispatcher),
-pExtensionData_(NULL),
-pExtListenerReceiver_(NULL),
-pIntListenerReceiver_(NULL),
-pDelayedChannels_(new DelayedChannelHandlers()),
-pChannelTimeOutHandler_(NULL),
-pChannelDeregisterHandler_(NULL),
-isExternal_(extlisteningPort_min != -1),
-numExtChannels_(0)
+ NetworkInterface::NetworkInterface(
+ Nub* pDispatcher,
+ ACE_INT16 extlisteningPort_min,
+ ACE_INT16 extlisteningPort_max,
+ const char * extlisteningInterface,
+ ACE_UINT32 extrbuffer,
+ ACE_UINT32 extwbuffer,
+ ACE_INT16 intlisteningPort,
+ const char * intlisteningInterface,
+ ACE_UINT32 intrbuffer,
+ ACE_UINT32 intwbuffer)
+ :
+ ACE_Event_Handler(),
+ channelMap_(),
+ nub_(pDispatcher),
+ pExtensionData_(NULL),
+ pExtListenerReceiver_(NULL),
+ pIntListenerReceiver_(NULL),
+ pDelayedChannels_(new DelayedChannelHandlers()),
+ pChannelTimeOutHandler_(NULL),
+ pChannelDeregisterHandler_(NULL),
+ isExternal_(extlisteningPort_min != -1),
+ numExtChannels_(0)
 {
 	/// first listen on external interface
 	if( isExternal_ )
@@ -297,20 +297,23 @@ bool NetworkInterface::is_ip_addr_valid(const char* spec, char* name)
 
 }
 
-/*These three methods are used to register and deregister the channel*/
+/// These three methods are used to register and deregister the channel
 bool NetworkInterface::register_channel(Channel* pChannel)
 {
 	TRACE("NetworkInterface::registerChannel");
 	/// get the current channel's address
-	ACE_INET_Addr localAddr;
-	pChannel->pEndPoint_->get_local_addr(localAddr);
+	static ACE_INET_Addr addr;
+	pChannel->protocolType_ == PROTOCOL_TCP ?
+		( (TCP_SOCK_Handler*) pChannel->pEndPoint_ )->sock_.get_remote_addr(addr) :
+		( (UDP_SOCK_Handler*) pChannel->pEndPoint_ )->sock_.get_local_addr(addr);
 
-	ACE_ASSERT(localAddr.get_ip_address() != 0);
+	//ACE_ASSERT(addr.get_ip_address() != 0);
 	ACE_ASSERT(pChannel->pNetworkInterface_ == this);
 
 	/// check if this channel has already been added
-	ChannelMap::iterator iter = channelMap_.find(localAddr);
-	Channel * pExisting = iter != channelMap_.end() ? iter->second : NULL;
+	ChannelMap::iterator iter = channelMap_.find(addr);
+	Channel * pExisting = ( iter != channelMap_.end() ? iter->second : NULL );
+
 	if( pExisting )
 	{
 		ACE_ERROR_RETURN(( LM_CRITICAL,
@@ -319,7 +322,7 @@ bool NetworkInterface::register_channel(Channel* pChannel)
 	}
 
 	/// if not added  then add it
-	channelMap_[localAddr] = pChannel;
+	channelMap_[addr] = pChannel;
 
 	///if it is external channel, increment by 1
 	if( pChannel->channelScope_ = Channel::EXTERNAL )
@@ -332,14 +335,17 @@ bool NetworkInterface::deregister_channel(Channel* pChannel)
 	TRACE("NetworkInterface::deregisterChannel");
 
 	/// get the current channel's address
-	ACE_INET_Addr localAddr;
-	pChannel->pEndPoint_->get_local_addr(localAddr);
+	static ACE_INET_Addr addr;
+	pChannel->protocolType_ == PROTOCOL_TCP ?
+		( (TCP_SOCK_Handler*) pChannel->pEndPoint_ )->sock_.get_remote_addr(addr) :
+		( (UDP_SOCK_Handler*) pChannel->pEndPoint_ )->sock_.get_local_addr(addr);
+	//pChannel->pEndPoint_-> ->get_local_addr(localAddr);
 
 	///if it is external channel, decrement by 1
 	if( pChannel->channelScope_ = Channel::EXTERNAL )
 		numExtChannels_--;
 
-	if( !channelMap_.erase(localAddr) )
+	if( !channelMap_.erase(addr) )
 	{
 		ACE_DEBUG(( LM_ERROR, "NetworkInterface::deregisterChannel: "
 			"Channel not found {}!\n",
@@ -372,20 +378,20 @@ bool NetworkInterface::deregister_all_channels()
 	TRACE_RETURN(true);
 }
 
-inline void NetworkInterface::delayed_channels_send(Channel* channel)
+void NetworkInterface::add_delayed_channel(Channel* channel)
 {
 	TRACE("NetworkInterface::delayedSend()");
 	pDelayedChannels_->add(channel);
 	TRACE_RETURN_VOID();
 }
-inline void NetworkInterface::send_on_delayed(Channel* channel)
+void NetworkInterface::send_delayed_channel(Channel* channel)
 {
 	TRACE("NetworkInterface::send_on_delayed()");
-	pDelayedChannels_->sendIfDelayed(channel);
+	pDelayedChannels_->send_delayed_channel(channel);
 	TRACE_RETURN_VOID();
 }
 
-/*These twp methods are used to find the channel */
+/// These twp methods are used to find the channel 
 Channel * NetworkInterface::channel(const ACE_INET_Addr& addr)
 {
 	TRACE("NetworkInterface::findChannel(const ACE_INET_Addr&)");
@@ -410,30 +416,36 @@ Channel * NetworkInterface::channel(ACE_HANDLE handle)
 	TRACE_RETURN(NULL);
 }
 
-inline void NetworkInterface::on_channel_left(Channel* pChannel)
+/// channel cb
+void NetworkInterface::on_channel_left(Channel* pChannel)
 {
 	TRACE("NetworkInterface::onChannelGone()");
+	// channel dtor has been called so we cannot call it again
+	/// thisi is the last chance for us to do some clear works the pchannel is valid
+	/// at this moment
 	TRACE_RETURN_VOID();
 }
-inline void NetworkInterface::on_channel_timeout(Channel* pChannel)
+void NetworkInterface::on_channel_timeout(Channel* pChannel)
 {
 	TRACE("NetworkInterface::onChannelTimeOut()");
-
-	if( pChannelTimeOutHandler_ )
-	{
-		( *pChannelTimeOutHandler_ )( pChannel );
-	} else
-	{
-		ACE_ERROR(( LM_ERROR,
-			"NetworkInterface::onChannelTimeOut: "
-			"Channel {%s} timed out but no handler is registered.\n",
-			pChannel->c_str() ));
-	}
+	//Channel_Pool->Dtor(pChannel); should use this one but for test we use the secpnd one 
+	/// tp cancel the timer
+	pChannel->pEndPoint_->reactor()->cancel_timer(pChannel->timerID_);
+	//if( pChannelTimeOutHandler_ )
+	//{
+	//	( *pChannelTimeOutHandler_ )( pChannel );
+	//} else
+	//{
+	//	ACE_ERROR(( LM_ERROR,
+	//		"NetworkInterface::onChannelTimeOut: "
+	//		"Channel {%s} timed out but no handler is registered.\n",
+	//		pChannel->c_str() ));
+	//}
 
 	TRACE_RETURN_VOID();
 }
 
-/*this method will go through all the channels and process its packets*/
+/// this method will go through all the channels and process its packets
 void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
 {
 	TRACE("NetworkInterface::process_all_channels_packets()");
@@ -456,5 +468,18 @@ void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
 	TRACE_RETURN_VOID();
 }
 
+void NetworkInterface::close_listenning_sockets(void)
+{
+	TRACE("NetworkInterface::close_socket()");
+	if( pExtListenerReceiver_ )
+		pExtListenerReceiver_->handle_close(pExtListenerReceiver_->get_handle(),
+		ACE_Event_Handler::ACCEPT_MASK | ACE_Event_Handler::DONT_CALL);
+
+	if( pIntListenerReceiver_ )
+		pIntListenerReceiver_->handle_close(pExtListenerReceiver_->get_handle(),
+		ACE_Event_Handler::ACCEPT_MASK | ACE_Event_Handler::DONT_CALL);
+
+	TRACE_RETURN_VOID();
+}
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

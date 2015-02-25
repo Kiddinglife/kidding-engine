@@ -1,10 +1,12 @@
 ﻿#include "Message.h"
+#include "Packet.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
 Messages* Messages::staticMsgsPtr = NULL;
-std::vector<Messages*>* gPtrMsgsPtrContainer = new std::vector < Messages* >();
+//std::vector<Messages*>* gPtrMsgsPtrContainer = NULL;
+std::vector<Messages*> gPtrMsgsPtrContainer;
 FixedMessages* gPtrFixedMsgs = NULL;
 
 /**
@@ -98,8 +100,17 @@ Message* Messages::find(MessageID msgID)
 void Messages::finalise(void)
 {
 	SAFE_RELEASE(gPtrFixedMsgs);
-	SAFE_RELEASE(gPtrMsgsPtrContainer);
+	//SAFE_RELEASE(gPtrMsgsPtrContainer);
 }
-
+/////////////////////////////////////// For Test Use Globals ///////////////////////////////
+//Messages g_msgs;
+//void inport_msgs()
+//{
+//	g_msgs.add_msg("currhandler1", new msgarg, NETWORK_FIXED_MESSAGE, new Message);
+//	g_msgs.add_msg("currhandler2", new msgarg_variable, NETWORK_VARIABLE_MESSAGE, new Message);
+//	g_msgs.add_msg("currhandler3", new msgarg, NETWORK_FIXED_MESSAGE, new Message);
+//	g_msgs.add_msg("currhandler4", new msgarg_variable, NETWORK_VARIABLE_MESSAGE, new Message);
+//}
+//////////////////////////////////////////////////////////////////////////////////////////////
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

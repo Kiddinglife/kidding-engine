@@ -33,7 +33,7 @@ struct DelayedChannelHandlers;
  * @Brief
  * This class is the abstraction of the network interface in the host machina.
  * It is listenning on the external and internal socket to wait the connection request.
- * When a connection comes, the nub create new socket handler to handle it and will call back 
+ * When a connection comes, the nub create new socket handler to handle it and will call back
  * register function to register a new channel
  */
 struct NetworkInterface : public ACE_Event_Handler
@@ -109,21 +109,22 @@ struct NetworkInterface : public ACE_Event_Handler
 	*/
 	bool is_ip_addr_valid(const char* spec, char* name);
 
-	void delayed_channels_send(Channel* channel);
-	void send_on_delayed(Channel* channel);
+	/// Send methods
+	void add_delayed_channel(Channel* channel);
+	void send_delayed_channel(Channel* channel);
 
-	/*These three methods are used to register and deregister the channel*/
+	/// These three methods are used to register and deregister the channel
 	bool register_channel(Channel* pChannel);
 	bool deregister_channel(Channel* pChannel);
 	bool deregister_all_channels();
 
-	/*These twp methods are used to find the channel */
+	/// These twp methods are used to find the channel 
 	Channel* channel(const ACE_INET_Addr& addr);
 	Channel* channel(ACE_HANDLE  handle);
 
 	/// call back functon when the specific channel goes away
 	void on_channel_left(Channel * pChannel);
-	void NetworkInterface::on_channel_timeout(Channel * pChannel);
+	void on_channel_timeout(Channel * pChannel);
 
 	/**
 	* This method is used to handle the timout event in network interface
@@ -131,8 +132,11 @@ struct NetworkInterface : public ACE_Event_Handler
 	*/
 	virtual int handle_timeout(const ACE_Time_Value &tv, const void *arg);
 
-	/*this method will go through all the channels and process its packets*/
+	/// this method will go through all the channels and process its packets
 	void process_all_channels_packets(Messages* pMsgHandlers);
+
+	/// close listenning sockets by remove the handlers from the reactor
+	void close_listenning_sockets(void);
 };
 
 NETWORK_NAMESPACE_END_DECL

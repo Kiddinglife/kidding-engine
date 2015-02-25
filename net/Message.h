@@ -3,18 +3,22 @@
 
 #include "ace\pre.h"
 #include "ace\Null_Mutex.h"
-#include "common\ace_object_pool.h"
-#include "FixedMessages.h"
+//#include "common\ace_object_pool.h"
+#include "common\common.h"
+#include "net\net_common.h"
+#include "net\FixedMessages.h"
 #include "net\Packet.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
 class KBE_MD5;
 struct Messages;
-extern std::vector<Messages*>* gPtrMsgsPtrContainer;
-extern FixedMessages* gPtrFixedMsgs;
+struct FixedMessages;
 
-struct Channel;
+//extern std::vector<Messages*>* gPtrMsgsPtrContainer;
+extern std::vector<Messages*> gPtrMsgsPtrContainer;
+extern FixedMessages* gPtrFixedMsgs;
 
 struct ExposedMessageInfo
 {
@@ -118,8 +122,8 @@ struct Message
 	virtual void handle(Channel* pChannel, Packet* s)
 	{
 		TRACE("Message::handle()");
-		ACE_DEBUG(( LM_DEBUG,
-			"%M::Message::msg payload len(%d)\n", s->length() ));
+		//ACE_DEBUG(( LM_DEBUG,
+		//	"%M::Message::msg payload len(%d)\n", s->length() ));
 		pMsgArgs_->fetch_args_from(s);
 		// 将参数传给最终的接口
 		TRACE_RETURN_VOID();
@@ -139,12 +143,13 @@ struct Messages
 		exposedMessages_(),
 		msgs_()
 	{
-		/// 获取 FixedMessages的单粒
+		/// 获取 FixedMessages的单例
 		gPtrFixedMsgs = ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance();
 		/// 从xml文档中读取固定消息配置
 		gPtrFixedMsgs->loadConfig("server/messages_fixed.xml");
 		///将该msgs添加到g_pMessagesContainer中去
-		gPtrMsgsPtrContainer->push_back(this);
+		gPtrMsgsPtrContainer.push_back(this);
+		//gPtrMsgsPtrContainer->push_back(this);
 
 	}
 
@@ -181,7 +186,7 @@ struct Messages
 
 	static std::string getDigestStr();
 };
-
+//////////////////////////////////////////////////////////////////////////////////////
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include "ace\post.h"

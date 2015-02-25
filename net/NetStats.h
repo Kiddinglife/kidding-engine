@@ -5,6 +5,7 @@
 #include "net_common.h"
 #define ACE_NTRACE 0
 #include "ace/mytrace.h"
+#include <unordered_map>
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL

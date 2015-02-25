@@ -1085,6 +1085,7 @@
 
 //#include "net\NetworkInterface.h"
 //#include "net\Channel.h"
+//#include "net\DelayedChannelHandler.h"
 //TEST(NetworkInterfaceTest, get_ip_addr_str)
 //{
 //	Nub              pDispatcher;
@@ -1112,21 +1113,46 @@
 //		intrbuffer,
 //		intwbuffer);
 //
-//	ACE_Time_Value tv;
-//	in.handle_timeout(tv, 0);
-//
+//	//ACE_Time_Value tv;
+//	//in.handle_timeout(tv, 0);
 //	ACE_INET_Addr addr(20006, "192.168.2.47");
-//	ACE_SOCK_Dgram dg(addr);
-//	Channel tcpchannel(&in, &dg, Channel::EXTERNAL, PROTOCOL_UDP);
-//	Messages msgs;
+//	TCP_SOCK_Handler dg(&in);
+//	dg.reactor(pDispatcher.rec);
 //
+//	Channel tcpchannel(&in, &dg);
+//	dg.pChannel_ = &tcpchannel;
+//	std::cout << "tcpchannel.c_str();\n" << tcpchannel.c_str();
+//	std::cout << "tcpchannel.get_bundles_length();\n" << tcpchannel.get_bundles_length();
+//	Messages msgs;
+//#include "net\net_common.h"
+//	Bundle* bundle = Bundle_Pool->Ctor();
+//	tcpchannel.send(bundle);
 //	in.register_channel(&tcpchannel);
+//
 //	in.channel(addr);
 //	in.channel(dg.get_handle());
 //	in.process_all_channels_packets(&msgs);
 //	in.deregister_channel(&tcpchannel);
 //	in.deregister_all_channels();
+//	in.close_listenning_sockets();
 //
+//	DelayedChannelHandlers delay;
+//	delay.init(&pDispatcher, &in);
+//	delay.add(&tcpchannel);
+//	delay.send_delayed_channel(&tcpchannel);
+//	delay.process();
+//	delay.fini(&pDispatcher);
+//
+//	//Bundle_Pool->Dtor(bundle);
+//
+//	//pDispatcher.startLoop();
+//}
+
+//#include "net\Nub.h"
+//TEST(NubTest, start_loop)
+//{
+//	Nub nub;
+//	nub.startLoop();
 //}
 
 #include "net\PacketReader.h"
@@ -1179,7 +1205,39 @@ TEST(PacketReaderTests, ctor_dtor_test)
 
 	g_channelExternalEncryptType = 0;
 
-	Channel channel;
+	Nub              pDispatcher;
+	ACE_INT32     extlisteningPort_min = 20001;
+	ACE_INT32     extlisteningPort_max = 20005;
+	const char *    extlisteningInterface = "192.168.2.47";
+	//const char *    extlisteningInterface = "";
+	//const char *    extlisteningInterface = "127.0.0.1";
+	//const char *    extlisteningInterface = USE_KBEMACHINED;
+	ACE_UINT32   extrbuffer = 512;
+	ACE_UINT32   extwbuffer = 512;
+	ACE_INT32      intlisteningPort = 20006;
+	const char *    intlisteningInterface = "192.168.2.47";
+	ACE_UINT32   intrbuffer = 512;
+	ACE_UINT32   intwbuffer = 512;
+
+	NetworkInterface in(&pDispatcher,
+		extlisteningPort_min,
+		extlisteningPort_max,
+		extlisteningInterface,
+		extrbuffer,
+		extwbuffer,
+		intlisteningPort,
+		intlisteningInterface,
+		intrbuffer,
+		intwbuffer);
+
+	ACE_INET_Addr addr(20006, "192.168.2.47");
+	TCP_SOCK_Handler dg(&in);
+	dg.reactor(pDispatcher.rec);
+
+	Channel channel(&in, &dg);
+	dg.pChannel_ = &channel;
+
+	in.register_channel(&channel);
 
 	ACE_PoolPtr_Getter(pool, Bundle, ACE_Null_Mutex);
 	ACE_PoolPtr_Getter(poolmsgarg, msgarg, ACE_Null_Mutex);
@@ -1235,8 +1293,16 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	*p << (UINT64) 2;
 	p->end_new_curr_message();
 
-	PacketReader pr(&channel);
-	pr.processMessages(&msgs, p);
+	Bundle::Packets::iterator iter = p->packets_.begin();
+	for( ; iter != p->packets_.end(); iter++ )
+	{
+		channel.recvPackets_[channel.recvPacketIndex_].push_back(( *iter ));
+	}
+	channel.process_packets(&msgs);
+
+	//PacketReader pr(&channel);
+	//pr.processMessages(&msgs, p->packets_);
+
 	pool->Dtor(p);
 
 }

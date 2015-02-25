@@ -1,6 +1,4 @@
-﻿#pragma execution_character_set("utf-8")
-
-#ifndef COMMON_HPP_
+﻿#ifndef COMMON_HPP_
 #define COMMON_HPP_
 
 #include "ace\pre.h"

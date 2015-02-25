@@ -4,11 +4,10 @@
 #include "ace\pre.h"
 #include "ace/CDR_Stream.h"
 #include "net_common.h"
-#include "Endpoint.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-struct Bundle;
 struct Packet
 {
 	ACE_OutputCDR os;
@@ -56,10 +55,12 @@ struct Packet
 		// we do not need reset os because we do not use any cont memeory
 		//os.reset();
 		buff->reset();
-		encrypted_ = false;
-		sentSize = 0;
-		msgID_ = 0;
-		pBundle_ = NULL;
+
+		/// will reset akk of them in the next time in the ctor from pool ctor()
+		//encrypted_ = false;
+		//sentSize = 0;
+		//msgID_ = 0;
+		//pBundle_ = NULL;
 	}
 
 	/* Make the read ptr = write ptr to show the read is done */

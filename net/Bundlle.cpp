@@ -4,11 +4,45 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
+Bundle::Bundle(Channel * pChannel, ProtocolType pt) :
+pChnnel_(pChannel),
+pCurrPacket_(NULL),
+numMessages_(0),
+currMsgID_(0),
+currMsgPacketCount_(0),
+currMsgLength_(0),
+currMsgType_(0),
+currMsgLengthPos_(NULL),
+currPacketPaddingBeforeEncrytypeField(0),
+pt_(PROTOCOL_TCP),
+pCurrMsg_(NULL),
+reuse_(false),
+currPacketMaxSize(pt == PROTOCOL_TCP ? TCP_PACKET_MAX_CHUNK_SIZE : UDP_PACKET_MAX_CHUNK_SIZE),
+in((char*) NULL, 0)
+{
+	// 如果使用了openssl加密通讯则我们保证一个包最大能被Blowfish::BLOCK_SIZE除尽
+	// 这样我们在加密一个满载包时不需要额外填充字节
+	/*ACE_DEBUG(( LM_DEBUG, "// 如果使用了openssl加密通讯则我们保证一个包最大能被Blowfish::BLOCK_SIZE除尽 \n" ));*/
+	if( g_channelExternalEncryptType )
+	{
+		//ACE_DEBUG(( LM_DEBUG, " currPacketMaxSize=%d \n", currPacketMaxSize ));
+		currPacketPaddingBeforeEncrytypeField = currPacketMaxSize % KBEBlowfish::BLOCK_SIZE;
+		currPacketMaxSize -= currPacketPaddingBeforeEncrytypeField;
+		//ACE_DEBUG(( LM_DEBUG, "After ajust, currPacketMaxSize=%d \n\n", currPacketMaxSize ));
+	}
+
+}
+
+Bundle::~Bundle()
+{
+	clear();
+}
+
 /**
 * @para calpCurrPacket_
 * 如果包含当前包的长度，则为真，否则为假
 * true if calculating pCurrPacket_'s length, false if not.
-* 
+*
 * @retvalue size_t
 * 返回值为该bundle中的所有包的有效长度(即msg所占的空间大小)
 * return the all packets length
@@ -33,18 +67,24 @@ size_t Bundle::get_packets_length()
 */
 void Bundle::clear()
 {
+	TRACE("Bundle::clear(");
 	recycle_all_packets();
 
-	///初始化成员初值
-	reuse_ = false;
-	pChnnel_ = NULL;
-	numMessages_ = 0;
-	currMsgID_ = 0;
-	currMsgPacketCount_ = 0;
-	currMsgLength_ = 0;
-	currMsgLengthPos_ = 0;
-	currMsgType_ = 0;
-	pCurrMsg_ = NULL;
+	///初始化成员初值 we do not need to reset all members values because 
+	/// it will be all done in the ctor when next time we get it from the pool
+
+	//reuse_ = false;
+	//pChnnel_ = NULL;
+	//numMessages_ = 0;
+
+	//currMsgID_ = 0;
+	//currMsgPacketCount_ = 0;
+	//currMsgLength_ = 0;
+	//currMsgLengthPos_ = 0;
+	//currMsgType_ = 0;
+	//pCurrMsg_ = NULL;
+
+	TRACE_RETURN_VOID();
 }
 
 /**
@@ -65,8 +105,7 @@ void Bundle::recycle_all_packets(void)
 	Packets::iterator iter = packets_.begin();
 	for( ; iter != packets_.end(); iter++ )
 	{
-		ACE_PoolPtr_Getter(ObjPool, Packet, ACE_Null_Mutex);
-		ObjPool->Dtor(*iter);
+		Packet_Pool->Dtor(*iter);
 	}
 
 	///清空元素但不回收空间，提高效率
@@ -79,11 +118,11 @@ void Bundle::recycle_all_packets(void)
 * 一个消息如果很大的话，可能需要多个包来装载
 * This mothod is is to ajust the space in the current packet when adding @para
 * addsize msg. A big msg may be divided into more than one packet.
-* 
+*
 * @para size_t addsize
 * 写入包中的消息大小， 不能大于包的最大容量
 * the size of msg that will be added to the current packet
-* 
+*
 * @para bool inseparable
 * 若为真，该方法会检测当前包可用空间的大小是否足以装下当前消息。
 * 如果当前包不能够装下的的话，该方法会创建一个新的包来装下整条消息。
@@ -91,7 +130,7 @@ void Bundle::recycle_all_packets(void)
 * if inseparable is true, it tests if  the rest of space in the current packet can hold the
 * addsize of msg, if space is not enough, it will create a new packet to hold whole msg,
 * the old space will leave empty.
-* 
+*
 * @retvalue size_t
 * 返回值为实际所能够写入的有效大小，
 * 如果 @para inseparable == false, 可能会 <= @para addsize 的大小
@@ -175,7 +214,7 @@ size_t Bundle::calculate_avaiable_space_of_curr_packet(size_t addsize, bool inse
 * @member Packet* pCurrPacket_.
 * 该方法用从对应的对象池中构造出一个新的tcp包或者udp包，
 * 该方法成功后，会更新 @member Packet* pCurrPacket_的值
-* 
+*
 * @para void
 * @retvalue void
 * @TO-DO
@@ -186,13 +225,12 @@ size_t Bundle::calculate_avaiable_space_of_curr_packet(size_t addsize, bool inse
 void Bundle::create_new_curr_packet(void)
 {
 	static MessageID msgid = 0;
-	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
 	if( pt_ == PROTOCOL_TCP )
 	{
-		this->pCurrPacket_ = pool->Ctor();
+		this->pCurrPacket_ = Packet_Pool->Ctor();
 	} else
 	{
-		this->pCurrPacket_ = pool->Ctor<MessageID, ProtocolType>(msgid, pt_);
+		this->pCurrPacket_ = Packet_Pool->Ctor(msgid, pt_);
 	}
 	this->pCurrPacket_->pBundle_ = this;
 	packets_.push_back(pCurrPacket_);
@@ -203,7 +241,7 @@ void Bundle::create_new_curr_packet(void)
 * 该方法用于填充当前变长消息的长度域，该长度有可能会超过
 * This method is use to calculate the variable-len message's length field
 * NETWORK_MESSAGE_MAX_SIZE 65535
-* 
+*
 * @para void
 * @retvalue void
 * @ChangeLog
@@ -404,32 +442,30 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 * 该方法在结束时将初始化所有与该消息相关的状态信息：
 * currMsgID_ = currMsgPacketCount_ = currMsgLength_ = 0;
 * currMsgLengthPos_ = NULL;
-* 
+*
 * @para bool issend
 * whether to send this bundle or not after finishing handling the current msg
 * when true, it will initialize all the memebers related the current msg at the end of this call
 * 该参数用于表明是否该方法调用结束后发送该bundle，若为真，该方法会将当前包加入到发送队列中去
-* 
+*
 * @retvalue void
 */
 //void Bundle::fill_curr_msg_len_field(bool issend)
 void Bundle::end_new_curr_message(void)
 {
 	//TRACE("Bundle::end_new_curr_message()");
+	ACE_TEST_ASSERT(pCurrMsg_ != NULL);
 
 	// 对消息进行跟踪 trace the msg
-	if( numMessages_ >= 1 )
-	{
-		//ACE_DEBUG(( LM_DEBUG,
-		//	"end_new_curr_message :: @2 :: pCurrMsg_ = %@, numMessages_ = %d\n",
-		//	pCurrMsg_, numMessages_ ));
+	//ACE_DEBUG(( LM_DEBUG,
+	//	"end_new_curr_message :: @2 :: pCurrMsg_ = %@, numMessages_ = %d\n",
+	//	pCurrMsg_, numMessages_ ));
 
-		/// 更新该消息stats并回调跟踪函数
-		/// update this msg's stats and call its callback method
-		ACE_Singleton<NetStats, ACE_Null_Mutex>::instance()->
-			trackMessage(NetStats::SEND, pCurrMsg_, currMsgLength_);
+	/// 更新该消息stats并回调跟踪函数
+	/// update this msg's stats and call its callback method
+	static NetStats* NetStatsSinglton = ACE_Singleton<NetStats, ACE_Null_Mutex>::instance();
+	NetStatsSinglton->trackMessage(NetStats::SEND, pCurrMsg_, currMsgLength_);
 
-	}
 
 	// 此处对于非固定长度的消息来说需要设置它的最终长度信息
 	// need setup the length of the varaible-length msg
@@ -439,14 +475,14 @@ void Bundle::end_new_curr_message(void)
 	}
 
 
-	ACE_DEBUG(( LM_DEBUG,
-		"%M::end_new_curr_message()::pCurrMsg_name = %s, currMsgHandlerLength_= %d"
-		"pCurrPacket_ = %d, currMsgID_= %d, currMsgLengthPos_ = %d,\n"
-		"currMsgPacketCount_ = %d, currMsgLength_ = %d\n",
-		pCurrMsg_->name_.c_str(),
-		currMsgType_, pCurrPacket_,
-		currMsgID_, currMsgLengthPos_,
-		currMsgPacketCount_, currMsgLength_ ));
+	//ACE_DEBUG(( LM_DEBUG,
+	//	"%M::end_new_curr_message()::pCurrMsg_name = %s, currMsgHandlerLength_= %d"
+	//	"pCurrPacket_ = %d, currMsgID_= %d, currMsgLengthPos_ = %d,\n"
+	//	"currMsgPacketCount_ = %d, currMsgLength_ = %d\n",
+	//	pCurrMsg_->name_.c_str(),
+	//	currMsgType_, pCurrPacket_,
+	//	currMsgID_, currMsgLengthPos_,
+	//	currMsgPacketCount_, currMsgLength_ ));
 
 	///// dump all packets that construct this msg
 	//if( g_trace_packet )
@@ -483,7 +519,7 @@ void Bundle::start_new_curr_message(Message* msg)
 	//ACE_DEBUG(( LM_DEBUG, "@1 void Bundle::start_new_curr_message(const MessageHandler* msg)\n" ));
 
 	/// 若当前包为空，则构造一个新的包
-	if( pCurrPacket_ == NULL ) this->create_new_curr_packet();
+	if( !pCurrPacket_ ) this->create_new_curr_packet();
 
 	//ACE_HEX_DUMP(( LM_DEBUG,
 	//	pCurrPacket_->buff->base(), pCurrPacket_->buff->length(),
@@ -522,7 +558,7 @@ void Bundle::start_new_curr_message(Message* msg)
 * This inline mothod is call back after this bundle gets sent.
 * when reuse = true, we do nothing but return so that all the states of this bundle
 * will remain unchanged including the current msg, current packet and the container
-* 
+*
 * @para void
 * @retvalue void
 */
@@ -542,12 +578,11 @@ void Bundle::on_send_completed(void)
 	Packets::iterator iter = packets_.begin();
 	for( ; iter != packets_.end(); ++iter )
 	{
-		ACE_PoolPtr_Getter(ObjPool, Packet, ACE_Null_Mutex);
-		ObjPool->Dtor(*iter);
+		Packet_Pool->Dtor(*iter);
 	}
+
 	/// 清空元素，但不释放内存 此时 size=0
 	packets_.clear();
-
 }
 
 inline void  Bundle::send(const NetworkInterface* networkInterface, Channel* pChannel)
