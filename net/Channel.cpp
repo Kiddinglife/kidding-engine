@@ -258,7 +258,7 @@ bool Channel::initialize(ACE_INET_Addr* addr)
 }
 
 /**
- * depreted use clear_channel() to rese this channel for reuse
+ * @depreted use clear_channel() to rese this channel for reuse
  */
 bool Channel::finalise(void)
 {

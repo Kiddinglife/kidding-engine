@@ -3,7 +3,6 @@
 
 #include "ace\pre.h"
 #include "ace\Null_Mutex.h"
-//#include "common\ace_object_pool.h"
 #include "common\common.h"
 #include "net\net_common.h"
 #include "net\FixedMessages.h"

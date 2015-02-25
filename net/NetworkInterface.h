@@ -19,8 +19,6 @@ const char* const USE_KBEMACHINED = "kbemachine";
 struct Bundle;
 struct Channel;
 struct DelayedChannels;
-//struct ChannelTimeOutHandler;
-//struct ChannelDeregisterHandler;
 struct Packet;
 struct Nub;
 struct Messages;
@@ -38,41 +36,35 @@ struct DelayedChannelHandlers;
  */
 struct NetworkInterface : public ACE_Event_Handler
 {
-	/* it stores external and internal channel */
+	/// it stores external and internal channel 
 	typedef std::map<ACE_INET_Addr, Channel*>	ChannelMap;
 	ChannelMap                                                    channelMap_;
 
-	/// Acceptor TCP SOCK
-	//ACE_SOCK_Acceptor                                         extEndpoint_;
-
-	/// UDP SOCK
-	//ACE_SOCK_DGRAM                                          intEndpoint_;
-
-	/* nub pointer it is actually the event dispatcher */
+	/// nub pointer it is actually the event dispatcher 
 	Nub*                                                                nub_;
 
-	/*extention data pointer*/
+	/// extention data pointer
 	void*                                                                pExtensionData_;
 
-	/*listenning acceptor for external and internal interfaces*/
+	/// listenning acceptor for external and internal interfaces
 	TCP_Acceptor_Handler*                                    pExtListenerReceiver_;
 	TCP_Acceptor_Handler*                                    pIntListenerReceiver_;
 
 	DelayedChannelHandlers* 						        pDelayedChannels_;
 
-	/*this handler is run when some channel delays, telling the cup layer client to disconnect*/
+	/// this handler is run when some channel delays, telling the cup layer client to disconnect
 	ChannelTimeOutHandler					                pChannelTimeOutHandler_;
 
-	/*this handler is run when some channel is deredistered*/
+	/// this handler is run when some channel is deredistered
 	ChannelDeregisterHandler				                pChannelDeregisterHandler_;
 
-	/*mark to indicate if this network interface has external interface*/
+	/// mark to indicate if this network interface has external interface 
 	const bool								                        isExternal_;
 
-	/*the number of external channels stored in this network interface*/
+	/// the number of external channels stored in this network interface
 	ACE_INT32									                    numExtChannels_;
 
-	/*ctor creates external and internal listenning socket both are tcp*/
+	/// ctor creates external and internal listenning socket both are tcp
 	NetworkInterface(
 		Nub*              pDispatcher = NULL,
 		ACE_INT16     extlisteningPort_min = 0,
@@ -85,7 +77,7 @@ struct NetworkInterface : public ACE_Event_Handler
 		ACE_UINT32   intrbuffer = 0,
 		ACE_UINT32   intwbuffer = 0);
 
-	/*release all resouces and clear the map*/
+	/// release all resouces and clear the map
 	~NetworkInterface();
 
 	/**

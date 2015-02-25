@@ -121,7 +121,7 @@ struct Channel
 	/// 扩展用, for extension
 	std::string					              strextra_;
 
-	/// tinmer id
+	/// tinmer id used to canncel the timmer
 	long                                       timerID_;
 
 	// Statistics
@@ -144,7 +144,7 @@ struct Channel
 		bool canFilterPacket = false,
 		ChannelID id = CHANNEL_ID_NULL);
 
-	virtual ~Channel(void);
+	~Channel(void);
 
 	void startInactivityDetection(float period, float checkPeriod = 1.0f);
 	int get_bundles_length(void);

@@ -1296,7 +1296,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	Bundle::Packets::iterator iter = p->packets_.begin();
 	for( ; iter != p->packets_.end(); iter++ )
 	{
-		channel.recvPackets_[channel.recvPacketIndex_].push_back(( *iter ));
+		channel.recvPackets_.push_back(( *iter ));
 	}
 	channel.process_packets(&msgs);
 

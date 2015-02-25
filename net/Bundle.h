@@ -19,96 +19,88 @@ struct Message;
 #define TCP_PACKET_MAX_CHUNK_SIZE  PACKET_MAX_SIZE_TCP - ENCRYPTTION_WASTAGE_SIZE
 #define UDP_PACKET_MAX_CHUNK_SIZE PACKET_MAX_SIZE_UDP - ENCRYPTTION_WASTAGE_SIZE
 
-
-#define PACKET_OUT_VALUE(v)\
-if( packets_.size() <= 0 ) return *this;\
-static ACE_Message_Block* block = const_cast<ACE_Message_Block*>( in.start() );\
-in >> v;\
-packets_[0]->buff->rd_ptr(in.rd_ptr());\
-if( in.length() == 0 )\
-{\
-	packets_.erase(packets_.begin());\
-	if( packets_.size() == 0 ) return *this;\
-	block->base(packets_[0]->buff->base(),\
-		packets_[0]->buff->length());\
-	block->wr_ptr(packets_[0]->buff->wr_ptr());\
+#define PACKET_OUT_VALUE(v)                                                                                \
+if( packets_.size() <= 0 ) return *this;                                                                         \
+static ACE_Message_Block* block = const_cast<ACE_Message_Block*>( in.start() );    \
+in >> v;                                                                                                                    \
+packets_[0]->buff->rd_ptr(in.rd_ptr());                                                                       \
+if( in.length() == 0 )                                                                                                  \
+{                                                                                                                               \
+	packets_.erase(packets_.begin());                                                                           \
+	if( packets_.size() == 0 ) return *this;                                                                     \
+	block->base(packets_[0]->buff->base(), packets_[0]->buff->length());                  \
+	block->wr_ptr(packets_[0]->buff->wr_ptr());                                                         \
 }
 
 struct Bundle
 {
 	typedef std::vector<Packet*> Packets;
-	/*所有的packet指针集合 : Packet Pointers Container*/
 	Packets                  packets_;
 
-	/*该bundle所处理packet的类型(TCP UDP) : This bundle's packets type */
+	/// 该bundle所处理packet的类型(TCP UDP) : This bundle's packets type 
 	ProtocolType         pt_;
 
-	/*通道指针 : CHANNEL*/
+	/// 通道指针 : CHANNEL
 	Channel*               pChnnel_;
 
-	/*该bundle处理的msg总的数量 : The number of all msgs handled in this bundle*/
+	/// 该bundle处理的msg总的数量 : The number of all msgs handled in this bundle
 	size_t		             numMessages_;
 
-	/*该bundle每个packet的最大容量(TCP 1460, UDP 1470) : max size of packet */
+	/// 该bundle每个packet的最大容量(TCP 1460, UDP 1470) : max size of packet  
 	size_t                     currPacketMaxSize;
 
-	/*当前需要处理的packet指针 : the current packet's pointer*/
+	/// 当前需要处理的packet指针 : the current packet's pointer 
 	Packet*                 pCurrPacket_;
 
-	/* 承载当前msg所需的packet数量 : how many packets needed to hold the current msg */
+	/// 承载当前msg所需的packet数量 : how many packets needed to hold the current msg 
 	ACE_UINT32          currMsgPacketCount_;
 
-	/* 当前msg的类型 定长或变长  : the current msg type fix-length or variable-length */
+	/// 当前msg的类型 定长或变长  : the current msg type fix-length or variable-length 
 	ACE_INT8            currMsgType_;
 
-	/*The size of paading between encrytype field and payload field */
+	/// The size of paading between encrytype field and payload field 
 	size_t                     currPacketPaddingBeforeEncrytypeField;
 
-	/* 当前msg的length域的位置偏移 : the current msg length field position offset */
+	/// 当前msg的length域的位置偏移 : the current msg length field position offset 
 	char*                     currMsgLengthPos_;
 
-	/* 当前msg的id号码 : the current msg's id */
+	/// 当前msg的id号码 : the current msg's id 
 	MessageID             currMsgID_;
 
 	/**
 	 * 当前packet中的msg的payload长度(不包含id和len)，以byte为单位
 	 * 如果某个msg由多于一个packet装载，该数值会被重新从0开始计算
+	 *
 	 * the current msg's length only in the current packet with the unit of byte
 	 * it will be recalculated if there are more than one packet to hold this msg
 	 */
 	MessageLength1   currMsgLength_;
 
-	/*当前msg的处理函数 : the current msg's handler */
+	/// 当前msg的处理函数 : the current msg's handler 
 	Message* pCurrMsg_;
 
-	/*@Unused 是否重用该bundle : whether to reuse this bundle */
+	/// @Unused 是否重用该bundle : whether to reuse this bundle 
 	bool reuse_;
-
-	/*用于读取包中的序列化数据 : used to read the data from the packets*/
-	ACE_InputCDR in;
 
 	Bundle(Channel * pChannel = NULL, ProtocolType pt = PROTOCOL_TCP);
 
+	/// recycle all packets
 	~Bundle();
 
 	/**
-	 * This method need to be called firstly before reading msg from packet
-	 * 当从包中读取消息时，该方法需要被首先调用
-	 * @param void
-	 * @retvalue void
+	 *  This method need to be called firstly before reading msg from packet
+	 *  当从包中读取消息时，该方法需要被首先调用,前提条件是该bundle
+	 *  p->init_instream();
+	 * *p >> id;
+	 * *p >> len;
 	 */
-	void init_instream(void)
-	{
-		const_cast<ACE_Message_Block*>( in.start() )->base(packets_[0]->buff->base(),
-			packets_[0]->buff->size());
-		const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(packets_[0]->buff->wr_ptr());
-	}
+	inline void init_instream(void);
 
 	/**
 	 * @para calpCurrPacket_
 	 * 如果包含当前包的长度，则为真，否则为假
 	 * true if calculating pCurrPacket_'s length, false if not.
-	 * \n
+	 *
 	 * @retvalue size_t
 	 * 返回值为该bundle中的所有包的有效长度(即msg所占的空间大小)
 	 * return the all packets length
@@ -223,7 +215,7 @@ struct Bundle
 	void end_new_curr_message();
 
 	/**
-	* @Unused 
+	* @Unused
 	* @Brief
 	* 该方法在该bundle发送后会被回掉，当reuse为真时, 该方法直接返回，
 	* 该bundle所有的状态信息都维持不变。包括 当前包，当前处理的消息以及包容器
@@ -233,10 +225,12 @@ struct Bundle
 	*/
 	inline void on_send_completed(void);
 
+	/// @Unused
 	inline void send(const NetworkInterface* networkInterface, Channel* pChannel);
-
+	/// @Unused
 	void resend(const NetworkInterface* networkInterface, Channel* pChannel);
 
+	/// @Deprated
 	void tcp_send(const ACE_SOCK_Stream* ep);
 	void udp_send(const ACE_SOCK_Dgram* ep, const ACE_INET_Addr* remoteaddr);
 
@@ -254,7 +248,6 @@ struct Bundle
 		PACKET_OUT_VALUE(v);
 		return *this;
 	}
-
 	Bundle &operator<<( ACE_CDR::Char value )
 	{
 		calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_CHAR);
@@ -263,10 +256,9 @@ struct Bundle
 	}
 	Bundle &operator>>( ACE_CDR::Char& value )
 	{
-		PACKET_OUT_VALUE(value)
-			return *this;
+		PACKET_OUT_VALUE(value);
+		return *this;
 	}
-
 	Bundle &operator<<( ACE_CDR::UShort value )
 	{
 		calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_SHORT);
@@ -488,40 +480,27 @@ struct Bundle
 	{
 
 		if( packets_.size() <= 0 ) return *this;
-
 		///Erases the contents of the string, 
 		/// which becomes an empty string (with a length of 0 characters).
 		value.clear();
-
 		static ACE_Message_Block* block = const_cast<ACE_Message_Block*>( in.start() );
-
 		static char cnt = '1';
 		cnt = '1';
-		ACE_DEBUG(( LM_DEBUG, "@1::char = %c \n", cnt ));
 		while( cnt )
 		{
-			ACE_DEBUG(( LM_DEBUG, "@2::char = %c \n", cnt ));
-
 			while( in.length() > 0 )
 			{
 				in >> cnt;
 				packets_[0]->buff->rd_ptr(in.rd_ptr());
 				if( cnt == 0 )
 				{
-					ACE_DEBUG(( LM_DEBUG, "@3::char = %c = 0\n", cnt ));
-					ACE_DEBUG(( LM_DEBUG, "@4::size = %d \n", value.size() ));
 					break;
 				}
 				value += cnt;
-				//ACE_DEBUG(( LM_DEBUG, "@4 :: char = %c \n", cnt ));
-				//ACE_DEBUG(( LM_DEBUG, "@4 :: size = %d \n", value.size() ));
 			}
-
-			//ACE_DEBUG(( LM_DEBUG, "@4 :: packets size = %d \n", packets_.size() ));
 
 			if( in.length() == 0 )
 			{
-				/*ACE_DEBUG(( LM_DEBUG, "@7::go to next packet  because in.length == 0 but cnt = %c\n", (int) cnt ));*/
 				packets_.erase(packets_.begin());
 				if( packets_.size() == 0 ) return *this;
 				block->base(packets_[0]->buff->base(),
@@ -529,7 +508,6 @@ struct Bundle
 				block->wr_ptr(packets_[0]->buff->wr_ptr());
 			}
 		}
-
 		return *this;
 	}
 
@@ -572,10 +550,8 @@ struct Bundle
 		static size_t advance = 0;
 		advance = 0;
 
-		//ACE_HEX_DUMP(( LM_DEBUG, in.start()->rd_ptr(), in.length(), "read_blob :: before read :: Result: \n" )); 
 		while( in.length() < len )
 		{
-			//ACE_DEBUG(( LM_DEBUG, "blob = %d\n", blob ));
 			len -= in.length();
 			advance = in.length();
 			in.read_char_array(blob, in.length());
@@ -588,7 +564,6 @@ struct Bundle
 
 			blob += advance;
 		}
-		//ACE_DEBUG(( LM_DEBUG, "after advance, blob = %d\n", blob ));
 		in.read_char_array(blob, len);
 		packets_[0]->buff->rd_ptr(in.rd_ptr());
 		return *this;
