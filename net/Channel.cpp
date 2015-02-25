@@ -35,7 +35,7 @@ canFilterPacket_(canFilterPacket),
 is_notified_send_(false),
 isCondemn_(false),
 proxyID_(0),
-strextra_(),
+strextra_(""),
 timerID_(-1),
 channelType_(CHANNEL_NORMAL),
 componentID_(UNKNOWN_COMPONENT_TYPE),
@@ -103,7 +103,7 @@ int Channel::get_bundles_length(void)
 
 void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 {
-	TRACE("Channel::clear_channe()");
+	//TRACE("Channel::clear_channe()");
 
 	/// Stop Inactivity Detection
 	if( timerID_ != -1 && pEndPoint_ ) pEndPoint_->reactor()->cancel_timer(timerID_);
@@ -137,19 +137,21 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 		}
 	}
 
-	/// reset all variables values
 	lastRecvTime_ = ::timestamp();
-	isDestroyed_ = false;
-	isCondemn_ = false;
-	numPacketsSent_ = 0;
-	numPacketsReceived_ = 0;
-	numBytesSent_ = 0;
-	numBytesReceived_ = 0;
-	lastTickBytesReceived_ = 0;
-	proxyID_ = 0;
-	strextra_ = "";
-	channelType_ = CHANNEL_NORMAL;
-	recvPacketIndex_ = 0;
+
+	/// reset all variables values  ctor(0 will reset al of them so we do not need to do this to save cucles of cpu
+	//isDestroyed_ = false;
+	//isCondemn_ = false;
+	//numPacketsSent_ = 0;
+	//numPacketsReceived_ = 0;
+	//numBytesSent_ = 0;
+	//numBytesReceived_ = 0;
+	//lastTickBytesReceived_ = 0;
+	//proxyID_ = 0;
+	//strextra_ = "";
+	//channelType_ = CHANNEL_NORMAL;
+	//channelScope_ = EXTERNAL;
+	//recvPacketIndex_ = 0;
 
 	/// clear the pendpoint
 	if( protocolType_ == PROTOCOL_TCP )
@@ -174,7 +176,7 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 		pPacketReader_ = NULL;
 	}
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 void Channel::add_delayed_channel(void)
@@ -524,18 +526,20 @@ bool Channel::process_send()
 			if( reason != REASON_SUCCESS )
 			{
 				break;
-			} else
-			{
-				Packet_Pool->Dtor(( *iter1 ));
-			}
+			} 
+			//else // bundle will recycle all the packets to the pool and so we do not need to do it here
+			//{
+			//	Packet_Pool->Dtor(( *iter1 ));
+			//	( *iter1 ) = NULL;
+			//}
 		} /// process this packet ends
 
 		/// All packets in this bundle are sent completely and so recycle it
 		if( reason == REASON_SUCCESS )
 		{
 			ACE_DEBUG(( LM_DEBUG, "Reason == REASON_SUCCESS\n" ));
-			pakcets.clear();
-			Bundle_Pool->Dtor(( *iter ));
+			//pakcets.clear();
+			Bundle_Pool->Dtor(( *iter )); /// bundle will recycle all the packets to the pool
 		} else
 		{
 			/// there are packets that are not sent, we first clear the sent ones from this bundle

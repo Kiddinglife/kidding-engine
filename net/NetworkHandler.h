@@ -188,8 +188,8 @@ struct MsgTraceHandler
 };
 typedef void(*OnSendMessage)( const Message& msgHandler, int size );
 typedef void(*OnRecvMessage)( const Message& msgHandler, int size );
-extern OnSendMessage g_onSendMessage;
-extern OnRecvMessage g_onRecvMessage;
+//extern OnSendMessage g_onSendMessage;
+//extern OnRecvMessage g_onRecvMessage;
 
 
 NETWORK_NAMESPACE_END_DECL

@@ -89,9 +89,9 @@ struct Message
 
 	virtual ~Message()
 	{
-		SAFE_RELEASE(pMsgArgs_);
-		//ACE_PoolPtr_Getter(pool, MessageArgs, ACE_Null_Mutex);
-		//pool->Dtor(pMsgArgs_);
+		//SAFE_RELEASE(pMsgArgs_);
+		ACE_PoolPtr_Getter(pool, MessageArgs, ACE_Null_Mutex);
+		pool->Dtor(pMsgArgs_);
 	}
 
 	ACE_UINT32 sendavgsize()const { return ( send_count_ <= 0 ) ? 0 : send_size_ / send_count_; }
@@ -143,7 +143,7 @@ struct Messages
 		exposedMessages_(),
 		msgs_()
 	{
-		/// 获取 FixedMessages的单粒
+		/// 获取 FixedMessages的单例
 		gPtrFixedMsgs = ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance();
 		/// 从xml文档中读取固定消息配置
 		gPtrFixedMsgs->loadConfig("server/messages_fixed.xml");
@@ -164,9 +164,9 @@ struct Messages
 		{
 			if( iter->second )
 			{
-				//ACE_PoolPtr_Getter(pool, Message, ACE_Null_Mutex);
-				//pool->Dtor(iter->second);
-				delete iter->second;
+				ACE_PoolPtr_Getter(pool, Message, ACE_Null_Mutex);
+				pool->Dtor(iter->second);
+				//delete iter->second;
 			}
 		};
 	}
@@ -186,65 +186,6 @@ struct Messages
 
 	static std::string getDigestStr();
 };
-
-////////////////////////////// For Test Use //////////////////////////////////////////
-//extern Messages g_msgs;
-//void inport_msgs();
-//struct msgarg : public MessageArgs
-//{
-//	//virtual MessageLength1 msgarg::args_bytes_count();
-//	//void msgarg::fetch_args_from(Packet* p);
-//	//void msgarg::add_args_to(Packet* p);
-//	MessageLength1 msgarg::args_bytes_count()
-//	{
-//		return 12;
-//	}
-//	void msgarg::fetch_args_from(Packet* p)
-//	{
-//		INT32  para1 = *(INT32*) p->buff->rd_ptr();
-//		p->buff->rd_ptr(4);
-//		INT32  para2 = *(INT32*) p->buff->rd_ptr();
-//		p->buff->rd_ptr(4);
-//		INT32  para3 = *(INT32*) p->buff->rd_ptr();
-//		ACE_DEBUG(( LM_DEBUG, "(%d)(%d)(%d)\n", para1, para2, para3 ));
-//	}
-//	void msgarg::add_args_to(Packet* p)
-//	{
-//	}
-//};
-//struct msgarg_variable : public MessageArgs
-//{
-//	MessageLength1 msgarg_variable::args_bytes_count(void)
-//	{
-//		return 0;
-//	}
-//	void msgarg_variable::fetch_args_from(Packet* p)
-//	{
-//		for( int i = 0; i < 4; i++ )
-//		{
-//			INT64  para1 = *(INT64*) p->buff->rd_ptr();
-//			p->buff->rd_ptr(8);
-//			ACE_DEBUG(( LM_DEBUG, "(%d)", para1 ));
-//		}
-//
-//		ACE_DEBUG(( LM_DEBUG, "\n" ));
-//	}
-//	void msgarg_variable::add_args_to(Packet* p)
-//	{
-//	}
-//};
-
-//extern  msgarg* ag;
-//extern msgarg_variable* ag_va;
-///// first msg is fixed msg
-//extern Message* currhandler1;
-///// second msg is variable msg
-//extern Message* currhandler2;
-/////// second msg is variable msg
-//extern Message* currhandler3;
-/////// second msg is variable msg
-//extern Message* currhandler4;
-
 //////////////////////////////////////////////////////////////////////////////////////
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

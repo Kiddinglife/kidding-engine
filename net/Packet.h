@@ -55,10 +55,12 @@ struct Packet
 		// we do not need reset os because we do not use any cont memeory
 		//os.reset();
 		buff->reset();
-		encrypted_ = false;
-		sentSize = 0;
-		msgID_ = 0;
-		pBundle_ = NULL;
+
+		/// will reset akk of them in the next time in the ctor from pool ctor()
+		//encrypted_ = false;
+		//sentSize = 0;
+		//msgID_ = 0;
+		//pBundle_ = NULL;
 	}
 
 	/* Make the read ptr = write ptr to show the read is done */

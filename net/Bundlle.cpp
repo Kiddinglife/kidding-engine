@@ -30,11 +30,12 @@ in((char*) NULL, 0)
 		currPacketMaxSize -= currPacketPaddingBeforeEncrytypeField;
 		//ACE_DEBUG(( LM_DEBUG, "After ajust, currPacketMaxSize=%d \n\n", currPacketMaxSize ));
 	}
-}
 
+}
 
 Bundle::~Bundle()
 {
+	clear();
 }
 
 /**
@@ -66,18 +67,24 @@ size_t Bundle::get_packets_length()
 */
 void Bundle::clear()
 {
+	TRACE("Bundle::clear(");
 	recycle_all_packets();
 
-	///初始化成员初值
-	reuse_ = false;
-	pChnnel_ = NULL;
-	numMessages_ = 0;
-	currMsgID_ = 0;
-	currMsgPacketCount_ = 0;
-	currMsgLength_ = 0;
-	currMsgLengthPos_ = 0;
-	currMsgType_ = 0;
-	pCurrMsg_ = NULL;
+	///初始化成员初值 we do not need to reset all members values because 
+	/// it will be all done in the ctor when next time we get it from the pool
+
+	//reuse_ = false;
+	//pChnnel_ = NULL;
+	//numMessages_ = 0;
+
+	//currMsgID_ = 0;
+	//currMsgPacketCount_ = 0;
+	//currMsgLength_ = 0;
+	//currMsgLengthPos_ = 0;
+	//currMsgType_ = 0;
+	//pCurrMsg_ = NULL;
+
+	TRACE_RETURN_VOID();
 }
 
 /**
@@ -98,8 +105,7 @@ void Bundle::recycle_all_packets(void)
 	Packets::iterator iter = packets_.begin();
 	for( ; iter != packets_.end(); iter++ )
 	{
-		ACE_PoolPtr_Getter(ObjPool, Packet, ACE_Null_Mutex);
-		ObjPool->Dtor(*iter);
+		Packet_Pool->Dtor(*iter);
 	}
 
 	///清空元素但不回收空间，提高效率
@@ -448,20 +454,18 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 void Bundle::end_new_curr_message(void)
 {
 	//TRACE("Bundle::end_new_curr_message()");
+	ACE_TEST_ASSERT(pCurrMsg_ != NULL);
 
 	// 对消息进行跟踪 trace the msg
-	if( numMessages_ >= 1 )
-	{
-		//ACE_DEBUG(( LM_DEBUG,
-		//	"end_new_curr_message :: @2 :: pCurrMsg_ = %@, numMessages_ = %d\n",
-		//	pCurrMsg_, numMessages_ ));
+	//ACE_DEBUG(( LM_DEBUG,
+	//	"end_new_curr_message :: @2 :: pCurrMsg_ = %@, numMessages_ = %d\n",
+	//	pCurrMsg_, numMessages_ ));
 
-		/// 更新该消息stats并回调跟踪函数
-		/// update this msg's stats and call its callback method
-		ACE_Singleton<NetStats, ACE_Null_Mutex>::instance()->
-			trackMessage(NetStats::SEND, pCurrMsg_, currMsgLength_);
+	/// 更新该消息stats并回调跟踪函数
+	/// update this msg's stats and call its callback method
+	static NetStats* NetStatsSinglton = ACE_Singleton<NetStats, ACE_Null_Mutex>::instance();
+	NetStatsSinglton->trackMessage(NetStats::SEND, pCurrMsg_, currMsgLength_);
 
-	}
 
 	// 此处对于非固定长度的消息来说需要设置它的最终长度信息
 	// need setup the length of the varaible-length msg
@@ -471,14 +475,14 @@ void Bundle::end_new_curr_message(void)
 	}
 
 
-	ACE_DEBUG(( LM_DEBUG,
-		"%M::end_new_curr_message()::pCurrMsg_name = %s, currMsgHandlerLength_= %d"
-		"pCurrPacket_ = %d, currMsgID_= %d, currMsgLengthPos_ = %d,\n"
-		"currMsgPacketCount_ = %d, currMsgLength_ = %d\n",
-		pCurrMsg_->name_.c_str(),
-		currMsgType_, pCurrPacket_,
-		currMsgID_, currMsgLengthPos_,
-		currMsgPacketCount_, currMsgLength_ ));
+	//ACE_DEBUG(( LM_DEBUG,
+	//	"%M::end_new_curr_message()::pCurrMsg_name = %s, currMsgHandlerLength_= %d"
+	//	"pCurrPacket_ = %d, currMsgID_= %d, currMsgLengthPos_ = %d,\n"
+	//	"currMsgPacketCount_ = %d, currMsgLength_ = %d\n",
+	//	pCurrMsg_->name_.c_str(),
+	//	currMsgType_, pCurrPacket_,
+	//	currMsgID_, currMsgLengthPos_,
+	//	currMsgPacketCount_, currMsgLength_ ));
 
 	///// dump all packets that construct this msg
 	//if( g_trace_packet )
@@ -515,7 +519,7 @@ void Bundle::start_new_curr_message(Message* msg)
 	//ACE_DEBUG(( LM_DEBUG, "@1 void Bundle::start_new_curr_message(const MessageHandler* msg)\n" ));
 
 	/// 若当前包为空，则构造一个新的包
-	if( pCurrPacket_ == NULL ) this->create_new_curr_packet();
+	if( !pCurrPacket_ ) this->create_new_curr_packet();
 
 	//ACE_HEX_DUMP(( LM_DEBUG,
 	//	pCurrPacket_->buff->base(), pCurrPacket_->buff->length(),
@@ -574,12 +578,11 @@ void Bundle::on_send_completed(void)
 	Packets::iterator iter = packets_.begin();
 	for( ; iter != packets_.end(); ++iter )
 	{
-		ACE_PoolPtr_Getter(ObjPool, Packet, ACE_Null_Mutex);
-		ObjPool->Dtor(*iter);
+		Packet_Pool->Dtor(*iter);
 	}
+
 	/// 清空元素，但不释放内存 此时 size=0
 	packets_.clear();
-
 }
 
 inline void  Bundle::send(const NetworkInterface* networkInterface, Channel* pChannel)
