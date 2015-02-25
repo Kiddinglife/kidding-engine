@@ -12,7 +12,6 @@
 #include "net\Message.h"
 #include "net\PacketReader.h"
 #include "net\NetworkInterface.h"
-#include "net\Message.h"
 #include "net\TestMsgs.h"
 
 TEST(PacketReaderTests, ctor_dtor_test)
@@ -49,6 +48,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	//*p << (UINT64) 2;
 	//*p << (UINT64) 2;
 	//p->end_new_curr_message();
+
 	ACE_TEST_ASSERT(TESTMSG::pmsg1 != NULL);
 	Bundle* p = Bundle_Pool->Ctor();
 	p->start_new_curr_message(TESTMSG::pmsg1);
@@ -60,7 +60,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	///////////////////////////////////////////////////////////////////////////////////////////
 	g_channelExternalEncryptType = 0;
 	ACE_INET_Addr addr;
-	addr.set(20001, ACE_LOCALHOST);
+	addr.set(20001, "192.168.2.47");
 	ACE_SOCK_Connector logConnector;
 	ACE_Time_Value timeout(10);
 	ACE_SOCK_Stream log;
@@ -106,6 +106,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 			"%M::TCP_SOCK_Handler::process_recv(): datasize={%d}, wpos={%d}.\n",
 			len, pReceiveWindow->buff->wr_ptr() ));
 	}
+
 	ACE_HEX_DUMP(( LM_DEBUG, pReceiveWindow->buff->rd_ptr(), pReceiveWindow->buff->length() ));
 	Packet_Pool->Dtor(pReceiveWindow);
 	log.close();

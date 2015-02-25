@@ -5,10 +5,6 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-//ACE_PoolPtr_Getter(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
-//ACE_PoolPtr_Declare(TCP_SOCK_Handler_Pool, TCP_SOCK_Handler, ACE_Null_Mutex);
-//ACE_PoolPtr_Declare(Channel_Pool, Channel, ACE_Null_Mutex);
-
 int TCP_Acceptor_Handler::open(const ACE_INET_Addr &listen_addr)
 {
 	if( this->acceptor_.open(listen_addr, 1) == -1 )
@@ -160,7 +156,6 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 		TRACE_RETURN(false);
 	}
 
-
 	static Packet* pReceiveWindow = NULL;
 	pReceiveWindow = Packet_Pool->Ctor();
 
@@ -171,12 +166,8 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 	{
 		pReceiveWindow->buff->wr_ptr(len);
 		// 注意:必须在大于0的时候否则DEBUG_MSG将会导致WSAGetLastError返回0从而陷入死循环
-		ACE_DEBUG(( LM_DEBUG,
-			"%M::TCP_SOCK_Handler::process_recv(): datasize={%d}, wpos={%d}.\n",
-			len, pReceiveWindow->buff->wr_ptr() ));
-
+		ACE_DEBUG(( LM_DEBUG, "%M::TCP_SOCK_Handler::process_recv(): datasize={%d}, wpos={%d}.\n", len, pReceiveWindow->buff->wr_ptr() ));
 		sock_.send(pReceiveWindow->buff->rd_ptr(), len);
-
 	}
 
 	if( len < 0 )

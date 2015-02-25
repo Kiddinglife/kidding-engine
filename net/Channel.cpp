@@ -526,7 +526,7 @@ bool Channel::process_send()
 			if( reason != REASON_SUCCESS )
 			{
 				break;
-			} 
+			}
 			//else // bundle will recycle all the packets to the pool and so we do not need to do it here
 			//{
 			//	Packet_Pool->Dtor(( *iter1 ));
