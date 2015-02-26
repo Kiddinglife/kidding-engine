@@ -17,6 +17,20 @@ namespace TCP
 {
 }
 
+namespace HTML5_WEBSOCKET
+{
+	bool isWebSocketProtocol(Packet* packet)
+	{
+		TRACE("HTML5_WEBSOCKET::isWebSocketProtocol()");
+		TRACE_RETURN(false);
+	}
+	bool web_sock_hand_shake(Channel* pChannel, Packet* packet)
+	{
+		TRACE("HTML5_WEBSOCKET::web_sock_hand_shake()");
+		TRACE_RETURN(false);
+	}
+}
+
 ////////////////////////////////////////// Globals //////////////////////////////////////////////
 /// 用于读取包中的序列化数据 : used to read the data from the packets
 ACE_InputCDR in((char*) NULL, 0);

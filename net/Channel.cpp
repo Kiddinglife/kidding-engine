@@ -50,42 +50,44 @@ Channel::~Channel()
 
 void Channel::hand_shake(void)
 {
-	TRACE("Channel::hand_shake()");
+	//TRACE("Channel::hand_shake()");
 
-	static RecvPackets::iterator packetIter;
-	static Packet* pPacket;
+	ACE_TEST_ASSERT(pPacketReader_ == NULL);
 
-	//if( recvPackets_[recvPacketIndex_].size() > 0 )
-	//{
+	if( recvPackets_.size() > 0 )
+	{
+		RecvPackets::iterator packetIter = recvPackets_.begin();
+		Packet* pPacket = ( *packetIter );
 
-	pPacketReader_ = PacketReader_Pool->Ctor(this);
-	ACE_DEBUG(( LM_DEBUG, "%M::pPacketReader_ = PacketReader_Pool->Ctor(this);" ));
-	//packetIter = recvPackets_[recvPacketIndex_].begin();
-	//pPacket = ( *packetIter );
+		// 此处判定是否为websocket或者其他协议的握手
+		if( HTML5_WEBSOCKET::isWebSocketProtocol(pPacket) )
+		{
+			channelType_ = CHANNEL_WEB;
+			if( HTML5_WEBSOCKET::web_sock_hand_shake(this, pPacket) )
+			{
+				if( pPacket->length() == 0 )
+				{
+					recvPackets_.erase(packetIter);
+				}
 
-	//// 此处判定是否为websocket或者其他协议的握手
-	//if( html5::WebSocketProtocol::isWebSocketProtocol(pPacket) )
-	//{
-	//	channelType_ = CHANNEL_WEB;
-	//	if( html5::WebSocketProtocol::handshake(this, pPacket) )
-	//	{
-	//		if( pPacket->length() == 0 )
-	//		{
-	//			bufferedReceives_[bufferedReceivesIdx_].erase(packetIter);
-	//		}
+				//pPacketReader_ = new HTML5PacketReader(this);
+				//pFilter_ = new HTML5PacketFilter(this);
 
-	//		pPacketReader_ = new HTML5PacketReader(this);
-	//		pFilter_ = new HTML5PacketFilter(this);
-	//		DEBUG_MSG(fmt::format("Channel::handshake: websocket({}) successfully!\n", this->c_str()));
-	//		return;
-	//	} else
-	//	{
-	//		DEBUG_MSG(fmt::format("Channel::handshake: websocket({}) error!\n", this->c_str()));
-	//	}
-	//}
-	//}
+				ACE_DEBUG(( LM_INFO,
+					"Channel::web_sock_hand_shake({%s}) successfully!\n", this->c_str() ));
+				return;
+			} else
+			{
+				ACE_DEBUG(( LM_ERROR, "Channel::handshake: websocket({%s}) error!\n",
+					this->c_str() ));
+			}
+		} else
+		{
+			pPacketReader_ = PacketReader_Pool->Ctor(this);
+		}
+	}
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 int Channel::get_bundles_length(void)
@@ -181,7 +183,7 @@ void Channel::add_delayed_channel(void)
 
 const char * Channel::c_str() const
 {
-	TRACE("Channel::c_str()");
+	//TRACE("Channel::c_str()");
 
 	static char dodgyString[MAX_BUF] = { "None" };
 	static ACE_INET_Addr addr;
@@ -204,12 +206,12 @@ const char * Channel::c_str() const
 			tdodgyString, channelId_, isCondemn_, isDestroyed_);
 	}
 
-	TRACE_RETURN(dodgyString);
+	//TRACE_RETURN(dodgyString);
 }
 
 void Channel::clearBundles(void)
 {
-	TRACE("Channel::clearBundle()");
+	//TRACE("Channel::clearBundle()");
 
 	Bundles::iterator iter = bundles_.begin();
 	for( ; iter != bundles_.end(); ++iter )
@@ -218,7 +220,7 @@ void Channel::clearBundles(void)
 	}
 	bundles_.clear();
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 void Channel::startInactivityDetection(float period, float checkPeriod)
@@ -242,7 +244,7 @@ void Channel::startInactivityDetection(float period, float checkPeriod)
  */
 bool Channel::initialize(ACE_INET_Addr* addr)
 {
-	TRACE("Channel::initialize()");
+	//TRACE("Channel::initialize()");
 
 	if( protocolType_ == PROTOCOL_UDP && addr )
 	{
@@ -250,11 +252,11 @@ bool Channel::initialize(ACE_INET_Addr* addr)
 		( (UDP_SOCK_Handler*) pEndPoint_ )->pChannel_ = this;
 	}
 
-	hand_shake();
+	//hand_shake();
 
 	startInactivityDetection(( channelScope_ == INTERNAL ) ? g_channelInternalTimeout : g_channelExternalTimeout);
 
-	TRACE_RETURN(true);
+	//TRACE_RETURN(true);
 }
 
 /**
@@ -262,7 +264,7 @@ bool Channel::initialize(ACE_INET_Addr* addr)
  */
 bool Channel::finalise(void)
 {
-	TRACE("Channel::finalise()");
+	//TRACE("Channel::finalise()");
 
 	this->clear_channel();
 
@@ -272,13 +274,12 @@ bool Channel::finalise(void)
 		pPacketReader_ = NULL;
 	}
 
-
-	TRACE_RETURN(true);
+	//TRACE_RETURN(true);
 }
 
 void Channel::destroy(void)
 {
-	TRACE("Channel::destroy()");
+	//TRACE("Channel::destroy()");
 
 	if( isDestroyed_ )
 	{
@@ -288,7 +289,7 @@ void Channel::destroy(void)
 
 	isDestroyed_ = true;
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 void Channel::process_packets(Messages* pMsgHandlers)
@@ -318,8 +319,10 @@ void Channel::process_packets(Messages* pMsgHandlers)
 		return;
 	}
 
-	ACE_TEST_ASSERT(pPacketReader_ != NULL);
-	//hand_shake();
+	if( !pPacketReader_ )
+	{
+		hand_shake();
+	}
 
 	pPacketReader_->processMessages(pMsgHandlers, recvPackets_);
 
@@ -554,6 +557,8 @@ void Channel::on_bundles_sent_completely()
 
 void Channel::on_packet_received(int bytes)
 {
+	TRACE(" Channel::on_packet_received");
+
 	lastRecvTime_ = timestamp();
 	++numPacketsReceived_;
 	++g_numPacketsReceived;
@@ -585,6 +590,8 @@ void Channel::on_packet_received(int bytes)
 				( void* )this, this->c_str(), lastTickBytesReceived_, g_intReceiveWindowBytesOverflow ));
 		}
 	}
+
+	TRACE_RETURN_VOID();
 }
 
 void Channel::on_packet_sent(int bytes_cnt, bool is_sent_completely)
@@ -630,7 +637,7 @@ void Channel::on_packet_sent(int bytes_cnt, bool is_sent_completely)
 
 void Channel::update_recv_window(Packet* pPacket)
 {
-	TRACE("Channel::update_recv_window(Packet* pPacket)");
+	//TRACE("Channel::update_recv_window(Packet* pPacket)");
 
 	static size_t size = 0;
 
@@ -674,7 +681,7 @@ void Channel::update_recv_window(Packet* pPacket)
 		}
 	}
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 void Channel::tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundle)

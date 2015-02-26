@@ -10,14 +10,6 @@ NETWORK_NAMESPACE_BEGIN_DECL
 
 struct Channel
 {
-	/// INTERNAL describes the properties of channel from server to server.
-	/// EXTERNAL describes the properties of a channel from client to server.
-	enum ChannelScope { INTERNAL, EXTERNAL };
-
-	/// CHANNEL_NORMAL 普通通道
-	/// CHANNEL_WEB 浏览器web通道
-	enum ChannelType { CHANNEL_NORMAL, CHANNEL_WEB };
-
 	/// 超时检查的目的标志，例如这是一个非活动通道的检查
 	/// This is the waht to be checked when timeout
 	enum TimeOutType
@@ -89,7 +81,6 @@ struct Channel
 
 	/**
 	 * A channel will cache the received packets.
-	 *
 	 * 通道会缓存一定量的接受包，这是recv-batch优化
 	 * int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)检测到有数据
 	 * 可接受后，会调用bool TCP_SOCK_Handler::process_recv(bool expectingPacket)函数
@@ -99,13 +90,44 @@ struct Channel
 	typedef std::vector<Packet*> RecvPackets;
 	RecvPackets                           recvPackets_;
 
+
+	/// INTERNAL describes the properties of channel from server to server.
+	/// EXTERNAL describes the properties of a channel from client to server.
+	enum ChannelScope { INTERNAL, EXTERNAL };
 	ChannelScope                        channelScope_;
+
+
+	/// CHANNEL_NORMAL 普通通道
+	/// CHANNEL_WEB 浏览器web通道
+	enum ChannelType { CHANNEL_NORMAL, CHANNEL_WEB };
 	ChannelType				              channelType_;
+
+	/**
+	 * Mark used to tell this is tcp channel or udp channel
+	 * If protocolType_ == Protocol_TCP, pEndpoint_ type will be ACE_SOCK_STREAM
+	 * If protocolType_ == Protocol_UDP, pEndpoint_ type will be ACE_SOCK_SGRAM
+	 */
 	ProtocolType				          protocolType_;
+
+	/// Mark used to tell this channel
 	ChannelID					          channelId_;
-	bool						                  isDestroyed_;
+
+	/**
+	 * It is quite often that the bundles we sent by calling Channel::send(Bundle* bundle)
+	 * are not sent completely in one time in which case we can let the reactor event
+	 * framework help to sent the rest of bundles or packets. If it is true, is_notified_send_
+	 * will be setup as true to hightlight it.
+	 */
 	bool						                  is_notified_send_;
 
+	/**
+	 * isCondemn_和isDestroyed_的不同在于，一个通道是isCondemn_但不一定是isDestroyed_
+	 * 通道为isDestroyed_一定也是isCondemn_
+	 */
+	/// 如果为true，则该频道已经在内存中被销毁或者回收
+	/// if true, this channel has become destoryed by recycling it baxk to the pool
+	/// or deleted in memeory
+	bool						                  isDestroyed_;
 	/// 如果为true，则该频道已经变得不合法
 	/// if true, this channel has become unusable
 	bool						                  isCondemn_;
