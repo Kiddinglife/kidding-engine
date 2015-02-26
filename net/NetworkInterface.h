@@ -34,7 +34,7 @@ struct DelayedChannelHandlers;
  * When a connection comes, the nub create new socket handler to handle it and will call back
  * register function to register a new channel
  */
-struct NetworkInterface : public ACE_Event_Handler
+struct NetworkInterface
 {
 	/// it stores external and internal channel 
 	typedef std::map<ACE_INET_Addr, Channel*>	ChannelMap;
@@ -119,10 +119,11 @@ struct NetworkInterface : public ACE_Event_Handler
 	void on_channel_timeout(Channel * pChannel);
 
 	/**
+	* @Unused
 	* This method is used to handle the timout event in network interface
 	* It just simply print the internal and external interface infos
 	*/
-	virtual int handle_timeout(const ACE_Time_Value &tv, const void *arg);
+	int on_handle_timeout(const ACE_Time_Value &tv, const void *arg);
 
 	/// this method will go through all the channels and process its packets
 	void process_all_channels_packets(Messages* pMsgHandlers);

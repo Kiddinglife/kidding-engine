@@ -159,6 +159,8 @@ struct TCP_Acceptor_Handler : public ACE_Event_Handler
 	// Called when a connection is ready to accept.
 	virtual int handle_input(ACE_HANDLE fd = ACE_INVALID_HANDLE);
 
+	virtual int handle_timeout(const ACE_Time_Value &current_time, const void * = 0);
+
 	// Called when this handler is removed from the ACE_Reactor.
 	virtual int handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask);
 };

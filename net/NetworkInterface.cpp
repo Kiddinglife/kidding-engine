@@ -18,7 +18,6 @@ NETWORK_NAMESPACE_BEGIN_DECL
  ACE_UINT32 intrbuffer,
  ACE_UINT32 intwbuffer)
  :
- ACE_Event_Handler(),
  channelMap_(),
  nub_(pDispatcher),
  pExtensionData_(NULL),
@@ -198,7 +197,7 @@ NetworkInterface::~NetworkInterface()
  * This method is used to handle the timout event in network interface
  * It just simply print the internal and external interface infos
  */
-int NetworkInterface::handle_timeout(const ACE_Time_Value& tv, const void* arg)
+int NetworkInterface::on_handle_timeout(const ACE_Time_Value& tv, const void* arg)
 {
 	TRACE("NetworkInterface::handle_timeout()");
 

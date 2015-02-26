@@ -5,6 +5,13 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
+int TCP_Acceptor_Handler::handle_timeout(const ACE_Time_Value &current_time, const void* act)
+{
+	TRACE("TCP_SOCK_Handler::handle_timeout()");
+	networkInterface_->on_handle_timeout(current_time, act);
+	TRACE_RETURN(0);
+}
+
 int TCP_Acceptor_Handler::open(const ACE_INET_Addr &listen_addr)
 {
 	if( this->acceptor_.open(listen_addr, 1) == -1 )
