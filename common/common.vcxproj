@@ -18,6 +18,7 @@
     <ClInclude Include="config.h" />
     <ClInclude Include="deadline.hpp" />
     <ClInclude Include="format.h" />
+    <ClInclude Include="Profile.h" />
     <ClInclude Include="task.h" />
     <ClInclude Include="tasks.h" />
     <ClInclude Include="kbekey.hpp" />
@@ -40,6 +41,7 @@
     <ClCompile Include="kbe_blowfish.cpp" />
     <ClCompile Include="kbe_version.cpp" />
     <ClCompile Include="md5.cpp" />
+    <ClCompile Include="Profile.cpp" />
     <ClCompile Include="rsa.cpp" />
     <ClCompile Include="sha1.cpp" />
     <ClCompile Include="timestamp.cpp" />
