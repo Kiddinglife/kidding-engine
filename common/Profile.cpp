@@ -1,15 +1,72 @@
 ﻿#include "Profile.h"
+#include "ace\Singleton.h"
+#include "ace\Null_Mutex.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 
-Profile::Profile(std::string name, Profiles* profiles)
+ACE_UINT64 runningTime()
 {
+	return ACE_Singleton<Profiles, ACE_Null_Mutex>::instance()->runningTime();
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+Profiles::Profiles(std::string name) : name_(name)
+{
+	stampsPerSecond();
+	Profile* pRunningTime = new Profile("RunningTime", this);
+	pRunningTime->start();
+}
+Profiles::~Profiles()
+{
+	delete this->pRunningTime();
+}
+bool Profiles::initializeWatcher()
+{
+	return true;
+}
+TimeStamp Profiles::runningTime() const
+{
+	return timestamp() - this->pRunningTime()->lastTime_;
+}
+void Profiles::add(Profile * pVal)
+{
+	profiles_.push_back(pVal);
+}
+///////////////////////////////////////////////////////////////////////////////////////////////
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+TimeStamp Profile::warningPeriod_(stampsPerSecond() / 100); // 10ms
+Profile::Profile(std::string name, Profiles* profiles) :
+strName_(name),
+pProfiles_(profiles),
+lastTime_(0),
+sumTime_(0),
+lastInternalTime_(0),
+sumInternalTime_(0),
+lastVal2Stop_(0),
+sumAllVals2Stop_(0),
+stopCounts_(0),
+inProgress_(0),
+initWatcher_(false)
+{
+	if( pProfiles_ == NULL )
+	{
+		pProfiles_ = ACE_Singleton<Profiles, ACE_Null_Mutex>::instance();
+	}
+
+	if( !strName_.empty() )
+	{
+		pProfiles_->add(this);
+	}
+}
 Profile::~Profile()
 {
+	if( pProfiles_ )
+	{
+		// pProfileGroup_.erase(std::remove( pProfileGroup_->begin(), pProfileGroup_->end(), this ), pProfileGroup_->end());
+	}
 }
-
 void Profile::start(void)
 {
 	TRACE("Profile::start()");
@@ -40,7 +97,6 @@ void Profile::start(void)
 
 	TRACE_RETURN_VOID();
 }
-
 void Profile::stop(ACE_UINT32 qty)
 {
 	TRACE("Profile::stop()");
@@ -51,7 +107,7 @@ void Profile::stop(ACE_UINT32 qty)
 	if( --inProgress_ == 0 )
 	{
 		lastTime_ = now - lastTime_;
-		sumInternalTime_ += lastTime_;
+		sumTime_ += lastTime_;
 	}
 
 	lastVal2Stop_ = qty;
@@ -73,10 +129,5 @@ void Profile::stop(ACE_UINT32 qty)
 
 	TRACE_RETURN_VOID();
 }
-
-bool Profile::initializeWatcher(void)
-{
-	TRACE("Profile::initializeWatcher()");
-	TRACE_RETURN(true);
-}
+/////////////////////////////////////////////////////////////////////////////////////////////////
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

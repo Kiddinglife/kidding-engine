@@ -206,6 +206,7 @@ const char * Channel::c_str() const
 			tdodgyString, channelId_, isCondemn_, isDestroyed_);
 	}
 
+	return dodgyString;
 	//TRACE_RETURN(dodgyString);
 }
 
@@ -256,6 +257,7 @@ bool Channel::initialize(ACE_INET_Addr* addr)
 
 	startInactivityDetection(( channelScope_ == INTERNAL ) ? g_channelInternalTimeout : g_channelExternalTimeout);
 
+	return true;
 	//TRACE_RETURN(true);
 }
 
@@ -274,6 +276,7 @@ bool Channel::finalise(void)
 		pPacketReader_ = NULL;
 	}
 
+	return true;
 	//TRACE_RETURN(true);
 }
 
