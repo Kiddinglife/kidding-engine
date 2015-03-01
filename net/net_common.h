@@ -243,7 +243,6 @@ inline RecvState checkSocketErrors(int len, bool expectingPacket)
 	// recv缓冲区已经无数据可读了
 	if( ( err == EAGAIN || err == EWOULDBLOCK ) && !expectingPacket )
 	{
-		ACE_DEBUG(( LM_DEBUG, "%M::Return RecvState::RECV_STATE_BREAK\n" ));
 		return RecvState::RECV_STATE_BREAK;
 	}
 
