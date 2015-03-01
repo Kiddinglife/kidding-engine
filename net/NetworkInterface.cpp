@@ -428,6 +428,10 @@ void NetworkInterface::on_channel_left(Channel* pChannel)
 	// channel dtor has been called so we cannot call it again
 	/// thisi is the last chance for us to do some clear works the pchannel is valid
 	/// at this moment
+	/// 由于pEndPoint通常由外部给入，必须释放，频道重新激活时会重新赋值
+	deregister_channel(pChannel);
+	pChannel->pEndPoint_->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
+	pChannel->pEndPoint_ = NULL;
 	TRACE_RETURN_VOID();
 }
 void NetworkInterface::on_channel_timeout(Channel* pChannel)

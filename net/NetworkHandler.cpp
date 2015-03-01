@@ -196,7 +196,7 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 	/// the client log off 
 	if( len == 0 )
 	{
-		//ACE_DEBUG(( LM_DEBUG, "%M::Client logs off...\n" ));
+		ACE_DEBUG(( LM_DEBUG, "%M::Client logs off...\n" ));
 		Packet_Pool->Dtor(pReceiveWindow);
 		pChannel_->on_error();
 		pChannel_ = NULL;

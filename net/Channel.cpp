@@ -136,9 +136,9 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 
 	lastRecvTime_ = ::timestamp();
 
-	/**
 	/// reset all variables values  ctor(0 will reset al of them
 	/// so we do not need to do this to save cucles of cpu
+	/**
 	isDestroyed_ = false;
 	isCondemn_ = false;
 	numPacketsSent_ = 0;
@@ -154,27 +154,28 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 	*/
 
 	/// clear the pendpoint
-	if( protocolType_ == PROTOCOL_TCP )
+	/*if( protocolType_ == PROTOCOL_TCP )
 	{
 
-		if( is_notified_send_ ) is_notified_send_ = false;
+	if( is_notified_send_ ) is_notified_send_ = false;
 
-		if( pNetworkInterface_ )
-		{
-			pNetworkInterface_->on_channel_left(this);
-		}
+	if( pNetworkInterface_ )
+	{
+	pNetworkInterface_->on_channel_left(this);
+	}
 
-		//@TEST
-		pEndPoint_->reactor()->remove_handler(pEndPoint_,
-			ACE_Event_Handler::DONT_CALL | ACE_Event_Handler::WRITE_MASK);
+	//@TEST
+	pEndPoint_->reactor()->remove_handler(pEndPoint_,
+	ACE_Event_Handler::DONT_CALL | ACE_Event_Handler::WRITE_MASK);
 
 	} else if( protocolType_ == PROTOCOL_UDP )
 	{
-		/// 由于pEndPoint通常由外部给入，必须释放，频道重新激活时会重新赋值
-		pEndPoint_->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
-	}
+	/// 由于pEndPoint通常由外部给入，必须释放，频道重新激活时会重新赋值
+	pEndPoint_->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
+	}*/
 
-	pEndPoint_ = NULL;
+
+	if( is_notified_send_ ) is_notified_send_ = false;
 
 	if( pPacketReader_ )
 	{
@@ -182,6 +183,7 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 		pPacketReader_ = NULL;
 	}
 
+	pNetworkInterface_->on_channel_left(this);
 	//TRACE_RETURN_VOID();
 }
 
@@ -433,23 +435,7 @@ void Channel::send_buffered_bundle()
 		clearBundles();
 		return;
 	}
-	//staic bool should_wait_next_tick = true;
-	//if 包数量大于0
-	//{
-	//	/// 先发送所有的满载包，
-	//	包数量 = bundle.packets_.size();
-	//	for( i; i < 包数量 - 1; i++ )
-	//	{
-	//		send(bundle.packets_);
-	//	}
-	//	///最后一包单独处理 可能满载可能未满
-	//	if( last_packet 满 ) send(last_packet);
-	//	else
-	//	{
-	//		if( should_wait_next_tick )  should_wait_next_tick = false;
-	//		else  send(last_packet); should_wait_next_tick = true;
-	//	}
-	//}
+
 	/// if no bundle to send, we just stop here
 	static size_t packets_cnt;
 	if( !( packets_cnt = buffered_sending_bundle_.packets_.size() ) ) return;
@@ -581,7 +567,6 @@ void Channel::send_buffered_bundle()
 
 	if( reason == REASON_SUCCESS )
 	{
-		ACE_DEBUG(( LM_DEBUG, "%M::%IReason == REASON_SUCCESS\n" ));
 		if( buffered_sending_bundle_.pCurrPacket_ )
 			buffered_sending_bundle_.pCurrPacket_ = NULL;
 		buffered_sending_bundle_.packets_.clear();
@@ -659,7 +644,6 @@ void Channel::on_error(void)
 	if( !isDestroyed_ )
 	{
 		destroy();
-		pNetworkInterface_->deregister_channel(this);
 		Channel_Pool->Dtor(this);
 	}
 }

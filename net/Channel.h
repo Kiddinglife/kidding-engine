@@ -209,6 +209,7 @@ struct Channel
 
 	inline const char*  c_str(void) const;
 };
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include "ace\post.h"

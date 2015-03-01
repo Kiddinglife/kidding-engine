@@ -98,6 +98,7 @@
     <ClInclude Include="Bundle.h" />
     <ClInclude Include="Channel.h" />
     <ClInclude Include="DelayedChannelHandler.h" />
+    <ClInclude Include="ErrorStatsMgr.h" />
     <ClInclude Include="FixedMessages.h" />
     <ClInclude Include="Message.h" />
     <ClInclude Include="Message_Defs.h" />
@@ -115,6 +116,7 @@
     <ClCompile Include="Bundlle.cpp" />
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="DelayedChannelHandler.cpp" />
+    <ClCompile Include="ErrorStatsMgr.cpp" />
     <ClCompile Include="FixedMessages.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="NetStats.cpp" />
