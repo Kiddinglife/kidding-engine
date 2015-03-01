@@ -29,7 +29,8 @@ struct ErrorStatMgr : public ACE_Event_Handler
 	static const ACE_UINT32 ERROR_REPORT_COUNT_MAX_LIFETIME_MS;
 
 	ErrorStats errorStats_;
-
+	long         timerID_; 	/// tinmer id used to canncel the timmer
+	Nub*        nub_;
 	ErrorStatMgr(Nub* nub);
 	virtual ~ErrorStatMgr();
 };

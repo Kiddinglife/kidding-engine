@@ -6,14 +6,14 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-Channel::Channel(
+Channel::
+Channel(
 NetworkInterface* networkInterface,
 ACE_Event_Handler* endpoint, //ACE_SOCK* endpoint,
 ChannelScope traits,
 ProtocolType pt,
 bool canFilterPacket,
-ChannelID id)
-:
+ChannelID id) :
 pNetworkInterface_(networkInterface),
 channelScope_(traits),
 protocolType_(pt),
