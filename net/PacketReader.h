@@ -41,7 +41,7 @@ struct PacketReader
 	char*                    curr_msg_end_pos_in_curr_packet;
 
 	PacketReader(Channel* pChannel = NULL);
-	virtual ~PacketReader();
+	~PacketReader();
 	void PacketReader::processMessages(Messages* pMsgHandlers, Bundle* pPacket);
 	void PacketReader::processMessages(Messages* pMsgHandlers, Channel::RecvPackets& packets_);
 };

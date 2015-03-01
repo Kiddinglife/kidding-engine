@@ -37,6 +37,14 @@ namespace TCP
 {
 };
 
+struct Packet;
+struct Channel;
+namespace HTML5_WEBSOCKET
+{
+	bool isWebSocketProtocol(Packet* packet);
+	bool web_sock_hand_shake(Channel* pChannel, Packet* packet);
+}
+
 enum RecvState
 {
 	RECV_STATE_INTERRUPT = -1,
@@ -51,6 +59,8 @@ enum PACKET_RECEIVER_TYPE
 };
 
 ////////////////////////////////////////// Globals //////////////////////////////////////////////
+/// 用于读取包中的序列化数据 : used to read the data from the packets
+extern ACE_InputCDR in;
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 //========================== Pools =========================
@@ -208,6 +218,7 @@ enum Reason
 	REASON_CHANNEL_CONDEMN = -14	 ///< condemn error.
 };
 
+/// check send errors
 inline Reason checkSocketErrors()
 {
 	Reason reason;
@@ -224,6 +235,7 @@ inline Reason checkSocketErrors()
 	return reason;
 }
 
+/// check recv errors
 inline RecvState checkSocketErrors(int len, bool expectingPacket)
 {
 	int err = kbe_lasterror();

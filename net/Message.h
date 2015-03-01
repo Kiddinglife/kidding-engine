@@ -1,9 +1,12 @@
-﻿#ifndef Message_H_
+﻿/**
+ * 
+ */
+
+#ifndef Message_H_
 #define Message_H_
 
 #include "ace\pre.h"
 #include "ace\Null_Mutex.h"
-//#include "common\ace_object_pool.h"
 #include "common\common.h"
 #include "net\net_common.h"
 #include "net\FixedMessages.h"

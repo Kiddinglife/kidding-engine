@@ -20,8 +20,6 @@ protocolType_(pt),
 channelId_(id),
 inactivityExceptionPeriod_(0),
 lastRecvTime_(0),
-bundle_(),
-recvPacketIndex_(0),
 pPacketReader_(NULL),
 isDestroyed_(false),
 numPacketsSent_(0),
@@ -52,42 +50,44 @@ Channel::~Channel()
 
 void Channel::hand_shake(void)
 {
-	TRACE("Channel::hand_shake()");
+	//TRACE("Channel::hand_shake()");
 
-	static RecvPackets::iterator packetIter;
-	static Packet* pPacket;
+	ACE_TEST_ASSERT(pPacketReader_ == NULL);
 
-	//if( recvPackets_[recvPacketIndex_].size() > 0 )
-	//{
+	if( recvPackets_.size() > 0 )
+	{
+		RecvPackets::iterator packetIter = recvPackets_.begin();
+		Packet* pPacket = ( *packetIter );
 
-	pPacketReader_ = PacketReader_Pool->Ctor(this);
-	ACE_DEBUG(( LM_DEBUG, "%M::pPacketReader_ = PacketReader_Pool->Ctor(this);" ));
-	//packetIter = recvPackets_[recvPacketIndex_].begin();
-	//pPacket = ( *packetIter );
+		// 此处判定是否为websocket或者其他协议的握手
+		if( HTML5_WEBSOCKET::isWebSocketProtocol(pPacket) )
+		{
+			channelType_ = CHANNEL_WEB;
+			if( HTML5_WEBSOCKET::web_sock_hand_shake(this, pPacket) )
+			{
+				if( pPacket->length() == 0 )
+				{
+					recvPackets_.erase(packetIter);
+				}
 
-	//// 此处判定是否为websocket或者其他协议的握手
-	//if( html5::WebSocketProtocol::isWebSocketProtocol(pPacket) )
-	//{
-	//	channelType_ = CHANNEL_WEB;
-	//	if( html5::WebSocketProtocol::handshake(this, pPacket) )
-	//	{
-	//		if( pPacket->length() == 0 )
-	//		{
-	//			bufferedReceives_[bufferedReceivesIdx_].erase(packetIter);
-	//		}
+				//pPacketReader_ = new HTML5PacketReader(this);
+				//pFilter_ = new HTML5PacketFilter(this);
 
-	//		pPacketReader_ = new HTML5PacketReader(this);
-	//		pFilter_ = new HTML5PacketFilter(this);
-	//		DEBUG_MSG(fmt::format("Channel::handshake: websocket({}) successfully!\n", this->c_str()));
-	//		return;
-	//	} else
-	//	{
-	//		DEBUG_MSG(fmt::format("Channel::handshake: websocket({}) error!\n", this->c_str()));
-	//	}
-	//}
-	//}
+				ACE_DEBUG(( LM_INFO,
+					"Channel::web_sock_hand_shake({%s}) successfully!\n", this->c_str() ));
+				return;
+			} else
+			{
+				ACE_DEBUG(( LM_ERROR, "Channel::handshake: websocket({%s}) error!\n",
+					this->c_str() ));
+			}
+		} else
+		{
+			pPacketReader_ = PacketReader_Pool->Ctor(this);
+		}
+	}
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 int Channel::get_bundles_length(void)
@@ -112,56 +112,62 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 	this->clearBundles();
 
 	/// clear the unprocessed recv packets
-	for( int i = 0; i < 2; ++i )
+	if( recvPackets_.size() > 0 )
 	{
-		if( recvPackets_[i].size() > 0 )
+		RecvPackets::iterator iter = recvPackets_.begin();
+		int hasDiscard = 0;
+
+		for( ; iter != recvPackets_.end(); ++iter )
 		{
-			RecvPackets::iterator iter = recvPackets_[i].begin();
-			int hasDiscard = 0;
-
-			for( ; iter != recvPackets_[i].end(); ++iter )
-			{
-				if( ( *iter )->length() > 0 ) hasDiscard++;
-				Packet_Pool->Dtor(( *iter ));
-			}
-
-			if( hasDiscard > 0 && warnOnDiscard )
-			{
-				ACE_DEBUG(( LM_WARNING,
-					"Channel::clear_channel( {%s} ): "
-					"Discarding {%d} buffered packet(s)\n",
-					this->c_str(), hasDiscard ));
-			}
-
-			recvPackets_[i].clear();
+			if( ( *iter )->length() > 0 ) hasDiscard++;
+			Packet_Pool->Dtor(( *iter ));
 		}
+
+		if( hasDiscard > 0 && warnOnDiscard )
+		{
+			ACE_DEBUG(( LM_WARNING,
+				"Channel::clear_channel( {%s} ): "
+				"Discarding {%d} buffered packet(s)\n",
+				this->c_str(), hasDiscard ));
+		}
+
+		recvPackets_.clear();
 	}
 
 	lastRecvTime_ = ::timestamp();
 
-	/// reset all variables values  ctor(0 will reset al of them so we do not need to do this to save cucles of cpu
-	//isDestroyed_ = false;
-	//isCondemn_ = false;
-	//numPacketsSent_ = 0;
-	//numPacketsReceived_ = 0;
-	//numBytesSent_ = 0;
-	//numBytesReceived_ = 0;
-	//lastTickBytesReceived_ = 0;
-	//proxyID_ = 0;
-	//strextra_ = "";
-	//channelType_ = CHANNEL_NORMAL;
-	//channelScope_ = EXTERNAL;
-	//recvPacketIndex_ = 0;
+	/**
+	/// reset all variables values  ctor(0 will reset al of them
+	/// so we do not need to do this to save cucles of cpu
+	isDestroyed_ = false;
+	isCondemn_ = false;
+	numPacketsSent_ = 0;
+	numPacketsReceived_ = 0;
+	numBytesSent_ = 0;
+	numBytesReceived_ = 0;
+	lastTickBytesReceived_ = 0;
+	proxyID_ = 0;
+	strextra_ = "";
+	channelType_ = CHANNEL_NORMAL;
+	channelScope_ = EXTERNAL;
+	recvPacketIndex_ = 0;
+	*/
 
 	/// clear the pendpoint
 	if( protocolType_ == PROTOCOL_TCP )
 	{
+
 		if( is_notified_send_ ) is_notified_send_ = false;
 
 		if( pNetworkInterface_ )
 		{
 			pNetworkInterface_->on_channel_left(this);
 		}
+
+		//@TEST
+		pEndPoint_->reactor()->remove_handler(pEndPoint_,
+			ACE_Event_Handler::DONT_CALL | ACE_Event_Handler::WRITE_MASK);
+
 	} else if( protocolType_ == PROTOCOL_UDP )
 	{
 		/// 由于pEndPoint通常由外部给入，必须释放，频道重新激活时会重新赋值
@@ -184,21 +190,9 @@ void Channel::add_delayed_channel(void)
 	pNetworkInterface_->add_delayed_channel(this);
 }
 
-void Channel::reset(ACE_Event_Handler* pEndPoint, bool warnOnDiscard)
-{
-	/// if adrr does not change, we do not change it
-	if( pEndPoint == pEndPoint_ ) return;
-
-	/// let pNetworkInterface_ the handle irself in next tick 
-	if( pNetworkInterface_ ) pNetworkInterface_->send_delayed_channel(this);
-
-	this->clear_channel(warnOnDiscard);
-	pEndPoint_ = pEndPoint;
-}
-
 const char * Channel::c_str() const
 {
-	TRACE("Channel::c_str()");
+	//TRACE("Channel::c_str()");
 
 	static char dodgyString[MAX_BUF] = { "None" };
 	static ACE_INET_Addr addr;
@@ -221,13 +215,15 @@ const char * Channel::c_str() const
 			tdodgyString, channelId_, isCondemn_, isDestroyed_);
 	}
 
-	TRACE_RETURN(dodgyString);
+	return dodgyString;
+	//TRACE_RETURN(dodgyString);
 }
 
 void Channel::clearBundles(void)
 {
-	TRACE("Channel::clearBundle()");
+	//TRACE("Channel::clearBundle()");
 
+	if( bundles_.size() == 0 ) return;
 	Bundles::iterator iter = bundles_.begin();
 	for( ; iter != bundles_.end(); ++iter )
 	{
@@ -235,7 +231,7 @@ void Channel::clearBundles(void)
 	}
 	bundles_.clear();
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 void Channel::startInactivityDetection(float period, float checkPeriod)
@@ -253,13 +249,9 @@ void Channel::startInactivityDetection(float period, float checkPeriod)
 	}
 }
 
-/**
- * addr != null udp
- * addr == null tcp
- */
 bool Channel::initialize(ACE_INET_Addr* addr)
 {
-	TRACE("Channel::initialize()");
+	//TRACE("Channel::initialize()");
 
 	if( protocolType_ == PROTOCOL_UDP && addr )
 	{
@@ -271,31 +263,16 @@ bool Channel::initialize(ACE_INET_Addr* addr)
 
 	startInactivityDetection(( channelScope_ == INTERNAL ) ? g_channelInternalTimeout : g_channelExternalTimeout);
 
-	TRACE_RETURN(true);
-}
+	/// @TEST
+	pEndPoint_->reactor()->register_handler(pEndPoint_, ACE_Event_Handler::WRITE_MASK);
 
-/**
- * depreted use clear_channel() to rese this channel for reuse
- */
-bool Channel::finalise(void)
-{
-	TRACE("Channel::finalise()");
-
-	this->clear_channel();
-
-	if( pPacketReader_ )
-	{
-		PacketReader_Pool->Dtor(pPacketReader_);
-		pPacketReader_ = NULL;
-	}
-
-
-	TRACE_RETURN(true);
+	return true;
+	//TRACE_RETURN(true);
 }
 
 void Channel::destroy(void)
 {
-	TRACE("Channel::destroy()");
+	//TRACE("Channel::destroy()");
 
 	if( isDestroyed_ )
 	{
@@ -305,36 +282,12 @@ void Channel::destroy(void)
 
 	isDestroyed_ = true;
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
-
-//bool Channel::process_recv(bool expectingPacket)
-//{
-//	TRACE("Channel::process_recv()");
-//
-//	if( isCondemn_ )
-//	{
-//		on_error();
-//		TRACE_RETURN(false);
-//	}
-//
-//	static MessageID msgid = 0;
-//	static Packet* pReceiveWindow = NULL;
-//
-//	if( protocolType_ == PROTOCOL_TCP )
-//	{
-//		pReceiveWindow = Packet_Pool->Ctor();
-//	} else
-//	{
-//		pReceiveWindow = Packet_Pool->Ctor(msgid, protocolType_);
-//	}
-//
-//	TRACE_RETURN(true);
-//}
 
 void Channel::process_packets(Messages* pMsgHandlers)
 {
-	TRACE("Channel::process_packets()");
+	//TRACE("Channel::process_packets()");
 
 	this->lastTickBytesReceived_ = 0;
 	this->lastTickBytesSent_ = 0;
@@ -359,20 +312,19 @@ void Channel::process_packets(Messages* pMsgHandlers)
 		return;
 	}
 
-	if( !pPacketReader_ ) hand_shake();
+	if( !pPacketReader_ )
+	{
+		hand_shake();
+	}
 
-	/// always use the other index 0 or 1
-	ACE_UINT8 idx = recvPacketIndex_;
-	recvPacketIndex_ = 1 - recvPacketIndex_;
+	pPacketReader_->processMessages(pMsgHandlers, recvPackets_);
 
-	pPacketReader_->processMessages(pMsgHandlers, recvPackets_[idx]);
-
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 void Channel::send(Bundle * pBundle)
 {
-	TRACE("Channel::send(Bundle * pBundle)");
+	//TRACE("Channel::send(Bundle * pBundle)");
 
 	/// check to see if the current channel is avaiable to use
 	if( isDestroyed_ )
@@ -397,8 +349,8 @@ void Channel::send(Bundle * pBundle)
 	if( pBundle ) bundles_.push_back(pBundle);
 
 	/// if no bundle to send, we just stop here
-	size_t bundles_cnt = bundles_.size();
-	if( !bundles_cnt ) return;
+	size_t packets_cnt = bundles_.size();
+	if( !packets_cnt ) return;
 
 	if( !is_notified_send_ )
 	{
@@ -412,7 +364,7 @@ void Channel::send(Bundle * pBundle)
 	}
 
 	if( g_sendWindowMessagesOverflowCritical > 0 &&
-		bundles_cnt > g_sendWindowMessagesOverflowCritical )
+		packets_cnt > g_sendWindowMessagesOverflowCritical )
 	{
 		if( channelScope_ == EXTERNAL )
 		{
@@ -420,11 +372,11 @@ void Channel::send(Bundle * pBundle)
 				"Channel::send[{%@}]: external channel({%s}), "
 				"send window has overflowed({%d} > {%d}).\n",
 				this, c_str(),
-				bundles_cnt,
+				packets_cnt,
 				g_sendWindowMessagesOverflowCritical ));
 
 			if( g_extSendWindowMessagesOverflow > 0 &&
-				bundles_cnt > g_extSendWindowMessagesOverflow )
+				packets_cnt > g_extSendWindowMessagesOverflow )
 			{
 				isCondemn_ = true;
 				ACE_DEBUG(( LM_ERROR,
@@ -432,12 +384,12 @@ void Channel::send(Bundle * pBundle)
 					"send window has overflowed({%d} > {%d}),\n"
 					"Try adjusting the kbengine_defs.xml->windowOverflow->send.\n"
 					"This channel is condemn{%d} now.\n",
-					this, c_str(), bundles_cnt, g_extSendWindowMessagesOverflow, isCondemn_ ));
+					this, c_str(), packets_cnt, g_extSendWindowMessagesOverflow, isCondemn_ ));
 			}
 		} else
 		{
 			if( g_intSendWindowMessagesOverflow > 0 &&
-				bundles_cnt > g_intSendWindowMessagesOverflow )
+				packets_cnt > g_intSendWindowMessagesOverflow )
 			{
 				isCondemn_ = true;
 				ACE_DEBUG(( LM_ERROR,
@@ -445,7 +397,7 @@ void Channel::send(Bundle * pBundle)
 					"send window has overflowed({%d} > {%d}).\n"
 					"This channel is condemn{%d} now.\n",
 					this, c_str(),
-					bundles_cnt, g_intSendWindowMessagesOverflow,
+					packets_cnt, g_intSendWindowMessagesOverflow,
 					isCondemn_ ));
 			} else
 			{
@@ -453,18 +405,254 @@ void Channel::send(Bundle * pBundle)
 					"Channel::send[{%@}]: internal channel({%s}), "
 					"send window has overflowed({%d} > {%d}).\n",
 					this, c_str(),
-					bundles_cnt,
+					packets_cnt,
 					g_sendWindowMessagesOverflowCritical ));
 			}
 		}
 	}
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
+void Channel::send_buffered_bundle()
+{
+	//TRACE("Channel::send(Bundle * pBundle)");
 
-/**
- * This method is called when the user lofs off or some network errors happens
- * Here we only
- */
+	/// check to see if the current channel is avaiable to use
+	if( isDestroyed_ )
+	{
+		ACE_DEBUG(( LM_ERROR, "Channel::send({%s}): channel has destroyed.\n", this->c_str() ));
+		clearBundles();
+		return;
+	}
+
+	if( isCondemn_ )
+	{
+		ACE_DEBUG(( LM_ERROR,
+			"Channel::send: is error, reason={%s}, from {%s}.\n", reasonToString(REASON_CHANNEL_CONDEMN),
+			c_str() ));
+		this->on_error();
+		clearBundles();
+		return;
+	}
+	//staic bool should_wait_next_tick = true;
+	//if 包数量大于0
+	//{
+	//	/// 先发送所有的满载包，
+	//	包数量 = bundle.packets_.size();
+	//	for( i; i < 包数量 - 1; i++ )
+	//	{
+	//		send(bundle.packets_);
+	//	}
+	//	///最后一包单独处理 可能满载可能未满
+	//	if( last_packet 满 ) send(last_packet);
+	//	else
+	//	{
+	//		if( should_wait_next_tick )  should_wait_next_tick = false;
+	//		else  send(last_packet); should_wait_next_tick = true;
+	//	}
+	//}
+	/// if no bundle to send, we just stop here
+	static size_t packets_cnt;
+	if( !( packets_cnt = buffered_sending_bundle_.packets_.size() ) ) return;
+
+	/////////////////////////////////////////////////////// process_send();
+	static bool should_wait_next_tick = true;
+	static Reason reason = REASON_SUCCESS;
+
+	reason = REASON_SUCCESS;
+	Bundle::Packets::iterator iter1 = buffered_sending_bundle_.packets_.begin();
+	for( ; iter1 != buffered_sending_bundle_.packets_.end() - 1; ++iter1 )
+	{
+		///////////////// process this packet starts /////////////////////////
+		/// filter the packet
+		if( canFilterPacket_ )
+		{
+			//filter_packet();
+		}
+
+		/// process filtered packets
+		if( protocolType_ == PROTOCOL_TCP )
+		{
+			if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
+			size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
+
+			if( sent_cnt == -1 )
+			{
+				reason = checkSocketErrors();
+			} else
+			{
+				( *iter1 )->buff->rd_ptr(sent_cnt);
+				on_packet_sent(sent_cnt, ( *iter1 )->length() == 0);
+			}
+
+		} else
+		{
+			/// TO-DO
+		}
+
+		if( reason != REASON_SUCCESS )
+		{
+			break;
+		} else
+		{
+			Packet_Pool->Dtor(( *iter1 ));
+		}
+	}
+
+	static Packet* end_packet = NULL;
+	end_packet = *iter1;
+	ACE_TEST_ASSERT(end_packet != NULL);
+	if( end_packet->buff->size() < PACKET_MAX_SIZE_TCP )
+	{
+		if( should_wait_next_tick )
+			should_wait_next_tick = false;
+		else
+		{
+			should_wait_next_tick = true;
+			/// filter the packet
+			if( canFilterPacket_ )
+			{
+				//filter_packet();
+			}
+
+			/// process filtered packets
+			if( protocolType_ == PROTOCOL_TCP )
+			{
+				if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
+				size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
+
+				if( sent_cnt == -1 )
+				{
+					reason = checkSocketErrors();
+				} else
+				{
+					( *iter1 )->buff->rd_ptr(sent_cnt);
+					on_packet_sent(sent_cnt, ( *iter1 )->length() == 0);
+				}
+
+			} else
+			{
+				/// TO-DO
+			}
+
+			if( reason != REASON_SUCCESS )
+			{
+				/// just instructive
+			} else
+			{
+				Packet_Pool->Dtor(( *iter1 ));
+			}
+		}
+	} else
+	{
+		/// filter the packet
+		if( canFilterPacket_ )
+		{
+			//filter_packet();
+		}
+
+		/// process filtered packets
+		if( protocolType_ == PROTOCOL_TCP )
+		{
+			if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
+			size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
+
+			if( sent_cnt == -1 )
+			{
+				reason = checkSocketErrors();
+			} else
+			{
+				( *iter1 )->buff->rd_ptr(sent_cnt);
+				on_packet_sent(sent_cnt, ( *iter1 )->length() == 0);
+			}
+
+		} else
+		{
+			/// TO-DO
+		}
+
+		if( reason != REASON_SUCCESS )
+		{
+			/// just instructive
+		} else
+		{
+			Packet_Pool->Dtor(( *iter1 ));
+		}
+	}
+
+	if( reason == REASON_SUCCESS )
+	{
+		ACE_DEBUG(( LM_DEBUG, "%M::%IReason == REASON_SUCCESS\n" ));
+		if( buffered_sending_bundle_.pCurrPacket_ )
+			buffered_sending_bundle_.pCurrPacket_ = NULL;
+		buffered_sending_bundle_.packets_.clear();
+	} else
+	{
+		/// there are packets that are not sent, we first clear the sent ones from this bundle
+		buffered_sending_bundle_.packets_.erase(buffered_sending_bundle_.packets_.begin(), iter1);
+
+		if( reason == REASON_RESOURCE_UNAVAILABLE )
+		{
+			ACE_DEBUG(( LM_WARNING,
+				"%M::CHANNEL::send(%s)::Transmit queue full, waiting for"
+				"space(kbengine.xml->channelCommon->writeBufferSize->{%s})...\n",
+				reasonToString(checkSocketErrors()),
+				( channelScope_ == INTERNAL ? "internal" : "external" ) ));
+		} else
+		{
+			//this->dispatcher().errorReporter().reportException(reason, pEndpoint_->addr());
+			this->on_error();
+		}
+	}//////////////////////////////////// process this packet ends
+
+	if( g_sendWindowMessagesOverflowCritical > 0 &&
+		packets_cnt > g_sendWindowMessagesOverflowCritical )
+	{
+		if( channelScope_ == EXTERNAL )
+		{
+			ACE_DEBUG(( LM_WARNING,
+				"Channel::send[{%@}]: external channel({%s}), "
+				"send window has overflowed({%d} > {%d}).\n",
+				this, c_str(),
+				packets_cnt,
+				g_sendWindowMessagesOverflowCritical ));
+
+			if( g_extSendWindowMessagesOverflow > 0 &&
+				packets_cnt > g_extSendWindowMessagesOverflow )
+			{
+				isCondemn_ = true;
+				ACE_DEBUG(( LM_ERROR,
+					"Channel::send[{%@}]: external channel({%s}),\n"
+					"send window has overflowed({%d} > {%d}),\n"
+					"Try adjusting the kbengine_defs.xml->windowOverflow->send.\n"
+					"This channel is condemn{%d} now.\n",
+					this, c_str(), packets_cnt, g_extSendWindowMessagesOverflow, isCondemn_ ));
+			}
+		} else
+		{
+			if( g_intSendWindowMessagesOverflow > 0 &&
+				packets_cnt > g_intSendWindowMessagesOverflow )
+			{
+				isCondemn_ = true;
+				ACE_DEBUG(( LM_ERROR,
+					"Channel::send[{%@}]: internal channel({%s}), \n"
+					"send window has overflowed({%d} > {%d}).\n"
+					"This channel is condemn{%d} now.\n",
+					this, c_str(),
+					packets_cnt, g_intSendWindowMessagesOverflow,
+					isCondemn_ ));
+			} else
+			{
+				ACE_DEBUG(( LM_WARNING,
+					"Channel::send[{%@}]: internal channel({%s}), "
+					"send window has overflowed({%d} > {%d}).\n",
+					this, c_str(),
+					packets_cnt,
+					g_sendWindowMessagesOverflowCritical ));
+			}
+		}
+	}
+	//TRACE_RETURN_VOID();
+}
 void Channel::on_error(void)
 {
 	if( !isDestroyed_ )
@@ -477,7 +665,7 @@ void Channel::on_error(void)
 
 bool Channel::process_send()
 {
-	TRACE("Channel::process_send()");
+	//TRACE("Channel::process_send()");
 
 	/// check if this channel has been condemed
 	if( isCondemn_ )
@@ -526,7 +714,7 @@ bool Channel::process_send()
 			if( reason != REASON_SUCCESS )
 			{
 				break;
-			} 
+			}
 			//else // bundle will recycle all the packets to the pool and so we do not need to do it here
 			//{
 			//	Packet_Pool->Dtor(( *iter1 ));
@@ -537,7 +725,7 @@ bool Channel::process_send()
 		/// All packets in this bundle are sent completely and so recycle it
 		if( reason == REASON_SUCCESS )
 		{
-			ACE_DEBUG(( LM_DEBUG, "Reason == REASON_SUCCESS\n" ));
+			//ACE_DEBUG(( LM_DEBUG, "Reason == REASON_SUCCESS\n" ));
 			//pakcets.clear();
 			Bundle_Pool->Dtor(( *iter )); /// bundle will recycle all the packets to the pool
 		} else
@@ -573,7 +761,8 @@ bool Channel::process_send()
 	bundles_.clear();
 	if( is_notified_send_ ) this->on_bundles_sent_completely();
 
-	TRACE_RETURN(true);
+	return true;
+	//TRACE_RETURN(true);
 }
 
 void Channel::set_channel_condem()
@@ -585,7 +774,7 @@ void Channel::set_channel_condem()
 
 void Channel::on_bundles_sent_completely()
 {
-	TRACE(" Channel::on_sent_completely");
+	//TRACE(" Channel::on_sent_completely");
 	ACE_ASSERT(bundles_.size() == 0 && is_notified_send_);
 	if( is_notified_send_ )
 	{
@@ -593,11 +782,13 @@ void Channel::on_bundles_sent_completely()
 		pEndPoint_->reactor()->remove_handler(pEndPoint_,
 			ACE_Event_Handler::DONT_CALL | ACE_Event_Handler::WRITE_MASK);
 	}
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 void Channel::on_packet_received(int bytes)
 {
+	//TRACE(" Channel::on_packet_received");
+
 	lastRecvTime_ = timestamp();
 	++numPacketsReceived_;
 	++g_numPacketsReceived;
@@ -629,11 +820,13 @@ void Channel::on_packet_received(int bytes)
 				( void* )this, this->c_str(), lastTickBytesReceived_, g_intReceiveWindowBytesOverflow ));
 		}
 	}
+
+	//TRACE_RETURN_VOID();
 }
 
 void Channel::on_packet_sent(int bytes_cnt, bool is_sent_completely)
 {
-	TRACE(" Channel::on_packet_sent");
+	//TRACE(" Channel::on_packet_sent");
 
 	if( is_sent_completely )
 	{
@@ -669,18 +862,28 @@ void Channel::on_packet_sent(int bytes_cnt, bool is_sent_completely)
 		}
 	}
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 void Channel::update_recv_window(Packet* pPacket)
 {
-	TRACE("Channel::update_recv_window(Packet* pPacket)");
-	recvPackets_[recvPacketIndex_].push_back(pPacket);
-	size_t size = recvPackets_[recvPacketIndex_].size();
+	//TRACE("Channel::update_recv_window(Packet* pPacket)");
+
+	static size_t size = 0;
+
+	recvPackets_.push_back(pPacket);
+	size = recvPackets_.size();
+
+	///@Test
 	if( size )
 	{
 		this->process_packets(&TESTMSG::messageHandlers);
-	}
+		buffered_sending_bundle_.start_new_curr_message(TESTMSG::pmsg1);
+		buffered_sending_bundle_ << (ACE_UINT64) 1 << "hello,kidding-server...";
+		buffered_sending_bundle_.end_new_curr_message();
+		this->send_buffered_bundle();
+	}///
+
 	if( g_receiveWindowMessagesOverflowCritical > 0 &&
 		size > g_receiveWindowMessagesOverflowCritical )
 	{
@@ -712,7 +915,7 @@ void Channel::update_recv_window(Packet* pPacket)
 		}
 	}
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 void Channel::tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundle)

@@ -17,8 +17,8 @@ currPacketPaddingBeforeEncrytypeField(0),
 pt_(PROTOCOL_TCP),
 pCurrMsg_(NULL),
 reuse_(false),
-currPacketMaxSize(pt == PROTOCOL_TCP ? TCP_PACKET_MAX_CHUNK_SIZE : UDP_PACKET_MAX_CHUNK_SIZE),
-in((char*) NULL, 0)
+currPacketMaxSize(pt == PROTOCOL_TCP ? TCP_PACKET_MAX_CHUNK_SIZE : UDP_PACKET_MAX_CHUNK_SIZE)
+//in((char*) NULL, 0)
 {
 	// 如果使用了openssl加密通讯则我们保证一个包最大能被Blowfish::BLOCK_SIZE除尽
 	// 这样我们在加密一个满载包时不需要额外填充字节
@@ -36,6 +36,23 @@ in((char*) NULL, 0)
 Bundle::~Bundle()
 {
 	clear();
+}
+
+/**
+*  This method need to be called firstly before reading msg from packet
+*  当从包中读取消息时，该方法需要被首先调用,前提条件是该bundle
+*  p->init_instream();
+* *p >> id;
+* *p >> len;
+*/
+void Bundle::init_instream(void)
+{
+	if( packets_.size() > 0 )
+	{
+		const_cast<ACE_Message_Block*>( in.start() )->base(packets_[0]->buff->base(), packets_[0]->buff->size());
+		const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(packets_[0]->buff->wr_ptr());
+		const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(packets_[0]->buff->rd_ptr());
+	}
 }
 
 /**
@@ -102,10 +119,13 @@ void Bundle::recycle_all_packets(void)
 
 	///遍历所有的packet并将其回收至对应的内存池
 	///loop all packets and recycle it the right pool
-	Packets::iterator iter = packets_.begin();
-	for( ; iter != packets_.end(); iter++ )
+	if( packets_.size() > 0 )
 	{
-		Packet_Pool->Dtor(*iter);
+		Packets::iterator iter = packets_.begin();
+		for( ; iter != packets_.end(); iter++ )
+		{
+			Packet_Pool->Dtor(*iter);
+		}
 	}
 
 	///清空元素但不回收空间，提高效率
@@ -585,18 +605,18 @@ void Bundle::on_send_completed(void)
 	packets_.clear();
 }
 
+/// @Deorated
 inline void  Bundle::send(const NetworkInterface* networkInterface, Channel* pChannel)
 {
 	/// 更新当前通道指针 update curr channel
 	this->pChnnel_ = pChannel;
-	//networkInterface.send(*this, pChannel);
 }
-
 void  Bundle::resend(const NetworkInterface* networkInterface, Channel* pChannel)
 {
 
 }
 
+/// @Deprated
 void Bundle::tcp_send(const ACE_SOCK_Stream* ep)
 {
 	//使用最后一条msg的 handler进行跟踪
@@ -712,7 +732,6 @@ void Bundle::tcp_send(const ACE_SOCK_Stream* ep)
 		}
 	}
 }
-
 void  Bundle::udp_send(const ACE_SOCK_Dgram* ep, const ACE_INET_Addr* remoteaddr)
 {
 	/// initialize all the variables used locally in this method
