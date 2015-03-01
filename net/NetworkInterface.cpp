@@ -486,5 +486,6 @@ void NetworkInterface::close_listenning_sockets(void)
 
 	TRACE_RETURN_VOID();
 }
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

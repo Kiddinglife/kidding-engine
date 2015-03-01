@@ -604,6 +604,7 @@ void Channel::send_buffered_bundle()
 		}
 	}//////////////////////////////////// process this packet ends
 
+	packets_cnt = buffered_sending_bundle_.packets_.size();
 	if( g_sendWindowMessagesOverflowCritical > 0 &&
 		packets_cnt > g_sendWindowMessagesOverflowCritical )
 	{
