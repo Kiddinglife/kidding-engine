@@ -1,4 +1,9 @@
-﻿#ifndef Channel_H_
+﻿/**
+ * @Date writing: 10:22 AM, 01/03/2015
+ * @TO-DO initlize()
+ * should let the networrkinterface class handle the udp sock handler's creation
+ */
+#ifndef Channel_H_
 #define Channel_H_
 
 #include "ace\pre.h"
@@ -78,7 +83,7 @@ struct Channel
 	 */
 	typedef std::vector<Bundle*> Bundles;
 	Bundles                                  bundles_;
-
+	Bundle                                    buffered_sending_bundle_;
 	/**
 	 * A channel will cache the received packets.
 	 * 通道会缓存一定量的接受包，这是recv-batch优化
@@ -171,9 +176,12 @@ struct Channel
 	void startInactivityDetection(float period, float checkPeriod = 1.0f);
 	int get_bundles_length(void);
 
-	bool initialize(ACE_INET_Addr* addr = NULL);
-	bool finalise(void);
-	void destroy(void);
+	/**
+	 * @TO-DO
+	 * should let the networrkinterface class handle the udp sock handler's creation
+	 */
+	inline bool initialize(ACE_INET_Addr* addr = NULL);
+	inline void destroy(void);
 	void clearBundles(void);
 	void clear_channel(bool warnOnDiscard = false);
 	inline void add_delayed_channel(void);
@@ -184,11 +192,14 @@ struct Channel
 
 	/// send stuff
 	void send(Bundle * pBundle = NULL);
+	void send_buffered_bundle();
 	bool process_send(void);
 	void on_packet_sent(int bytes_cnt, bool is_sent_completely);
 	inline void on_bundles_sent_completely(void);
 
-	/// error stuff
+	/**
+	* This method is called when the user lofs off or some network errors happens
+	*/
 	inline void on_error(void);
 	inline void set_channel_condem();
 
@@ -196,7 +207,7 @@ struct Channel
 	void tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundle);
 	void udp_send_single_bundle(UDP_SOCK_Handler* pEndpoint, Bundle* pBundle, ACE_INET_Addr& addr);
 
-	const char*  c_str(void) const;
+	inline const char*  c_str(void) const;
 };
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

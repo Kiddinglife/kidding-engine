@@ -1,4 +1,8 @@
-﻿#ifndef Message_H_
+﻿/**
+ * 
+ */
+
+#ifndef Message_H_
 #define Message_H_
 
 #include "ace\pre.h"

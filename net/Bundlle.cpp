@@ -119,10 +119,13 @@ void Bundle::recycle_all_packets(void)
 
 	///遍历所有的packet并将其回收至对应的内存池
 	///loop all packets and recycle it the right pool
-	Packets::iterator iter = packets_.begin();
-	for( ; iter != packets_.end(); iter++ )
+	if( packets_.size() > 0 )
 	{
-		Packet_Pool->Dtor(*iter);
+		Packets::iterator iter = packets_.begin();
+		for( ; iter != packets_.end(); iter++ )
+		{
+			Packet_Pool->Dtor(*iter);
+		}
 	}
 
 	///清空元素但不回收空间，提高效率

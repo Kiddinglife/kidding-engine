@@ -19,12 +19,12 @@ currMsgFieldLen_(0),
 in_((char*) NULL, 0),
 block_(const_cast<ACE_Message_Block*>( in_.start() ))
 {
-	TRACE("PacketReader::ctor()");
-	TRACE_RETURN_VOID();
+	//TRACE("PacketReader::ctor()");
+	//TRACE_RETURN_VOID();
 }
 PacketReader::~PacketReader()
 {
-	TRACE("PacketReader::dtor()");
+	//TRACE("PacketReader::dtor()");
 
 	fragmentsFlag_ = FRAGMENT_DATA_UNKNOW;
 	currMsgLen_ = currMsgID_ = pFragmentsRemainning_ = 0;
@@ -36,11 +36,12 @@ PacketReader::~PacketReader()
 	}
 	pChannel_ = NULL;
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packets)
 {
-	TRACE("PacketReader::processMessages()");
+	//TRACE("PacketReader::processMessages()");
+
 	if( !pFragmentPacket_ ) pFragmentPacket_ = Packet_Pool->Ctor();
 	Channel::RecvPackets::iterator iter = packets.begin();
 	for( ; iter != packets.end(); iter++ )
@@ -312,15 +313,18 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 					{
 						//ACE_DEBUG(( LM_DEBUG, 
 						//"%M::%T::@if( pCurrPacket_->length() < currMsgLen_)\n" ));*/
+
 						fragmentsFlag_ = FRAGMENT_DATA_MESSAGE_BODY;
 						currMsgFieldLen_ = currMsgLen_;
+
 						if( opsize )
 						{
-							ACE_DEBUG(( LM_DEBUG, "%M::%T::@if( opsize > 0)\n" ));
+							//ACE_DEBUG(( LM_DEBUG, "%M::%T::@if( opsize > 0)\n" ));
 							if( currMsgFieldLen_ > pFragmentPacket_->buff->size() )
 							{
-								ACE_DEBUG(( LM_DEBUG,
-									"%M::%T::@if( currMsgFieldLen_ > pFragmentPacket_->buff->size() )\n" ));
+								//ACE_DEBUG(( LM_DEBUG,
+								//"%M::%T::@if( currMsgFieldLen_ > pFragmentPacket_->buff->size() )\n" ));
+
 								Packet* p = Packet_Pool->Ctor<ACE_UINT32>(currMsgFieldLen_);
 
 								if( pFragmentPacket_->length() )
@@ -414,7 +418,7 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 	/// all receive buffer data are done and so we clear them from vector
 	packets.clear();
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 NETWORK_NAMESPACE_END_DECL

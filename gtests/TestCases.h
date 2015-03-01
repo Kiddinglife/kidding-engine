@@ -1307,22 +1307,21 @@
 //
 //}
 #include "common\Profile.h"
-void hello(Profile& p)
+static Profile _localProfile;
+void hello()
 {
-	AutoScopedProfile _autoScopedProfile(p, __FILE__, __LINE__);
-	Sleep(1);
+	SCOPED_PROFILE(_localProfile);
+	Sleep(100);
 }
 TEST(pROFILETESTS, aLLTESTS)
 {
-	static Profile _localProfile("test");
-	hello(_localProfile);
-	ACE_DEBUG(( LM_DEBUG, 
+	hello();
+	ACE_DEBUG(( LM_DEBUG,
 		"%s::lastIntTime(%f), lastTime(%f), sumTime(%f), sumIntTime(%f),runningTime(%f) \n",
 		_localProfile.name(),
-		_localProfile.lastIntTimeInSeconds(),
-		_localProfile.lastTimeInSeconds(),
-		_localProfile.sumTimeInSeconds(),
-		_localProfile.sumIntTimeInSeconds(),
-		(double) runningTime() / stampsPerSecondD()
-		));
+		_localProfile.lastIntTimeInSeconds() * 1000,
+		_localProfile.lastTimeInSeconds() * 1000,
+		_localProfile.sumTimeInSeconds() * 1000,
+		_localProfile.sumIntTimeInSeconds() * 1000,
+		(double) runningTime() / stampsPerSecondD() * 1000 ));
 }

@@ -49,13 +49,17 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	//*p << (UINT64) 2;
 	//p->end_new_curr_message();
 
+	//ACE_TEST_ASSERT(TESTMSG::pmsg1 != NULL);
+	//Bundle* p = Bundle_Pool->Ctor();
+	//p->start_new_curr_message(TESTMSG::pmsg1);
+	//*p << (ACE_UINT64) 1;
+	//p->end_new_curr_message();
+
 	ACE_TEST_ASSERT(TESTMSG::pmsg1 != NULL);
 	Bundle* p = Bundle_Pool->Ctor();
 	p->start_new_curr_message(TESTMSG::pmsg1);
 	*p << (ACE_UINT64) 1;
 	p->end_new_curr_message();
-
-
 	////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
 	g_channelExternalEncryptType = 0;
@@ -108,6 +112,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	}
 
 	ACE_HEX_DUMP(( LM_DEBUG, pReceiveWindow->buff->rd_ptr(), pReceiveWindow->buff->length() ));
+
 	Packet_Pool->Dtor(pReceiveWindow);
 	log.close();
 }

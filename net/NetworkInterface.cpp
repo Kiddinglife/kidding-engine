@@ -176,7 +176,7 @@ NETWORK_NAMESPACE_BEGIN_DECL
  */
 NetworkInterface::~NetworkInterface()
 {
-	TRACE("NetworkInterface::dtor()");
+	//TRACE("NetworkInterface::dtor()");
 
 	deregister_all_channels();
 
@@ -190,7 +190,7 @@ NetworkInterface::~NetworkInterface()
 	SAFE_RELEASE(pExtListenerReceiver_);
 	SAFE_RELEASE(pIntListenerReceiver_);
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 /**
@@ -299,7 +299,7 @@ bool NetworkInterface::is_ip_addr_valid(const char* spec, char* name)
 /// These three methods are used to register and deregister the channel
 bool NetworkInterface::register_channel(Channel* pChannel)
 {
-	TRACE("NetworkInterface::registerChannel");
+	//TRACE("NetworkInterface::registerChannel");
 	/// get the current channel's address
 	static ACE_INET_Addr addr;
 	pChannel->protocolType_ == PROTOCOL_TCP ?
@@ -327,11 +327,12 @@ bool NetworkInterface::register_channel(Channel* pChannel)
 	if( pChannel->channelScope_ = Channel::EXTERNAL )
 		numExtChannels_++;
 
-	TRACE_RETURN(true);
+	return true;
+	//TRACE_RETURN(true);
 }
 bool NetworkInterface::deregister_channel(Channel* pChannel)
 {
-	TRACE("NetworkInterface::deregisterChannel");
+	//TRACE("NetworkInterface::deregisterChannel");
 
 	/// get the current channel's address
 	static ACE_INET_Addr addr;
@@ -349,7 +350,8 @@ bool NetworkInterface::deregister_channel(Channel* pChannel)
 		ACE_DEBUG(( LM_ERROR, "NetworkInterface::deregisterChannel: "
 			"Channel not found {}!\n",
 			pChannel->c_str() ));
-		TRACE_RETURN(false);
+		return false;
+		//TRACE_RETURN(false);
 	}
 
 
@@ -358,11 +360,12 @@ bool NetworkInterface::deregister_channel(Channel* pChannel)
 		( *pChannelDeregisterHandler_ )( pChannel );
 	}
 
-	TRACE_RETURN(true);
+	return true;
+	//TRACE_RETURN(true);
 }
 bool NetworkInterface::deregister_all_channels()
 {
-	TRACE("NetworkInterface::deregisterAllChannels");
+	//TRACE("NetworkInterface::deregisterAllChannels");
 
 	ChannelMap::iterator iter = channelMap_.begin();
 	while( iter != channelMap_.end() )
@@ -374,45 +377,48 @@ bool NetworkInterface::deregister_all_channels()
 	channelMap_.clear();
 	numExtChannels_ = 0;
 
-	TRACE_RETURN(true);
+	return true;
+	//TRACE_RETURN(true);
 }
 
 void NetworkInterface::add_delayed_channel(Channel* channel)
 {
-	TRACE("NetworkInterface::delayedSend()");
+	//TRACE("NetworkInterface::delayedSend()");
 	pDelayedChannels_->add(channel);
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 void NetworkInterface::send_delayed_channel(Channel* channel)
 {
-	TRACE("NetworkInterface::send_on_delayed()");
+	//TRACE("NetworkInterface::send_on_delayed()");
 	pDelayedChannels_->send_delayed_channel(channel);
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 /// These twp methods are used to find the channel 
 Channel * NetworkInterface::channel(const ACE_INET_Addr& addr)
 {
-	TRACE("NetworkInterface::findChannel(const ACE_INET_Addr&)");
+	//TRACE("NetworkInterface::findChannel(const ACE_INET_Addr&)");
 
 	if( !addr.get_ip_address() ) return NULL;
 	ChannelMap::iterator iter = channelMap_.find(addr);
+	return ( ( iter != channelMap_.end() ) ? iter->second : NULL );
 
-	TRACE_RETURN(( iter != channelMap_.end() ) ? iter->second : NULL);
+	//TRACE_RETURN(( iter != channelMap_.end() ) ? iter->second : NULL);
 }
 Channel * NetworkInterface::channel(ACE_HANDLE handle)
 {
-	TRACE("NetworkInterface::findChannel(ACE_HANDLE)");
+	//TRACE("NetworkInterface::findChannel(ACE_HANDLE)");
 
 	ChannelMap::iterator iter = channelMap_.begin();
 	for( ; iter != channelMap_.end(); ++iter )
 	{
 		/// test if the end point in the current channel has the handle that equals to handle
 		if( iter->second->pEndPoint_ && iter->second->pEndPoint_->get_handle() == handle )
-			TRACE_RETURN(iter->second);
+			return  ( iter->second );
+		//TRACE_RETURN(iter->second);
 	}
-
-	TRACE_RETURN(NULL);
+	return NULL;
+	//TRACE_RETURN(NULL);
 }
 
 /// channel cb
