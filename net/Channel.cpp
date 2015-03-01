@@ -92,13 +92,14 @@ void Channel::hand_shake(void)
 
 int Channel::get_bundles_length(void)
 {
-	int len = 0;
-	Bundles::iterator iter = bundles_.begin();
-	for( ; iter != bundles_.end(); ++iter )
-	{
-		len += ( *iter )->get_packets_length();
-	}
-	return len;
+	//int len = 0;
+	//Bundles::iterator iter = bundles_.begin();
+	//for( ; iter != bundles_.end(); ++iter )
+	//{
+	//	len += ( *iter )->get_packets_length();
+	//}
+	//return len;
+	return buffered_sending_bundle_.get_packets_length();
 }
 
 void Channel::clear_channel(bool warnOnDiscard /*=false*/)
@@ -108,8 +109,19 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 	/// Stop Inactivity Detection
 	if( timerID_ != -1 && pEndPoint_ ) pEndPoint_->reactor()->cancel_timer(timerID_);
 
-	/// clear the bundles
-	this->clearBundles();
+	/// clear the sending bundles
+	///this->clearBundles();
+
+	if( buffered_sending_bundle_.packets_.size() > 0 )
+	{
+		Bundle::Packets::iterator iter = recvPackets_.begin();
+		int hasDiscard = 0;
+
+		for( ; iter != buffered_sending_bundle_.packets_.end(); ++iter )
+		{
+			if( ( *iter )->length() > 0 ) hasDiscard++;
+		}
+	}
 
 	/// clear the unprocessed recv packets
 	if( recvPackets_.size() > 0 )
@@ -221,6 +233,7 @@ const char * Channel::c_str() const
 	//TRACE_RETURN(dodgyString);
 }
 
+//@Unused
 void Channel::clearBundles(void)
 {
 	//TRACE("Channel::clearBundle()");
@@ -323,7 +336,7 @@ void Channel::process_packets(Messages* pMsgHandlers)
 
 	//TRACE_RETURN_VOID();
 }
-
+//@Unused
 void Channel::send(Bundle * pBundle)
 {
 	//TRACE("Channel::send(Bundle * pBundle)");

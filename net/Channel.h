@@ -78,12 +78,12 @@ struct Channel
 
 	/**
 	 * 该通道会缓存一定量的发送包，这是send-batch的优化
-	 * 每个bundle包含了许多满载包
-	 *
+	 * 一个bundle包含了许多满载包或者未满在包
 	 */
-	typedef std::vector<Bundle*> Bundles;
-	Bundles                                  bundles_;
-	Bundle                                    buffered_sending_bundle_;
+	typedef std::vector<Bundle*> Bundles;  //@Unused
+	Bundles                                  bundles_; //@Unused
+	Bundle                                    buffered_sending_bundle_; //@used
+
 	/**
 	 * A channel will cache the received packets.
 	 * 通道会缓存一定量的接受包，这是recv-batch优化
@@ -182,7 +182,7 @@ struct Channel
 	 */
 	inline bool initialize(ACE_INET_Addr* addr = NULL);
 	inline void destroy(void);
-	void clearBundles(void);
+	void clearBundles(void); 	//@Unused
 	void clear_channel(bool warnOnDiscard = false);
 	inline void add_delayed_channel(void);
 	void hand_shake(void);
@@ -191,8 +191,8 @@ struct Channel
 	void on_packet_received(int bytes);
 
 	/// send stuff
-	void send(Bundle * pBundle = NULL);
-	void send_buffered_bundle();
+	void send(Bundle * pBundle = NULL); //@Unused
+	void send_buffered_bundle(); //@Used
 	bool process_send(void);
 	void on_packet_sent(int bytes_cnt, bool is_sent_completely);
 	inline void on_bundles_sent_completely(void);
