@@ -19,7 +19,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	ACE_TEST_ASSERT(TESTMSG::pmsg1 != NULL);
 	Bundle* p = Bundle_Pool->Ctor();
 	p->start_new_curr_message(TESTMSG::pmsg1);
-	*p << (ACE_UINT64) 1;
+	*p << (ACE_UINT64) 1 << (ACE_INT16) 1;
 	p->end_new_curr_message();
 
 	////////////////////////////////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	ACE_INET_Addr addr;
 	addr.set(20001, "192.168.2.47");
 	ACE_SOCK_Connector logConnector;
-	ACE_Time_Value timeout(10);
+	ACE_Time_Value timeout(30);
 	ACE_SOCK_Stream log;
 	if( logConnector.connect(log, addr, &timeout) == -1 )
 	{
@@ -59,9 +59,10 @@ TEST(PacketReaderTests, ctor_dtor_test)
 			0);
 	}
 
-	Bundle_Pool->Dtor(p);
+	Sleep(1);
 
-	ACE_Time_Value wait(3);
+	Bundle_Pool->Dtor(p);
+	ACE_Time_Value wait(10);
 	Packet* pReceiveWindow = pReceiveWindow = Packet_Pool->Ctor();
 	size_t len = log.recv(pReceiveWindow->buff->wr_ptr(),
 		pReceiveWindow->buff->size(), &wait);
@@ -73,7 +74,6 @@ TEST(PacketReaderTests, ctor_dtor_test)
 			"%M::TCP_SOCK_Handler::process_recv(): datasize={%d}, wpos={%d}.\n",
 			len, pReceiveWindow->buff->wr_ptr() ));
 	}
-
 	ACE_HEX_DUMP(( LM_DEBUG, pReceiveWindow->buff->rd_ptr(), pReceiveWindow->buff->length() ));
 
 

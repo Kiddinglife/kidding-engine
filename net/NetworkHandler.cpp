@@ -109,9 +109,9 @@ int TCP_SOCK_Handler::open(void)
 	if( this->sock_.get_remote_addr(peer_addr) == 0 &&
 		peer_addr.addr_to_string(peer_name, MAXHOSTNAMELEN) == 0 )
 
-		//ACE_DEBUG(( LM_DEBUG, "(%P|%t) Connection from %s\n", peer_name ));
+		ACE_DEBUG(( LM_DEBUG, "(%P|%t) Connection from %s\n", peer_name ));
 
-		return this->reactor()->register_handler(this, ACE_Event_Handler::READ_MASK);
+	return this->reactor()->register_handler(this, ACE_Event_Handler::RWE_MASK);
 }
 
 int TCP_SOCK_Handler::handle_close(ACE_HANDLE, ACE_Reactor_Mask mask)
@@ -225,7 +225,6 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 
 int TCP_SOCK_Handler::handle_output(ACE_HANDLE fd)
 {
-	//pChannel_->process_send();
 	pChannel_->send_buffered_bundle();
 	return 0;
 }

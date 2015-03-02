@@ -5,6 +5,8 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
 Bundle::Bundle(Channel * pChannel, ProtocolType pt) :
+written_bytes_cnt_(0),
+unwritten_bytes_cnt_(0),
 pChnnel_(pChannel),
 pCurrPacket_(NULL),
 numMessages_(0),
@@ -224,6 +226,8 @@ size_t Bundle::calculate_avaiable_space_of_curr_packet(size_t addsize, bool inse
 	//	currMsgLength_, pCurrPacket_->length() ));
 
 	//TRACE_RETURN(taddsize);
+	ACE_DEBUG(( LM_DEBUG,
+		"calculate_avaiable_space_of_curr_packet::, now taddsize=%d\n", taddsize ));
 	return taddsize;
 }
 

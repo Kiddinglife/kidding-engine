@@ -1,3 +1,6 @@
+/**
+ * @By Jackie Zhang at 6:10 PM on 01/03/2015
+ */
 #ifndef Channel_H_
 #define Channel_H_
 
@@ -20,9 +23,6 @@ struct ErrorSat
 typedef std::pair<ACE_INET_Addr, std::string > AdrrStrPair;
 typedef std::map < AdrrStrPair, ErrorSat > ErrorStats;
 
-/**
- * @By Jackie Zhang at 6:10 PM on 01/03/2015
- */
 struct ErrorStatMgr : public ACE_Event_Handler
 {
 	static const ACE_UINT32 ERROR_REPORT_MIN_PERIOD_MS;

@@ -39,7 +39,7 @@ channelType_(CHANNEL_NORMAL),
 componentID_(UNKNOWN_COMPONENT_TYPE),
 pMsgs_(NULL)
 {
-	clearBundles();
+	/*clearBundles();*/
 	initialize();
 }
 
@@ -114,7 +114,7 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 
 	if( buffered_sending_bundle_.packets_.size() > 0 )
 	{
-		Bundle::Packets::iterator iter = recvPackets_.begin();
+		Bundle::Packets::iterator iter = buffered_sending_bundle_.packets_.begin();
 		int hasDiscard = 0;
 
 		for( ; iter != buffered_sending_bundle_.packets_.end(); ++iter )
@@ -278,9 +278,6 @@ bool Channel::initialize(ACE_INET_Addr* addr)
 
 	startInactivityDetection(( channelScope_ == INTERNAL ) ? g_channelInternalTimeout : g_channelExternalTimeout);
 
-	/// @TEST
-	pEndPoint_->reactor()->register_handler(pEndPoint_, ACE_Event_Handler::WRITE_MASK);
-
 	return true;
 	//TRACE_RETURN(true);
 }
@@ -429,7 +426,7 @@ void Channel::send(Bundle * pBundle)
 }
 void Channel::send_buffered_bundle()
 {
-	//TRACE("Channel::send(Bundle * pBundle)");
+	TRACE("Channel::send(Bundle * pBundle)");
 
 	/// check to see if the current channel is avaiable to use
 	if( isDestroyed_ )
@@ -461,6 +458,8 @@ void Channel::send_buffered_bundle()
 	Bundle::Packets::iterator iter1 = buffered_sending_bundle_.packets_.begin();
 	for( ; iter1 != buffered_sending_bundle_.packets_.end() - 1; ++iter1 )
 	{
+		ACE_DEBUG(( LM_DEBUG,
+			"Channel::send(1)\n" ));
 		///////////////// process this packet starts /////////////////////////
 		/// filter the packet
 		if( canFilterPacket_ )
@@ -494,17 +493,23 @@ void Channel::send_buffered_bundle()
 		} else
 		{
 			Packet_Pool->Dtor(( *iter1 ));
+			//buffered_sending_bundle_.packets_.erase(iter1);
 		}
 	}
-
+	ACE_DEBUG(( LM_DEBUG,
+		"Channel::send(last)\n" ));
 	static Packet* end_packet = NULL;
 	end_packet = *iter1;
 	ACE_TEST_ASSERT(end_packet != NULL);
-	if( end_packet->buff->size() < PACKET_MAX_SIZE_TCP )
+	if( end_packet->buff->length() < buffered_sending_bundle_.currPacketMaxSize )
 	{
+		ACE_DEBUG(( LM_DEBUG,
+			"Channel::send(<)\n" ));
 		if( should_wait_next_tick )
+		{
 			should_wait_next_tick = false;
-		else
+			return;
+		} else
 		{
 			should_wait_next_tick = true;
 			/// filter the packet
@@ -517,14 +522,14 @@ void Channel::send_buffered_bundle()
 			if( protocolType_ == PROTOCOL_TCP )
 			{
 				if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
-				size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
+				size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(end_packet->buff->rd_ptr(), end_packet->length());
 
 				if( sent_cnt == -1 )
 				{
 					reason = checkSocketErrors();
 				} else
 				{
-					( *iter1 )->buff->rd_ptr(sent_cnt);
+					end_packet->buff->rd_ptr(sent_cnt);
 					on_packet_sent(sent_cnt, ( *iter1 )->length() == 0);
 				}
 
@@ -539,6 +544,7 @@ void Channel::send_buffered_bundle()
 			} else
 			{
 				Packet_Pool->Dtor(( *iter1 ));
+				buffered_sending_bundle_.packets_.erase(iter1);
 			}
 		}
 	} else
@@ -553,15 +559,16 @@ void Channel::send_buffered_bundle()
 		if( protocolType_ == PROTOCOL_TCP )
 		{
 			if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
-			size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
+			size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(
+				end_packet->buff->rd_ptr(), end_packet->length());
 
 			if( sent_cnt == -1 )
 			{
 				reason = checkSocketErrors();
 			} else
 			{
-				( *iter1 )->buff->rd_ptr(sent_cnt);
-				on_packet_sent(sent_cnt, ( *iter1 )->length() == 0);
+				end_packet->buff->rd_ptr(sent_cnt);
+				on_packet_sent(sent_cnt, end_packet->length() == 0);
 			}
 
 		} else
@@ -575,6 +582,7 @@ void Channel::send_buffered_bundle()
 		} else
 		{
 			Packet_Pool->Dtor(( *iter1 ));
+			//buffered_sending_bundle_.packets_.erase(iter1);
 		}
 	}
 
@@ -586,7 +594,7 @@ void Channel::send_buffered_bundle()
 	} else
 	{
 		/// there are packets that are not sent, we first clear the sent ones from this bundle
-		buffered_sending_bundle_.packets_.erase(buffered_sending_bundle_.packets_.begin(), iter1);
+		//buffered_sending_bundle_.packets_.erase(buffered_sending_bundle_.packets_.begin(), iter1);
 
 		if( reason == REASON_RESOURCE_UNAVAILABLE )
 		{
@@ -650,7 +658,7 @@ void Channel::send_buffered_bundle()
 			}
 		}
 	}
-	//TRACE_RETURN_VOID();
+	TRACE_RETURN_VOID();
 }
 void Channel::on_error(void)
 {
@@ -873,12 +881,20 @@ void Channel::update_recv_window(Packet* pPacket)
 	size = recvPackets_.size();
 
 	///@Test
-	if( size )
+	if( size  )
 	{
 		this->process_packets(&TESTMSG::messageHandlers);
 		buffered_sending_bundle_.start_new_curr_message(TESTMSG::pmsg1);
-		buffered_sending_bundle_ << (ACE_UINT64) 1 << "hello,kidding-server...";
+		buffered_sending_bundle_ << (ACE_UINT64) 1 << "hello"
+			<< (ACE_INT16) 1;
 		buffered_sending_bundle_.end_new_curr_message();
+		ACE_HEX_DUMP(( LM_DEBUG, buffered_sending_bundle_.packets_[0]->buff->base(),
+			buffered_sending_bundle_.packets_[0]->buff->length(),
+			"TEST HUNP" ));
+		ACE_HEX_DUMP(( LM_DEBUG, buffered_sending_bundle_.packets_[1]->buff->base(),
+			buffered_sending_bundle_.packets_[1]->buff->length(),
+			"TEST HUNP" ));
+		this->send_buffered_bundle();
 		this->send_buffered_bundle();
 	}///
 
