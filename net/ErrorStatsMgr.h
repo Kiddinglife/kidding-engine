@@ -17,7 +17,7 @@ struct ErrorSat
 {
 	ACE_UINT64 lastReportStamps;	// When this error was last reported
 	ACE_UINT64 lastRaisedStamps;	// When this error was last raised
-	ACE_UINT64 count;	                // How many of this exception have beenreported since
+	ACE_UINT32 count;	                // How many of this exception have beenreported since
 };
 
 typedef std::pair<ACE_INET_Addr, std::string > AdrrStrPair;

@@ -1,5 +1,6 @@
 #include "ErrorStatsMgr.h"
 #include "net\Nub.h"
+#include <iostream>
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
@@ -43,42 +44,18 @@ std::string ErrorStatMgr::addressErrorToString(
 	ACE_INT64 deltaStamps = now - reportAndCount.lastReportStamps;
 	double deltaMillis = 1000 * deltaStamps / stampsPerSecondD();
 
-	char * buf = NULL;
-	int bufLen =5;
-	int strLen = bufLen;
-	do
+	char buf[1024];
+	int len = kbe_snprintf(buf, 1024,
+		"%d reports of %s in the last %.00f ms",
+		reportAndCount.count,
+		addressErrorToString(address, errorString).c_str(),
+		deltaMillis);
+
+	if( len >= 1024 )
 	{
-		bufLen = strLen + 1;
-		delete[ ] buf;
-		buf = new char[bufLen];
-#ifdef _WIN32
-		strLen = _snprintf(buf, bufLen, "%d reports of '%s' "
-			"in the last %.00fms",
-			reportAndCount.count,
-			addressErrorToString(address, errorString).c_str(),
-			deltaMillis);
-		if( strLen == -1 ) strLen = ( bufLen - 1 ) * 2;
-#else
-		strLen = snprintf(buf, bufLen, "%d reports of '%s' "
-			"in the last %.00fms",
-			reportAndCount.count,
-			addressErrorToString(address, errorString).c_str(),
-			deltaMillis);
-#endif
-	} while( strLen >= bufLen );
-
-	std::string out(buf);
-	delete[ ] buf;
-	return out;
-
-	//char buf[512];
-	//kbe_snprintf(buf, 512,
-	//	"%d reports of '%s' "
-	//	"in the last %.00fms",
-	//	reportAndCount.count,
-	//	addressErrorToString(address, errorString).c_str(),
-	//	deltaMillis);
-	//return std::string(buf);
+		return std::string("the error string length  >= 1024 butes\n");
+	}
+	return std::string(buf);
 }
 
 /**
@@ -88,38 +65,19 @@ std::string ErrorStatMgr::addressErrorToString(
 */
 void ErrorStatMgr::reportError(const ACE_INET_Addr& address, const char* format, ...)
 {
-	char * buf = NULL;
-	int bufLen = 5;
-	int strLen = bufLen;
-	do
-	{
-		delete[ ] buf;
-		bufLen = strLen + 1;
-		buf = new char[bufLen];
-
-		va_list va;
-		va_start(va, format);
-#ifdef _WIN32
-		strLen = _vsnprintf(buf, bufLen, format, va);
-		if( strLen == -1 ) strLen = ( bufLen - 1 ) * 2;
-#else
-		strLen = vsnprintf(buf, bufLen, format, va);
-#endif
-		va_end(va);
-		buf[bufLen - 1] = '\0';
-
-	} while( strLen >= bufLen );
-
+	char  buf[1024];
+	va_list va;
+	va_start(va, format);
+	int strLen = _vsnprintf(buf, 1024, format, va);
+	va_end(va);
+	buf[1024 - 1] = '\0';
 	std::string error(buf);
-
-	delete[ ] buf;
-
 	this->addReport(address, error);
 }
 
 void ErrorStatMgr::addReport(const ACE_INET_Addr& address, const std::string & errorString)
 {
-
+	std::cout << errorString << "\n";
 }
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
