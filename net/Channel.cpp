@@ -428,6 +428,13 @@ void Channel::send_buffered_bundle()
 {
 	TRACE("Channel::send(Bundle * pBundle)");
 
+	static Bundle::Packets::iterator  iter1;
+	static Bundle::Packets::iterator  end;
+	static size_t                              packets_cnt = 0;
+	static size_t                              sent_cnt = 0;
+	static bool                               should_wait_next_tick = true;
+	static Reason                           reason = REASON_SUCCESS;
+
 	/// check to see if the current channel is avaiable to use
 	if( isDestroyed_ )
 	{
@@ -447,145 +454,40 @@ void Channel::send_buffered_bundle()
 	}
 
 	/// if no bundle to send, we just stop here
-	static size_t packets_cnt;
 	if( !( packets_cnt = buffered_sending_bundle_.packets_.size() ) ) return;
 
-	/////////////////////////////////////////////////////// process_send();
-	static bool should_wait_next_tick = true;
-	static Reason reason = REASON_SUCCESS;
-
+	/// reset all states variables values
+	iter1 = buffered_sending_bundle_.packets_.begin();
+	end = iter1 + packets_cnt - 1;
 	reason = REASON_SUCCESS;
-	Bundle::Packets::iterator iter1 = buffered_sending_bundle_.packets_.begin();
-	for( ; iter1 != buffered_sending_bundle_.packets_.end() - 1; ++iter1 )
+	if( packets_cnt > 1 && should_wait_next_tick == false ) should_wait_next_tick = true;
+
+	for( ; iter1 != end; ++iter1 )
 	{
-		ACE_DEBUG(( LM_DEBUG,
-			"Channel::send(1)\n" ));
-		///////////////// process this packet starts /////////////////////////
-		/// filter the packet
-		if( canFilterPacket_ )
-		{
-			//filter_packet();
-		}
-
-		/// process filtered packets
-		if( protocolType_ == PROTOCOL_TCP )
-		{
-			if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
-			size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
-
-			if( sent_cnt == -1 )
-			{
-				reason = checkSocketErrors();
-			} else
-			{
-				( *iter1 )->buff->rd_ptr(sent_cnt);
-				on_packet_sent(sent_cnt, ( *iter1 )->length() == 0);
-			}
-
-		} else
-		{
-			/// TO-DO
-		}
-
-		if( reason != REASON_SUCCESS )
-		{
-			break;
-		} else
-		{
-			Packet_Pool->Dtor(( *iter1 ));
-			//buffered_sending_bundle_.packets_.erase(iter1);
-		}
+		//process this packet 
+		SEND_METHOD();
 	}
-	ACE_DEBUG(( LM_DEBUG,
-		"Channel::send(last)\n" ));
-	static Packet* end_packet = NULL;
-	end_packet = *iter1;
-	ACE_TEST_ASSERT(end_packet != NULL);
-	if( end_packet->buff->length() < buffered_sending_bundle_.currPacketMaxSize )
+
+	ACE_TEST_ASSERT(( *iter1 ) != NULL);
+	if( ( *iter1 )->buff->length() < buffered_sending_bundle_.currPacketMaxSize )
 	{
-		ACE_DEBUG(( LM_DEBUG,
-			"Channel::send(<)\n" ));
 		if( should_wait_next_tick )
 		{
 			should_wait_next_tick = false;
+			buffered_sending_bundle_.packets_.erase(
+				buffered_sending_bundle_.packets_.begin(), iter1);
 			return;
 		} else
 		{
 			should_wait_next_tick = true;
-			/// filter the packet
-			if( canFilterPacket_ )
-			{
-				//filter_packet();
-			}
-
-			/// process filtered packets
-			if( protocolType_ == PROTOCOL_TCP )
-			{
-				if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
-				size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(end_packet->buff->rd_ptr(), end_packet->length());
-
-				if( sent_cnt == -1 )
-				{
-					reason = checkSocketErrors();
-				} else
-				{
-					end_packet->buff->rd_ptr(sent_cnt);
-					on_packet_sent(sent_cnt, ( *iter1 )->length() == 0);
-				}
-
-			} else
-			{
-				/// TO-DO
-			}
-
-			if( reason != REASON_SUCCESS )
-			{
-				/// just instructive
-			} else
-			{
-				Packet_Pool->Dtor(( *iter1 ));
-				buffered_sending_bundle_.packets_.erase(iter1);
-			}
+			SEND_METHOD();
 		}
 	} else
 	{
-		/// filter the packet
-		if( canFilterPacket_ )
-		{
-			//filter_packet();
-		}
-
-		/// process filtered packets
-		if( protocolType_ == PROTOCOL_TCP )
-		{
-			if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
-			size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(
-				end_packet->buff->rd_ptr(), end_packet->length());
-
-			if( sent_cnt == -1 )
-			{
-				reason = checkSocketErrors();
-			} else
-			{
-				end_packet->buff->rd_ptr(sent_cnt);
-				on_packet_sent(sent_cnt, end_packet->length() == 0);
-			}
-
-		} else
-		{
-			/// TO-DO
-		}
-
-		if( reason != REASON_SUCCESS )
-		{
-			/// just instructive
-		} else
-		{
-			Packet_Pool->Dtor(( *iter1 ));
-			//buffered_sending_bundle_.packets_.erase(iter1);
-		}
+		SEND_METHOD();
 	}
 
+	goto1:
 	if( reason == REASON_SUCCESS )
 	{
 		if( buffered_sending_bundle_.pCurrPacket_ )
@@ -594,7 +496,7 @@ void Channel::send_buffered_bundle()
 	} else
 	{
 		/// there are packets that are not sent, we first clear the sent ones from this bundle
-		//buffered_sending_bundle_.packets_.erase(buffered_sending_bundle_.packets_.begin(), iter1);
+		buffered_sending_bundle_.packets_.erase(buffered_sending_bundle_.packets_.begin(), iter1);
 
 		if( reason == REASON_RESOURCE_UNAVAILABLE )
 		{
@@ -611,6 +513,7 @@ void Channel::send_buffered_bundle()
 	}//////////////////////////////////// process this packet ends
 
 	packets_cnt = buffered_sending_bundle_.packets_.size();
+
 	if( g_sendWindowMessagesOverflowCritical > 0 &&
 		packets_cnt > g_sendWindowMessagesOverflowCritical )
 	{
@@ -881,7 +784,7 @@ void Channel::update_recv_window(Packet* pPacket)
 	size = recvPackets_.size();
 
 	///@Test
-	if( size  )
+	if( size )
 	{
 		this->process_packets(&TESTMSG::messageHandlers);
 		buffered_sending_bundle_.start_new_curr_message(TESTMSG::pmsg1);

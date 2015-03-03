@@ -13,6 +13,34 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
+#define SEND_METHOD();\
+if( canFilterPacket_ )\
+{\
+}\
+if( protocolType_ == PROTOCOL_TCP )\
+{\
+	if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;\
+	sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(\
+		( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());\
+	if( sent_cnt == -1 )\
+	{\
+		reason = checkSocketErrors();\
+	} else\
+	{\
+		( *iter1 )->buff->rd_ptr(sent_cnt);\
+		on_packet_sent(sent_cnt, ( *iter1 )->length() == 0);\
+	}\
+} else\
+{\
+}\
+if( reason != REASON_SUCCESS )\
+{\
+	goto goto1;\
+} else\
+{\
+	Packet_Pool->Dtor(( *iter1 ));\
+}
+
 struct Channel
 {
 	/// 超时检查的目的标志，例如这是一个非活动通道的检查

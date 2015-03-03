@@ -62,9 +62,19 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	Sleep(1);
 
 	Bundle_Pool->Dtor(p);
-	ACE_Time_Value wait(10);
+	ACE_Time_Value wait(1);
 	Packet* pReceiveWindow = pReceiveWindow = Packet_Pool->Ctor();
 	size_t len = log.recv(pReceiveWindow->buff->wr_ptr(),
+		pReceiveWindow->buff->size(), &wait);
+	if( len > 0 )
+	{
+		pReceiveWindow->buff->wr_ptr(len);
+		// 注意:必须在大于0的时候否则DEBUG_MSG将会导致WSAGetLastError返回0从而陷入死循环
+		ACE_DEBUG(( LM_DEBUG,
+			"%M::TCP_SOCK_Handler::process_recv(): datasize={%d}, wpos={%d}.\n",
+			len, pReceiveWindow->buff->wr_ptr() ));
+	}
+	len = log.recv(pReceiveWindow->buff->wr_ptr(),
 		pReceiveWindow->buff->size(), &wait);
 	if( len > 0 )
 	{
