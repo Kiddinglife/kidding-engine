@@ -793,8 +793,12 @@ void Channel::update_recv_window(Packet* pPacket)
 			<< "hello, world, rainie is a fool"
 			<< (ACE_INT16) 1;
 		buffered_sending_bundle_.end_new_curr_message();
-		this->send_buffered_bundle();
-		this->send_buffered_bundle();
+		int i = 10;
+		while( i > 0 )
+		{
+			this->send_buffered_bundle();
+			i--;
+		}
 	}///
 
 	if( g_receiveWindowMessagesOverflowCritical > 0 &&
