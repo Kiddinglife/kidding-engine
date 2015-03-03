@@ -46,6 +46,8 @@ TEST(PacketReaderTests, ctor_dtor_test)
 		}
 
 	}
+	setnonblocking(true, log);
+
 	ssize_t recv_cnt, send_cnt;
 	Bundle::Packets::iterator iter = p->packets_.begin();
 	for( ; iter != p->packets_.end(); iter++ )
@@ -59,24 +61,26 @@ TEST(PacketReaderTests, ctor_dtor_test)
 			0);
 	}
 
-	Sleep(1);
+	Sleep(100);
 
 	Bundle_Pool->Dtor(p);
-	Packet* pReceiveWindow = pReceiveWindow = Packet_Pool->Ctor();
-	int i = 10;
+
+	Packet* pReceiveWindow = Packet_Pool->Ctor();
+	int i = 3;
 	while( i > 0 )
 	{
+		i--;
 		size_t len = log.recv(pReceiveWindow->buff->wr_ptr(), pReceiveWindow->buff->size());
-		if( len > 0 )
+		if( len == pReceiveWindow->buff->size() )
 		{
 			pReceiveWindow->buff->wr_ptr(len);
-			// 注意:必须在大于0的时候否则DEBUG_MSG将会导致WSAGetLastError返回0从而陷入死循环
-			ACE_DEBUG(( LM_DEBUG,
-				"%M::TCP_SOCK_Handler::process_recv(): datasize={%d}, wpos={%d}.\n",
-				len, pReceiveWindow->buff->wr_ptr() ));
+			ACE_HEX_DUMP(( LM_DEBUG, pReceiveWindow->buff->rd_ptr(), pReceiveWindow->buff->length() ));
+			pReceiveWindow->buff->reset();
+		} else if( len > 0 )
+		{
+			pReceiveWindow->buff->wr_ptr(len);
+			ACE_HEX_DUMP(( LM_DEBUG, pReceiveWindow->buff->rd_ptr(), pReceiveWindow->buff->length() ));
 		}
-		ACE_HEX_DUMP(( LM_DEBUG, pReceiveWindow->buff->rd_ptr(), pReceiveWindow->buff->length() ));
-		i--;
 	}
 
 

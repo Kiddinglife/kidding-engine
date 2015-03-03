@@ -31,8 +31,31 @@ struct ErrorStatMgr : public ACE_Event_Handler
 	ErrorStats errorStats_;
 	long         timerID_; 	/// tinmer id used to canncel the timmer
 	Nub*        nub_;
+
 	ErrorStatMgr(Nub* nub);
 	virtual ~ErrorStatMgr();
+
+	std::string addressErrorToString(const ACE_INET_Addr& address, const std::string& errorString);
+
+	std::string ErrorStatMgr::addressErrorToString(
+		const ACE_INET_Addr& address,
+		const std::string& errorString,
+		const ErrorSat& reportAndCount,
+		const ACE_UINT64& now);
+
+	/**
+	*	Report a general error with printf style format string. If repeatedly the
+	*	resulting formatted string is reported within the minimum output window,
+	*	they are accumulated and output after the minimum output window has passed.
+	*/
+	void ErrorStatMgr::reportError(const ACE_INET_Addr& address, const char* format, ...);
+
+	/**
+	*	Adds a new error message for an address to the reporter count map.
+	*	Emits an error message if there has been no previous equivalent error
+	*	string provider for this address.
+	*/
+	void ErrorStatMgr::addReport(const ACE_INET_Addr& address, const std::string & errorString);
 };
 
 NETWORK_NAMESPACE_END_DECL

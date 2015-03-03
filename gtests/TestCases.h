@@ -1306,22 +1306,29 @@
 //	pool->Dtor(p);
 //
 //}
-#include "common\Profile.h"
-static Profile _localProfile;
-void hello()
+//#include "common\Profile.h"
+//static Profile _localProfile;
+//void hello()
+//{
+//	SCOPED_PROFILE(_localProfile);
+//	Sleep(100);
+//}
+//TEST(pROFILETESTS, aLLTESTS)
+//{
+//	hello();
+//	ACE_DEBUG(( LM_DEBUG,
+//		"%s::lastIntTime(%f), lastTime(%f), sumTime(%f), sumIntTime(%f),runningTime(%f) \n",
+//		_localProfile.name(),
+//		_localProfile.lastIntTimeInSeconds() * 1000,
+//		_localProfile.lastTimeInSeconds() * 1000,
+//		_localProfile.sumTimeInSeconds() * 1000,
+//		_localProfile.sumIntTimeInSeconds() * 1000,
+//		(double) runningTime() / stampsPerSecondD() * 1000 ));
+//}
+#include "net\ErrorStatsMgr.h"
+#include "net\Nub.h"
+TEST(ErrorStatsMgr, tESTTS)
 {
-	SCOPED_PROFILE(_localProfile);
-	Sleep(100);
-}
-TEST(pROFILETESTS, aLLTESTS)
-{
-	hello();
-	ACE_DEBUG(( LM_DEBUG,
-		"%s::lastIntTime(%f), lastTime(%f), sumTime(%f), sumIntTime(%f),runningTime(%f) \n",
-		_localProfile.name(),
-		_localProfile.lastIntTimeInSeconds() * 1000,
-		_localProfile.lastTimeInSeconds() * 1000,
-		_localProfile.sumTimeInSeconds() * 1000,
-		_localProfile.sumIntTimeInSeconds() * 1000,
-		(double) runningTime() / stampsPerSecondD() * 1000 ));
+	Nub nub;
+	ErrorStatMgr mgr(&nub);
 }
