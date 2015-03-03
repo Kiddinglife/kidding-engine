@@ -788,15 +788,11 @@ void Channel::update_recv_window(Packet* pPacket)
 	{
 		this->process_packets(&TESTMSG::messageHandlers);
 		buffered_sending_bundle_.start_new_curr_message(TESTMSG::pmsg1);
-		buffered_sending_bundle_ << (ACE_UINT64) 1 << "hello"
+		buffered_sending_bundle_
+			<< (ACE_UINT64) 1
+			<< "hello, world, rainie is a fool"
 			<< (ACE_INT16) 1;
 		buffered_sending_bundle_.end_new_curr_message();
-		ACE_HEX_DUMP(( LM_DEBUG, buffered_sending_bundle_.packets_[0]->buff->base(),
-			buffered_sending_bundle_.packets_[0]->buff->length(),
-			"TEST HUNP" ));
-		ACE_HEX_DUMP(( LM_DEBUG, buffered_sending_bundle_.packets_[1]->buff->base(),
-			buffered_sending_bundle_.packets_[1]->buff->length(),
-			"TEST HUNP" ));
 		this->send_buffered_bundle();
 		this->send_buffered_bundle();
 	}///
