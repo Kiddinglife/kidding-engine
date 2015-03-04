@@ -84,6 +84,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	}
 
 
-	Packet_Pool->Dtor(pReceiveWindow);
-	//log.close();
+	//Packet_Pool->Dtor(pReceiveWindow);
+	Sleep(10000);
+	log.close();
 }

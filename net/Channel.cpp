@@ -426,7 +426,7 @@ void Channel::send(Bundle * pBundle)
 }
 void Channel::send_buffered_bundle()
 {
-	TRACE("Channel::send(Bundle * pBundle)");
+	//TRACE("Channel::send(Bundle * pBundle)");
 
 	static Bundle::Packets::iterator  iter1;
 	static Bundle::Packets::iterator  end;
@@ -561,7 +561,7 @@ void Channel::send_buffered_bundle()
 			}
 		}
 	}
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 void Channel::on_error(void)
 {
@@ -783,7 +783,7 @@ void Channel::update_recv_window(Packet* pPacket)
 	recvPackets_.push_back(pPacket);
 	size = recvPackets_.size();
 
-	///@Test
+	/////@Test
 	if( size )
 	{
 		this->process_packets(&TESTMSG::messageHandlers);
@@ -793,12 +793,6 @@ void Channel::update_recv_window(Packet* pPacket)
 			<< "hello, world, rainie is a fool"
 			<< (ACE_INT16) 1;
 		buffered_sending_bundle_.end_new_curr_message();
-		int i = 10;
-		while( i > 0 )
-		{
-			this->send_buffered_bundle();
-			i--;
-		}
 	}///
 
 	if( g_receiveWindowMessagesOverflowCritical > 0 &&
@@ -882,7 +876,6 @@ RecvState Channel::checkSocketErrors(int len, bool expectingPacket)
 	pNetworkInterface_->nub_->pErrorReporter_->reportException(REASON_GENERAL_NETWORK);
 	return RecvState::RECV_STATE_CONTINUE;
 }
-
 Reason Channel::checkSocketErrors()
 {
 	Reason reason;
@@ -898,6 +891,7 @@ Reason Channel::checkSocketErrors()
 	}
 	return reason;
 }
+
 void Channel::tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundle)
 {
 	Bundle::Packets::iterator iter = pBundle->packets_.begin();
@@ -957,7 +951,6 @@ void Channel::tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundl
 	}
 	pBundle->recycle_all_packets();
 }
-
 void Channel::udp_send_single_bundle(UDP_SOCK_Handler* pEndpoint, Bundle* pBundle, ACE_INET_Addr& addr)
 {
 	Bundle::Packets::iterator iter = pBundle->packets_.begin();

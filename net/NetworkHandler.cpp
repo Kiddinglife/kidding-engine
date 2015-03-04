@@ -77,7 +77,7 @@ int TCP_SOCK_Handler::handle_timeout(const ACE_Time_Value &current_time, const v
 	{
 		case Channel::TIMEOUT_INACTIVITY_CHECK:
 		{
-			if( timestamp() - pChannel_->lastRecvTime_ > pChannel_->inactivityExceptionPeriod_ )
+			if( timestamp() - pChannel_->lastRecvTime_ >= pChannel_->inactivityExceptionPeriod_ )
 			{
 				ACE_DEBUG(( LM_INFO,
 					ACE_TEXT("%M::TCP_SOCK_Handler::handle_timeout(%s)\n"),
@@ -222,7 +222,7 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 int TCP_SOCK_Handler::handle_output(ACE_HANDLE fd)
 {
 	pChannel_->send_buffered_bundle();
-	return 0;
+	return 1;
 }
 
 // Called when input is available from the client.
