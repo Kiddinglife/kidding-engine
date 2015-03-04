@@ -251,6 +251,7 @@ void Channel::clearBundles(void)
 
 void Channel::startInactivityDetection(float period, float checkPeriod)
 {
+	TRACE("Channel::startInactivityDetection(f");
 	if( timerID_ != -1 ) this->pEndPoint_->reactor()->cancel_timer(timerID_);
 
 	if( period > 0.f )
@@ -258,10 +259,10 @@ void Channel::startInactivityDetection(float period, float checkPeriod)
 		inactivityExceptionPeriod_ = (ACE_UINT64) ( period * stampsPerSecond() );
 		lastRecvTime_ = timestamp();
 		ACE_Time_Value interval(checkPeriod, 0);
-		/*	interval.set_msec(( ACE_UINT64(checkPeriod * 1000) ));*/
 		timerID_ = this->pEndPoint_->reactor()->schedule_timer(pEndPoint_,
 			(void*) TIMEOUT_INACTIVITY_CHECK, ACE_Time_Value::zero, interval);
 	}
+	TRACE_RETURN_VOID();
 }
 
 bool Channel::initialize(ACE_INET_Addr* addr)
@@ -426,7 +427,7 @@ void Channel::send(Bundle * pBundle)
 }
 void Channel::send_buffered_bundle()
 {
-	//TRACE("Channel::send(Bundle * pBundle)");
+	TRACE("Channel::send(Bundle * pBundle)");
 
 	static Bundle::Packets::iterator  iter1;
 	static Bundle::Packets::iterator  end;
@@ -440,6 +441,7 @@ void Channel::send_buffered_bundle()
 	{
 		ACE_DEBUG(( LM_ERROR, "Channel::send({%s}): channel has destroyed.\n", this->c_str() ));
 		clearBundles();
+		//pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
 		return;
 	}
 
@@ -450,11 +452,16 @@ void Channel::send_buffered_bundle()
 			c_str() ));
 		this->on_error();
 		clearBundles();
+	/*	pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);*/
 		return;
 	}
 
 	/// if no bundle to send, we just stop here
-	if( !( packets_cnt = buffered_sending_bundle_.packets_.size() ) ) return;
+	if( !( packets_cnt = buffered_sending_bundle_.packets_.size() ) )
+	{
+	/*	pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);*/
+		return;
+	}
 
 	/// reset all states variables values
 	iter1 = buffered_sending_bundle_.packets_.begin();
@@ -493,6 +500,7 @@ void Channel::send_buffered_bundle()
 		if( buffered_sending_bundle_.pCurrPacket_ )
 			buffered_sending_bundle_.pCurrPacket_ = NULL;
 		buffered_sending_bundle_.packets_.clear();
+		//pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
 	} else
 	{
 		/// there are packets that are not sent, we first clear the sent ones from this bundle
@@ -505,6 +513,7 @@ void Channel::send_buffered_bundle()
 				"space(kbengine.xml->channelCommon->writeBufferSize->{%s})...\n",
 				reasonToString(checkSocketErrors()),
 				( channelScope_ == INTERNAL ? "internal" : "external" ) ));
+			//pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
 		} else
 		{
 			//this->dispatcher().errorReporter().reportException(reason, pEndpoint_->addr());
@@ -561,7 +570,7 @@ void Channel::send_buffered_bundle()
 			}
 		}
 	}
-	//TRACE_RETURN_VOID();
+	TRACE_RETURN_VOID();
 }
 void Channel::on_error(void)
 {

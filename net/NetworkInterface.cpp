@@ -440,6 +440,8 @@ void NetworkInterface::on_channel_timeout(Channel* pChannel)
 	//Channel_Pool->Dtor(pChannel); should use this one but for test we use the secpnd one 
 	/// tp cancel the timer
 	pChannel->pEndPoint_->reactor()->cancel_timer(pChannel->timerID_);
+	deregister_channel(pChannel);
+	pChannel->pEndPoint_->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
 	//if( pChannelTimeOutHandler_ )
 	//{
 	//	( *pChannelTimeOutHandler_ )( pChannel );

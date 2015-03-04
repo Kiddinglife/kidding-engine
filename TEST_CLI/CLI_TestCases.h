@@ -64,7 +64,6 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	Sleep(100);
 
 	Bundle_Pool->Dtor(p);
-
 	Packet* pReceiveWindow = Packet_Pool->Ctor();
 	int i = 3;
 	while( i > 0 )
@@ -82,9 +81,9 @@ TEST(PacketReaderTests, ctor_dtor_test)
 			ACE_HEX_DUMP(( LM_DEBUG, pReceiveWindow->buff->rd_ptr(), pReceiveWindow->buff->length() ));
 		}
 	}
+	Packet_Pool->Dtor(pReceiveWindow);
 
+	Sleep(20000);
 
-	//Packet_Pool->Dtor(pReceiveWindow);
-	Sleep(10000);
 	log.close();
 }
