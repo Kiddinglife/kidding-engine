@@ -133,7 +133,7 @@ void ErrorStatMgr::addReport(const ACE_INET_Addr& address, const std::string & e
 */
 void ErrorStatMgr::reportPendingExceptions(bool reportBelowThreshold)
 {
-	TRACE("ErrorStatMgr::reportPendingExceptions");
+	//TRACE("ErrorStatMgr::reportPendingExceptions");
 	ACE_UINT64 now = timestamp();
 	// this is set to any iterator slated for removal
 	ErrorStats::iterator staleIter = this->errorStats_.end();
@@ -182,7 +182,7 @@ void ErrorStatMgr::reportPendingExceptions(bool reportBelowThreshold)
 	{
 		this->errorStats_.erase(staleIter);
 	}
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 
 int ErrorStatMgr::handle_timeout(const ACE_Time_Value &current_time, const void* act)

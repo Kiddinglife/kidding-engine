@@ -157,6 +157,10 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 
 	if( !pChannel_ ) return false; //TRACE_RETURN(false);
 
+	static Packet* pReceiveWindow = NULL;
+	static int len = 0;
+	static RecvState recv_state = RECV_STATE_BREAK;
+
 	if( pChannel_->isCondemn_ )
 	{
 		pChannel_->on_error();
@@ -164,10 +168,8 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 		//	TRACE_RETURN(false);
 	}
 
-	static Packet* pReceiveWindow = NULL;
 	pReceiveWindow = Packet_Pool->Ctor();
 
-	static int len;
 	len = sock_.recv(pReceiveWindow->buff->wr_ptr(), pReceiveWindow->buff->size());
 
 	if( len > 0 )
@@ -180,7 +182,6 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 	if( len < 0 )
 	{
 		if( pChannel_ ) Packet_Pool->Dtor(pReceiveWindow);
-		static RecvState recv_state;
 		if( ( recv_state = pChannel_->checkSocketErrors(len, expectingPacket) ) == RecvState::RECV_STATE_INTERRUPT )
 		{
 			pChannel_->on_error();

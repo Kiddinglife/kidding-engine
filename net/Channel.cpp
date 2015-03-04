@@ -879,9 +879,7 @@ RecvState Channel::checkSocketErrors(int len, bool expectingPacket)
 		"TCPPacketReceiver::processPendingEvents: "
 		"Throwing REASON_GENERAL_NETWORK (%s), will continue the reactor\n",
 		kbe_strerror() ));
-
 	pNetworkInterface_->nub_->pErrorReporter_->reportException(REASON_GENERAL_NETWORK);
-
 	return RecvState::RECV_STATE_CONTINUE;
 }
 

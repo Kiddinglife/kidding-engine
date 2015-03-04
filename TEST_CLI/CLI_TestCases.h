@@ -85,5 +85,5 @@ TEST(PacketReaderTests, ctor_dtor_test)
 
 
 	Packet_Pool->Dtor(pReceiveWindow);
-	log.close();
+	//log.close();
 }
