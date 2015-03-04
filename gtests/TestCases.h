@@ -1337,7 +1337,12 @@ TEST(ErrorStatsMgr, tESTTS)
 	std::string error = "The send buf is full";
 	ACE_INET_Addr addr(20001, ACE_LOCALHOST);
 	ACE_UINT64 now = timestamp();
+
 	//cout << mgr.addressErrorToString(addr, error) << "\n";
-	cout << mgr.addressErrorToString(addr, error, stat, now) << "\n";
-	mgr.reportError(addr, "%s, %d", "The send buf is full", 12);
+	//cout << mgr.addressErrorToString(addr, error, stat, now) << "\n";
+	mgr.reportPendingExceptions(false);
+	//mgr.reportError(addr, "%s, %d", "The send buf is full", 12);
+	//mgr.reportError(addr, "%s, %d", "The send buf is full", 12);
+	//Sleep(30);
+	//mgr.reportError(addr, "%s, %d", "The send buf is full", 12);
 }

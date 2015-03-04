@@ -8,6 +8,7 @@
 #include "ace\Event_Handler.h"
 #include "ace\INET_Addr.h"
 #include "common\common.h"
+#include "net\net_common.h"
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
@@ -37,7 +38,7 @@ struct ErrorStatMgr : public ACE_Event_Handler
 
 	std::string addressErrorToString(const ACE_INET_Addr& address, const std::string& errorString);
 
-	std::string ErrorStatMgr::addressErrorToString(
+	std::string addressErrorToString(
 		const ACE_INET_Addr& address,
 		const std::string& errorString,
 		const ErrorSat& reportAndCount,
@@ -48,14 +49,30 @@ struct ErrorStatMgr : public ACE_Event_Handler
 	*	resulting formatted string is reported within the minimum output window,
 	*	they are accumulated and output after the minimum output window has passed.
 	*/
-	void ErrorStatMgr::reportError(const ACE_INET_Addr& address, const char* format, ...);
+	void reportError(const ACE_INET_Addr& address, const char* format, ...);
+
+	/**
+	*	Output the exception if it has not occurred before, otherwise only
+	*	output the exception if the minimum period has elapsed since the
+	*	last outputting of this exception.
+	*
+	*	@param ne 		the NubException
+	*	@param prefix 	any prefix to add to the error message, or NULL if no prefix
+	*
+	*/
+	void reportException(Reason reason, const ACE_INET_Addr & addr, const char* prefix);
 
 	/**
 	*	Adds a new error message for an address to the reporter count map.
 	*	Emits an error message if there has been no previous equivalent error
 	*	string provider for this address.
 	*/
-	void ErrorStatMgr::addReport(const ACE_INET_Addr& address, const std::string & errorString);
+	void addReport(const ACE_INET_Addr& address, const std::string & errorString);
+
+	/**
+	*	Output all exception's reports that have not yet been output.
+	*/
+	void reportPendingExceptions(bool reportBelowThreshold = false);
 };
 
 NETWORK_NAMESPACE_END_DECL

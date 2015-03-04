@@ -4,7 +4,7 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-const ACE_UINT32 ErrorStatMgr::ERROR_REPORT_MIN_PERIOD_MS = 2000; // 2 seconds
+const ACE_UINT32 ErrorStatMgr::ERROR_REPORT_MIN_PERIOD_MS = 20; // 2 seconds 2000
 
 /**
  * The nominal maximum time that a report count for a Network address and
@@ -58,11 +58,6 @@ std::string ErrorStatMgr::addressErrorToString(
 	return std::string(buf);
 }
 
-/**
-*	Report a general error with printf style format string. If repeatedly the
-*	resulting formatted string is reported within the minimum output window,
-*	they are accumulated and output after the minimum output window has passed.
-*/
 void ErrorStatMgr::reportError(const ACE_INET_Addr& address, const char* format, ...)
 {
 	char  buf[1024];
@@ -75,9 +70,114 @@ void ErrorStatMgr::reportError(const ACE_INET_Addr& address, const char* format,
 	this->addReport(address, error);
 }
 
+void ErrorStatMgr::reportException(Reason reason, const ACE_INET_Addr & addr,
+	const char* prefix)
+{
+	if( prefix )
+	{
+		this->reportError(addr,
+			"%s: Exception occurred: %s",
+			prefix, reasonToString(reason));
+	} else
+	{
+		this->reportError(addr, "Exception occurred: %s", reasonToString(reason));
+	}
+}
+
 void ErrorStatMgr::addReport(const ACE_INET_Addr& address, const std::string & errorString)
 {
-	std::cout << errorString << "\n";
+	//TRACE("ErrorStatMgr::addReport");
+	ACE_UINT64 now = timestamp();
+	AdrrStrPair addressError(address, errorString);
+	ErrorStats::iterator searchIter = errorStats_.find(addressError);
+	// see if we have ever reported this error
+	if( searchIter != errorStats_.end() )
+	{
+		// this error has been reported recently..
+		ErrorSat& reportAndCount = searchIter->second;
+		reportAndCount.count++;
+		reportAndCount.lastRaisedStamps = now;
+		ACE_INT64 millisSinceLastReport = 1000 * ( now - reportAndCount.lastReportStamps ) /
+			stampsPerSecond();
+
+		if( millisSinceLastReport >= ERROR_REPORT_MIN_PERIOD_MS )
+		{
+			ACE_DEBUG(( LM_ERROR, "{%s}\n",
+				addressErrorToString(address, errorString, reportAndCount, now).c_str() ));
+			reportAndCount.count = 0;
+			reportAndCount.lastReportStamps = now;
+		}
+	} else
+	{
+		{
+			ACE_DEBUG(( LM_ERROR, "{first report of %s}\n",
+				addressErrorToString(address, errorString).c_str() ));
+			ErrorSat reportAndCount = {
+				now, 	// lastReportStamps,
+				now, 	// lastRaisedStamps,
+				0,		// count
+			};
+			errorStats_[addressError] = reportAndCount;
+		}
+	}
+	//TRACE_RETURN_VOID();
+}
+
+/**
+*	Output all exception's reports that have not yet been output.
+*/
+void ErrorStatMgr::reportPendingExceptions(bool reportBelowThreshold)
+{
+	TRACE("ErrorStatMgr::reportPendingExceptions");
+	ACE_UINT64 now = timestamp();
+	// this is set to any iterator slated for removal
+	ErrorStats::iterator staleIter = this->errorStats_.end();
+	for( ErrorStats::iterator exceptionCountIter = this->errorStats_.begin();
+		exceptionCountIter != this->errorStats_.end();
+		++exceptionCountIter )
+	{
+		// remove any stale mappings from the last loop's run
+		if( staleIter != this->errorStats_.end() )
+		{
+			this->errorStats_.erase(staleIter);
+			staleIter = this->errorStats_.end();
+		}
+
+		// check this iteration's last report and see if we need to output
+		// anything
+		const AdrrStrPair & addressError = exceptionCountIter->first;
+		ErrorSat& reportAndCount = exceptionCountIter->second;
+		ACE_INT64 millisSinceLastReport = 1000 * ( now - reportAndCount.lastReportStamps ) /
+			stampsPerSecond();
+		if( reportBelowThreshold || millisSinceLastReport >= ERROR_REPORT_MIN_PERIOD_MS )
+		{
+			if( reportAndCount.count )
+			{
+				ACE_DEBUG(( LM_ERROR, "{%s}\n",
+					addressErrorToString(addressError.first, addressError.second,
+					reportAndCount, now).c_str() ));
+				reportAndCount.count = 0;
+				reportAndCount.lastReportStamps = now;
+			}
+		}
+
+		// see if we can remove this mapping if it has not been raised in a while
+		ACE_UINT64 sinceLastRaisedMillis = 1000 * ( now - reportAndCount.lastRaisedStamps ) /
+			stampsPerSecond();
+		if( sinceLastRaisedMillis > ERROR_REPORT_COUNT_MAX_LIFETIME_MS )
+		{
+			// it's hung around for too long without being raised again,
+			// so remove it in the next iteration
+			staleIter = exceptionCountIter;
+		}
+	}
+
+	// remove the last mapping if it is marked stale
+	if( staleIter != this->errorStats_.end() )
+	{
+		this->errorStats_.erase(staleIter);
+	}
+	TRACE_RETURN_VOID();
 }
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
