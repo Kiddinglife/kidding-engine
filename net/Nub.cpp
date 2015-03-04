@@ -1,8 +1,19 @@
 #include "Nub.h"
+#include "net\ErrorStatsMgr.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 //ProfileVal g_idleProfile("Idle");
 NETWORK_NAMESPACE_BEGIN_DECL
+
+Nub::Nub() :
+rec(ACE_Reactor::instance()), 
+numTimerCalls_(0),
+pErrorReporter_(new ErrorStatMgr(this))
+{
+	//pErrorReporter_ = new ErrorReporter(*this);
+	//Timers64* pTimers_;
+}
+
 int Nub::startLoop(ACE_Reactor::REACTOR_EVENT_HOOK eh)
 {
 	if( rec->reactor_event_loop_done() )

@@ -123,7 +123,6 @@ int TCP_SOCK_Handler::handle_close(ACE_HANDLE, ACE_Reactor_Mask mask)
 
 	if( mask == ACE_Event_Handler::TIMER_MASK )
 	{
-		//ACE_DEBUG(( LM_INFO, ACE_TEXT("%M::TCP_SOCK_Handler::handle_close::TIMER_MASK\n") ));
 		return 0;
 	}
 
@@ -182,7 +181,7 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 	{
 		if( pChannel_ ) Packet_Pool->Dtor(pReceiveWindow);
 		static RecvState recv_state;
-		if( ( recv_state = checkSocketErrors(len, expectingPacket) ) == RecvState::RECV_STATE_INTERRUPT )
+		if( ( recv_state = pChannel_->checkSocketErrors(len, expectingPacket) ) == RecvState::RECV_STATE_INTERRUPT )
 		{
 			pChannel_->on_error();
 			pChannel_ = NULL;
@@ -215,10 +214,6 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 	{
 		pChannel_->update_recv_window(pReceiveWindow);
 	}///
-
-	//if( ret != REASON_SUCCESS )
-	//	this->dispatcher().errorReporter().reportException(ret, pEndpoint_->addr());
-
 	return true;
 	//TRACE_RETURN(true);
 }

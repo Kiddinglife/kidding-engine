@@ -2,6 +2,7 @@
 #include "net\NetworkInterface.h"
 #include "net\PacketReader.h"
 #include "net\TestMsgs.h"
+#include "net\ErrorStatsMgr.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -194,7 +195,6 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 		PacketReader_Pool->Dtor(pPacketReader_);
 		pPacketReader_ = NULL;
 	}
-
 	pNetworkInterface_->on_channel_left(this);
 	//TRACE_RETURN_VOID();
 }
@@ -835,6 +835,71 @@ void Channel::update_recv_window(Packet* pPacket)
 	//TRACE_RETURN_VOID();
 }
 
+RecvState Channel::checkSocketErrors(int len, bool expectingPacket)
+{
+	int err = kbe_lasterror();
+
+	// recv缓冲区已经无数据可读了
+	if( ( err == EAGAIN || err == EWOULDBLOCK ) && !expectingPacket )
+	{
+		return RecvState::RECV_STATE_BREAK;
+	}
+
+
+	if( err == EAGAIN ||							// 已经无数据可读了
+		err == ECONNREFUSED ||					// 连接被服务器拒绝
+		err == EHOSTUNREACH )						// 目的地址不可到达
+	{
+		pNetworkInterface_->nub_->pErrorReporter_->reportException(REASON_NO_SUCH_PORT);
+		return RecvState::RECV_STATE_BREAK;
+	}
+
+	/*
+	存在的连接被远程主机强制关闭。通常原因为：远程主机上对等方应用程序突然停止运行，或远程主机重新启动，
+	或远程主机在远程方套接字上使用了“强制”关闭（参见setsockopt(SO_LINGER)）。
+	另外，在一个或多个操作正在进行时，如果连接因“keep-alive”活动检测到一个失败而中断，也可能导致此错误。
+	此时，正在进行的操作以错误码WSAENETRESET失败返回，后续操作将失败返回错误码WSAECONNRESET
+	*/
+
+	if( err == WSAECONNRESET )
+	{
+		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
+			"Throwing REASON_GENERAL_NETWORK - WSAECONNRESET\n" ));
+		return RecvState::RECV_STATE_INTERRUPT;
+	}
+
+	if( err == WSAECONNABORTED )
+	{
+		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
+			"Throwing REASON_GENERAL_NETWORK - WSAECONNABORTED\n" ));
+		return RecvState::RECV_STATE_INTERRUPT;
+	}
+
+	ACE_DEBUG(( LM_WARNING,
+		"TCPPacketReceiver::processPendingEvents: "
+		"Throwing REASON_GENERAL_NETWORK (%s), will continue the reactor\n",
+		kbe_strerror() ));
+
+	pNetworkInterface_->nub_->pErrorReporter_->reportException(REASON_GENERAL_NETWORK);
+
+	return RecvState::RECV_STATE_CONTINUE;
+}
+
+Reason Channel::checkSocketErrors()
+{
+	Reason reason;
+	switch( kbe_lasterror() )
+	{
+		case ECONNREFUSED:	reason = REASON_NO_SUCH_PORT; break;
+		case EWOULDBLOCK:   reason = REASON_RESOURCE_UNAVAILABLE; break;
+		case EAGAIN:		        reason = REASON_RESOURCE_UNAVAILABLE; break;
+		case EPIPE:			        reason = REASON_CLIENT_DISCONNECTED; break;
+		case ECONNRESET:	    reason = REASON_CLIENT_DISCONNECTED; break;
+		case ENOBUFS:		        reason = REASON_TRANSMIT_QUEUE_FULL; break;
+		default:			                reason = REASON_GENERAL_NETWORK; break;
+	}
+	return reason;
+}
 void Channel::tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundle)
 {
 	Bundle::Packets::iterator iter = pBundle->packets_.begin();

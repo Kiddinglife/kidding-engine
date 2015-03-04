@@ -229,8 +229,12 @@ struct Channel
 	* This method is called when the user lofs off or some network errors happens
 	*/
 	inline void on_error(void);
+
 	inline void set_channel_condem();
 
+	/// check recv errors
+	RecvState Channel::checkSocketErrors(int len, bool expectingPacket);
+	Reason Channel::checkSocketErrors();
 	///@TO-DO move to 
 	void tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundle);
 	void udp_send_single_bundle(UDP_SOCK_Handler* pEndpoint, Bundle* pBundle, ACE_INET_Addr& addr);

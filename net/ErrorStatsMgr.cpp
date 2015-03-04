@@ -4,7 +4,7 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-const ACE_UINT32 ErrorStatMgr::ERROR_REPORT_MIN_PERIOD_MS = 20; // 2 seconds 2000
+const ACE_UINT32 ErrorStatMgr::ERROR_REPORT_MIN_PERIOD_MS = 2; // 2 seconds 
 
 /**
  * The nominal maximum time that a report count for a Network address and
@@ -70,17 +70,22 @@ void ErrorStatMgr::reportError(const ACE_INET_Addr& address, const char* format,
 	this->addReport(address, error);
 }
 
-void ErrorStatMgr::reportException(Reason reason, const ACE_INET_Addr & addr,
+void ErrorStatMgr::reportException(Reason reason, const ACE_INET_Addr* addr,
 	const char* prefix)
 {
+	if( !addr )
+	{
+		addr = &ACE_INET_Addr();
+	}
+
 	if( prefix )
 	{
-		this->reportError(addr,
+		this->reportError(*addr,
 			"%s: Exception occurred: %s",
 			prefix, reasonToString(reason));
 	} else
 	{
-		this->reportError(addr, "Exception occurred: %s", reasonToString(reason));
+		this->reportError(*addr, "Exception occurred: %s", reasonToString(reason));
 	}
 }
 
@@ -178,6 +183,14 @@ void ErrorStatMgr::reportPendingExceptions(bool reportBelowThreshold)
 		this->errorStats_.erase(staleIter);
 	}
 	TRACE_RETURN_VOID();
+}
+
+int ErrorStatMgr::handle_timeout(const ACE_Time_Value &current_time, const void* act)
+{
+	//TRACE("ErrorStatMgr::handle_timeout()");
+	this->reportPendingExceptions();
+	return 0;
+	//TRACE_RETURN(0);
 }
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

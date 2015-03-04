@@ -1334,15 +1334,12 @@ TEST(ErrorStatsMgr, tESTTS)
 	stat.count = 10;
 	Nub nub;
 	ErrorStatMgr mgr(&nub);
+
 	std::string error = "The send buf is full";
 	ACE_INET_Addr addr(20001, ACE_LOCALHOST);
-	ACE_UINT64 now = timestamp();
-
-	//cout << mgr.addressErrorToString(addr, error) << "\n";
-	//cout << mgr.addressErrorToString(addr, error, stat, now) << "\n";
-	mgr.reportPendingExceptions(false);
-	//mgr.reportError(addr, "%s, %d", "The send buf is full", 12);
-	//mgr.reportError(addr, "%s, %d", "The send buf is full", 12);
-	//Sleep(30);
-	//mgr.reportError(addr, "%s, %d", "The send buf is full", 12);
+	/// if exceeeds the max report period it will be reported otherwise coutn_ will be updated
+	mgr.reportError(addr, "%s, %d", error.c_str(), 12);
+	/// report all errors true report all erros false report id it exceeds max report period
+	mgr.reportPendingExceptions(true);
+	nub.startLoop();
 }

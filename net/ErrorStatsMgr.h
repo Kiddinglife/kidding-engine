@@ -1,14 +1,14 @@
 /**
  * @By Jackie Zhang at 6:10 PM on 01/03/2015
  */
-#ifndef Channel_H_
-#define Channel_H_
+#ifndef ErrorSat_H_
+#define ErrorSat_H_
 
 #include "ace\pre.h"
 #include "ace\Event_Handler.h"
 #include "ace\INET_Addr.h"
-#include "common\common.h"
 #include "net\net_common.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
@@ -60,8 +60,8 @@ struct ErrorStatMgr : public ACE_Event_Handler
 	*	@param prefix 	any prefix to add to the error message, or NULL if no prefix
 	*
 	*/
-	void reportException(Reason reason, const ACE_INET_Addr & addr, const char* prefix);
 
+	void reportException(Reason reason, const ACE_INET_Addr* addr = NULL, const char* prefix = NULL);
 	/**
 	*	Adds a new error message for an address to the reporter count map.
 	*	Emits an error message if there has been no previous equivalent error
@@ -73,6 +73,12 @@ struct ErrorStatMgr : public ACE_Event_Handler
 	*	Output all exception's reports that have not yet been output.
 	*/
 	void reportPendingExceptions(bool reportBelowThreshold = false);
+
+	/**
+	*	This method handles the timer event and checks to see if any delayed
+	*	messages should be reported.
+	*/
+	virtual int handle_timeout(const ACE_Time_Value &current_time, const void * = 0);
 };
 
 NETWORK_NAMESPACE_END_DECL
