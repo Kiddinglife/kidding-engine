@@ -10,7 +10,7 @@
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
-
+struct NetworkInterface;
 struct ErrorStatMgr;
 struct Nub
 {
@@ -78,6 +78,7 @@ struct Nub
 	}
 
 	int startLoop(ACE_Reactor::REACTOR_EVENT_HOOK eh);
+	int startLoop(NetworkInterface* ni);
 	int startLoop();
 };
 

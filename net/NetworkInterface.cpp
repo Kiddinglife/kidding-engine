@@ -493,5 +493,19 @@ void NetworkInterface::close_listenning_sockets(void)
 	TRACE_RETURN_VOID();
 }
 
+int NetworkInterface::process_all_channels_buffered_sending_packets(void)
+{
+	TRACE("NetworkInterface::notify_all_output_events()");
+
+	static ChannelMap::iterator iter = channelMap_.begin();
+	iter = channelMap_.begin();
+	while( iter != channelMap_.end() )
+	{
+		iter->second->send_buffered_bundle();
+		++iter;
+	}
+
+	TRACE_RETURN(0);
+}
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

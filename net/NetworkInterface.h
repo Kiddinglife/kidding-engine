@@ -126,12 +126,13 @@ struct NetworkInterface
 	int on_handle_timeout(const ACE_Time_Value &tv, const void *arg);
 
 	/// this method will go through all the channels and process its packets
-	void process_all_channels_packets(Messages* pMsgHandlers);
+	inline void process_all_channels_packets(Messages* pMsgHandlers);
+	inline int process_all_channels_buffered_sending_packets(void);
 
 	/// close listenning sockets by remove the handlers from the reactor
 	void close_listenning_sockets(void);
-};
 
+};
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include "ace\post.h"

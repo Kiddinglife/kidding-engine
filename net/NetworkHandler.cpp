@@ -134,7 +134,6 @@ int TCP_SOCK_Handler::handle_close(ACE_HANDLE, ACE_Reactor_Mask mask)
 
 int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)
 {
-	this->sock_.enable(ACE_NONBLOCK);
 	//TRACE("TCP_SOCK_Handler::handle_input()");
 	/// this is to make the recv get error to reset the reactor
 	if( this->process_recv(/*expectingPacket:*/true) )
