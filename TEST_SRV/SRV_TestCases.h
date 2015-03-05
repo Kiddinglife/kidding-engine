@@ -25,9 +25,6 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	ACE_INT32     extlisteningPort_min = 20001;
 	ACE_INT32     extlisteningPort_max = 20005;
 	const char *    extlisteningInterface = "192.168.2.47";
-	//const char *    extlisteningInterface = "";
-	//const char *    extlisteningInterface = "127.0.0.1";
-	//const char *    extlisteningInterface = USE_KBEMACHINED;
 	ACE_UINT32   extrbuffer = 0;
 	ACE_UINT32   extwbuffer = 0;
 	ACE_INT32      intlisteningPort = 20006;
@@ -35,7 +32,8 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	ACE_UINT32   intrbuffer = 0;
 	ACE_UINT32   intwbuffer = 0;
 
-	NetworkInterface in(&pDispatcher,
+	NetworkInterface in(
+		&pDispatcher,
 		extlisteningPort_min,
 		extlisteningPort_max,
 		extlisteningInterface,
@@ -46,5 +44,5 @@ TEST(PacketReaderTests, ctor_dtor_test)
 		intrbuffer,
 		intwbuffer);
 
-	pDispatcher.startLoop();
+	pDispatcher.startLoop(&in);
 }

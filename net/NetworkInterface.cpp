@@ -428,6 +428,10 @@ void NetworkInterface::on_channel_left(Channel* pChannel)
 	// channel dtor has been called so we cannot call it again
 	/// thisi is the last chance for us to do some clear works the pchannel is valid
 	/// at this moment
+	/// 由于pEndPoint通常由外部给入，必须释放，频道重新激活时会重新赋值
+	deregister_channel(pChannel);
+	pChannel->pEndPoint_->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
+	pChannel->pEndPoint_ = NULL;
 	TRACE_RETURN_VOID();
 }
 void NetworkInterface::on_channel_timeout(Channel* pChannel)
@@ -436,6 +440,8 @@ void NetworkInterface::on_channel_timeout(Channel* pChannel)
 	//Channel_Pool->Dtor(pChannel); should use this one but for test we use the secpnd one 
 	/// tp cancel the timer
 	pChannel->pEndPoint_->reactor()->cancel_timer(pChannel->timerID_);
+	deregister_channel(pChannel);
+	pChannel->pEndPoint_->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
 	//if( pChannelTimeOutHandler_ )
 	//{
 	//	( *pChannelTimeOutHandler_ )( pChannel );
@@ -450,30 +456,8 @@ void NetworkInterface::on_channel_timeout(Channel* pChannel)
 	TRACE_RETURN_VOID();
 }
 
-/// this method will go through all the channels and process its packets
-void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
-{
-	TRACE("NetworkInterface::process_all_channels_packets()");
-	ChannelMap::iterator iter = channelMap_.begin();
-	while( iter != channelMap_.end() )
-	{
-		Channel* pChannel = iter->second;
 
-		if( pChannel->isDestroyed_ || pChannel->isCondemn_ )
-		{
-			++iter;
-			deregister_channel(pChannel);
-			pChannel->destroy();
-		} else
-		{
-			pChannel->process_packets(pMsgHandlers);
-			++iter;
-		}
-	}
-	TRACE_RETURN_VOID();
-}
-
-void NetworkInterface::close_listenning_sockets(void)
+void NetworkInterface::close_listenning_sockets()
 {
 	TRACE("NetworkInterface::close_socket()");
 	if( pExtListenerReceiver_ )
@@ -486,5 +470,6 @@ void NetworkInterface::close_listenning_sockets(void)
 
 	TRACE_RETURN_VOID();
 }
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

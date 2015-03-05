@@ -13,6 +13,34 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
+#define SEND_METHOD();\
+if( canFilterPacket_ )\
+{\
+}\
+if( protocolType_ == PROTOCOL_TCP )\
+{\
+	if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;\
+	sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(\
+		( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());\
+	if( sent_cnt == -1 )\
+	{\
+		reason = checkSocketErrors();\
+	} else\
+	{\
+		( *iter1 )->buff->rd_ptr(sent_cnt);\
+		on_packet_sent(sent_cnt, ( *iter1 )->length() == 0);\
+	}\
+} else\
+{\
+}\
+if( reason != REASON_SUCCESS )\
+{\
+	goto goto1;\
+} else\
+{\
+	Packet_Pool->Dtor(( *iter1 ));\
+}
+
 struct Channel
 {
 	/// 超时检查的目的标志，例如这是一个非活动通道的检查
@@ -78,12 +106,12 @@ struct Channel
 
 	/**
 	 * 该通道会缓存一定量的发送包，这是send-batch的优化
-	 * 每个bundle包含了许多满载包
-	 *
+	 * 一个bundle包含了许多满载包或者未满在包
 	 */
-	typedef std::vector<Bundle*> Bundles;
-	Bundles                                  bundles_;
-	Bundle                                    buffered_sending_bundle_;
+	typedef std::vector<Bundle*> Bundles;  //@Unused
+	Bundles                                  bundles_; //@Unused
+	Bundle                                    buffered_sending_bundle_; //@used
+
 	/**
 	 * A channel will cache the received packets.
 	 * 通道会缓存一定量的接受包，这是recv-batch优化
@@ -182,7 +210,7 @@ struct Channel
 	 */
 	inline bool initialize(ACE_INET_Addr* addr = NULL);
 	inline void destroy(void);
-	void clearBundles(void);
+	void clearBundles(void); 	//@Unused
 	void clear_channel(bool warnOnDiscard = false);
 	inline void add_delayed_channel(void);
 	void hand_shake(void);
@@ -191,8 +219,8 @@ struct Channel
 	void on_packet_received(int bytes);
 
 	/// send stuff
-	void send(Bundle * pBundle = NULL);
-	void send_buffered_bundle();
+	void send(Bundle * pBundle = NULL); //@Unused
+	void send_buffered_bundle(); //@Used
 	bool process_send(void);
 	void on_packet_sent(int bytes_cnt, bool is_sent_completely);
 	inline void on_bundles_sent_completely(void);
@@ -201,14 +229,19 @@ struct Channel
 	* This method is called when the user lofs off or some network errors happens
 	*/
 	inline void on_error(void);
+
 	inline void set_channel_condem();
 
+	/// check recv errors
+	RecvState Channel::checkSocketErrors(int len, bool expectingPacket);
+	Reason Channel::checkSocketErrors();
 	///@TO-DO move to 
 	void tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundle);
 	void udp_send_single_bundle(UDP_SOCK_Handler* pEndpoint, Bundle* pBundle, ACE_INET_Addr& addr);
 
 	inline const char*  c_str(void) const;
 };
+
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include "ace\post.h"

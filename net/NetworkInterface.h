@@ -126,12 +126,54 @@ struct NetworkInterface
 	int on_handle_timeout(const ACE_Time_Value &tv, const void *arg);
 
 	/// this method will go through all the channels and process its packets
-	void process_all_channels_packets(Messages* pMsgHandlers);
+	inline void process_all_channels_packets(Messages* pMsgHandlers);
+	inline int process_all_channels_buffered_sending_packets(void);
 
 	/// close listenning sockets by remove the handlers from the reactor
 	void close_listenning_sockets(void);
+
 };
 
+int NetworkInterface::process_all_channels_buffered_sending_packets()
+{
+	//TRACE("NetworkInterface::process_all_channels_buffered_sending_packets()");
+
+	static ChannelMap::iterator iter = channelMap_.begin();
+	static ChannelMap::iterator end = channelMap_.end();
+
+	iter = channelMap_.begin();
+	end = channelMap_.end();
+	while( iter != end )
+	{
+		iter->second->send_buffered_bundle();
+		++iter;
+	}
+	return 0;
+	//TRACE_RETURN(0);
+}
+
+/// this method will go through all the channels and process its packets
+void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
+{
+	TRACE("NetworkInterface::process_all_channels_packets()");
+	ChannelMap::iterator iter = channelMap_.begin();
+	while( iter != channelMap_.end() )
+	{
+		Channel* pChannel = iter->second;
+
+		if( pChannel->isDestroyed_ || pChannel->isCondemn_ )
+		{
+			++iter;
+			deregister_channel(pChannel);
+			pChannel->destroy();
+		} else
+		{
+			pChannel->process_packets(pMsgHandlers);
+			++iter;
+		}
+	}
+	TRACE_RETURN_VOID();
+}
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include "ace\post.h"

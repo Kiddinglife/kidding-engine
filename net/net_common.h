@@ -6,6 +6,7 @@
 #include "ace\SOCK_Dgram.h"
 #include "common\common.h"
 #include "common\ace_object_pool.h"
+#include "net\Nub.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -164,7 +165,7 @@ typedef ACE_UINT16	PacketLength;//最大65535
 #define ENCRYPTTION_WASTAGE_SIZE			    (1 + 7) /// 加密额外存储的信息占用字节(长度+填充)
 
 #define PACKET_MAX_SIZE						        1500
-#define PACKET_MAX_SIZE_TCP					    1460 
+#define PACKET_MAX_SIZE_TCP					    20//1460 
 #define PACKET_MAX_SIZE_UDP					    1472
 #define PACKET_LENGTH_BYTE_SIZE				    sizeof(PacketLength)
 
@@ -219,77 +220,72 @@ enum Reason
 };
 
 /// check send errors
-inline Reason checkSocketErrors()
-{
-	Reason reason;
-	switch( kbe_lasterror() )
-	{
-		case ECONNREFUSED:	reason = REASON_NO_SUCH_PORT; break;
-		case EWOULDBLOCK:   reason = REASON_RESOURCE_UNAVAILABLE; break;
-		case EAGAIN:		        reason = REASON_RESOURCE_UNAVAILABLE; break;
-		case EPIPE:			        reason = REASON_CLIENT_DISCONNECTED; break;
-		case ECONNRESET:	    reason = REASON_CLIENT_DISCONNECTED; break;
-		case ENOBUFS:		        reason = REASON_TRANSMIT_QUEUE_FULL; break;
-		default:			                reason = REASON_GENERAL_NETWORK; break;
-	}
-	return reason;
-}
+//inline Reason checkSocketErrors()
+//{
+//	Reason reason;
+//	switch( kbe_lasterror() )
+//	{
+//		case ECONNREFUSED:	reason = REASON_NO_SUCH_PORT; break;
+//		case EWOULDBLOCK:   reason = REASON_RESOURCE_UNAVAILABLE; break;
+//		case EAGAIN:		        reason = REASON_RESOURCE_UNAVAILABLE; break;
+//		case EPIPE:			        reason = REASON_CLIENT_DISCONNECTED; break;
+//		case ECONNRESET:	    reason = REASON_CLIENT_DISCONNECTED; break;
+//		case ENOBUFS:		        reason = REASON_TRANSMIT_QUEUE_FULL; break;
+//		default:			                reason = REASON_GENERAL_NETWORK; break;
+//	}
+//	return reason;
+//}
 
-/// check recv errors
-inline RecvState checkSocketErrors(int len, bool expectingPacket)
-{
-	int err = kbe_lasterror();
-
-	// recv缓冲区已经无数据可读了
-	if( ( err == EAGAIN || err == EWOULDBLOCK ) && !expectingPacket )
-	{
-		ACE_DEBUG(( LM_DEBUG, "%M::Return RecvState::RECV_STATE_BREAK\n" ));
-		return RecvState::RECV_STATE_BREAK;
-	}
-
-
-	if( err == EAGAIN ||							// 已经无数据可读了
-		err == ECONNREFUSED ||					// 连接被服务器拒绝
-		err == EHOSTUNREACH )						// 目的地址不可到达
-	{
-		//this->dispatcher().errorReporter().reportException(
-		//	REASON_NO_SUCH_PORT);
-		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
-			"Throwing REASON_NO_SUCH_PORT\n" ));
-		return RecvState::RECV_STATE_BREAK;
-	}
-
-	/*
-	存在的连接被远程主机强制关闭。通常原因为：远程主机上对等方应用程序突然停止运行，或远程主机重新启动，
-	或远程主机在远程方套接字上使用了“强制”关闭（参见setsockopt(SO_LINGER)）。
-	另外，在一个或多个操作正在进行时，如果连接因“keep-alive”活动检测到一个失败而中断，也可能导致此错误。
-	此时，正在进行的操作以错误码WSAENETRESET失败返回，后续操作将失败返回错误码WSAECONNRESET
-	*/
-
-	if( err == WSAECONNRESET )
-	{
-		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
-			"Throwing REASON_GENERAL_NETWORK - WSAECONNRESET\n" ));
-		return RecvState::RECV_STATE_INTERRUPT;
-	}
-
-	if( err == WSAECONNABORTED )
-	{
-		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
-			"Throwing REASON_GENERAL_NETWORK - WSAECONNABORTED\n" ));
-		return RecvState::RECV_STATE_INTERRUPT;
-	}
-
-	ACE_DEBUG(( LM_WARNING,
-		"TCPPacketReceiver::processPendingEvents: "
-		"Throwing REASON_GENERAL_NETWORK (%s), will continue the reactor\n",
-		kbe_strerror() ));
-
-	//this->dispatcher().errorReporter().reportException(
-	//	REASON_GENERAL_NETWORK);
-	ACE_DEBUG(( LM_DEBUG, "%M::Return RecvState::RECV_STATE_CONTINUE\n" ));
-	return RecvState::RECV_STATE_CONTINUE;
-}
+///// check recv errors
+//inline RecvState checkSocketErrors(int len, bool expectingPacket)
+//{
+//	int err = kbe_lasterror();
+//
+//	// recv缓冲区已经无数据可读了
+//	if( ( err == EAGAIN || err == EWOULDBLOCK ) && !expectingPacket )
+//	{
+//		return RecvState::RECV_STATE_BREAK;
+//	}
+//
+//
+//	if( err == EAGAIN ||							// 已经无数据可读了
+//		err == ECONNREFUSED ||					// 连接被服务器拒绝
+//		err == EHOSTUNREACH )						// 目的地址不可到达
+//	{
+//		pErrorReporter_->reportException(REASON_NO_SUCH_PORT);
+//		return RecvState::RECV_STATE_BREAK;
+//	}
+//
+//	/*
+//	存在的连接被远程主机强制关闭。通常原因为：远程主机上对等方应用程序突然停止运行，或远程主机重新启动，
+//	或远程主机在远程方套接字上使用了“强制”关闭（参见setsockopt(SO_LINGER)）。
+//	另外，在一个或多个操作正在进行时，如果连接因“keep-alive”活动检测到一个失败而中断，也可能导致此错误。
+//	此时，正在进行的操作以错误码WSAENETRESET失败返回，后续操作将失败返回错误码WSAECONNRESET
+//	*/
+//
+//	if( err == WSAECONNRESET )
+//	{
+//		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
+//			"Throwing REASON_GENERAL_NETWORK - WSAECONNRESET\n" ));
+//		return RecvState::RECV_STATE_INTERRUPT;
+//	}
+//
+//	if( err == WSAECONNABORTED )
+//	{
+//		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
+//			"Throwing REASON_GENERAL_NETWORK - WSAECONNABORTED\n" ));
+//		return RecvState::RECV_STATE_INTERRUPT;
+//	}
+//
+//	ACE_DEBUG(( LM_WARNING,
+//		"TCPPacketReceiver::processPendingEvents: "
+//		"Throwing REASON_GENERAL_NETWORK (%s), will continue the reactor\n",
+//		kbe_strerror() ));
+//
+//	pErrorReporter_->reportException(REASON_GENERAL_NETWORK);
+//
+//	return RecvState::RECV_STATE_CONTINUE;
+//}
 
 
 inline const char* reasonToString(Reason reason)

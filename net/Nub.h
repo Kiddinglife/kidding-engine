@@ -2,23 +2,22 @@
 #define NUB_H_
 
 #include "ace\pre.h"
-
 #include "ace/Reactor.h"
 #include "ace/Reactor_Impl.h"
 #include "ace/Timer_Queue.h"
-
 #include "common\timestamp.hpp"
 #include "common\tasks.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
-
+struct NetworkInterface;
+struct ErrorStatMgr;
 struct Nub
 {
 	public:
 	ACE_Reactor* rec;
 	Tasks frequentTasks_;
-	//ErrorReporter * pErrorReporter_;
+	ErrorStatMgr* pErrorReporter_;
 	//Timers64* pTimers_;
 
 	// Statistics
@@ -30,14 +29,11 @@ struct Nub
 	ACE_UINT32     numTimerCalls_;
 	ACE_Time_Value      timeout_;
 
-	Nub::Nub()
+	Nub::Nub();
+	~Nub()
 	{
-		rec = ACE_Reactor::instance();
-		//pErrorReporter_ = new ErrorReporter(*this);
-		//Timers64* pTimers_;
-		numTimerCalls_ = 0;
+		SAFE_RELEASE(pErrorReporter_);
 	}
-	~Nub() { }
 
 	/// geterrs and setters
 	const TimeStamp& spareTime() const
@@ -82,6 +78,7 @@ struct Nub
 	}
 
 	int startLoop(ACE_Reactor::REACTOR_EVENT_HOOK eh);
+	int startLoop(NetworkInterface* ni);
 	int startLoop();
 };
 

@@ -2,18 +2,19 @@
 #include "net\NetworkInterface.h"
 #include "net\PacketReader.h"
 #include "net\TestMsgs.h"
+#include "net\ErrorStatsMgr.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-Channel::Channel(
+Channel::
+Channel(
 NetworkInterface* networkInterface,
 ACE_Event_Handler* endpoint, //ACE_SOCK* endpoint,
 ChannelScope traits,
 ProtocolType pt,
 bool canFilterPacket,
-ChannelID id)
-:
+ChannelID id) :
 pNetworkInterface_(networkInterface),
 channelScope_(traits),
 protocolType_(pt),
@@ -39,7 +40,7 @@ channelType_(CHANNEL_NORMAL),
 componentID_(UNKNOWN_COMPONENT_TYPE),
 pMsgs_(NULL)
 {
-	clearBundles();
+	/*clearBundles();*/
 	initialize();
 }
 
@@ -92,13 +93,14 @@ void Channel::hand_shake(void)
 
 int Channel::get_bundles_length(void)
 {
-	int len = 0;
-	Bundles::iterator iter = bundles_.begin();
-	for( ; iter != bundles_.end(); ++iter )
-	{
-		len += ( *iter )->get_packets_length();
-	}
-	return len;
+	//int len = 0;
+	//Bundles::iterator iter = bundles_.begin();
+	//for( ; iter != bundles_.end(); ++iter )
+	//{
+	//	len += ( *iter )->get_packets_length();
+	//}
+	//return len;
+	return buffered_sending_bundle_.get_packets_length();
 }
 
 void Channel::clear_channel(bool warnOnDiscard /*=false*/)
@@ -108,8 +110,19 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 	/// Stop Inactivity Detection
 	if( timerID_ != -1 && pEndPoint_ ) pEndPoint_->reactor()->cancel_timer(timerID_);
 
-	/// clear the bundles
-	this->clearBundles();
+	/// clear the sending bundles
+	///this->clearBundles();
+
+	if( buffered_sending_bundle_.packets_.size() > 0 )
+	{
+		Bundle::Packets::iterator iter = buffered_sending_bundle_.packets_.begin();
+		int hasDiscard = 0;
+
+		for( ; iter != buffered_sending_bundle_.packets_.end(); ++iter )
+		{
+			if( ( *iter )->length() > 0 ) hasDiscard++;
+		}
+	}
 
 	/// clear the unprocessed recv packets
 	if( recvPackets_.size() > 0 )
@@ -136,9 +149,9 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 
 	lastRecvTime_ = ::timestamp();
 
-	/**
 	/// reset all variables values  ctor(0 will reset al of them
 	/// so we do not need to do this to save cucles of cpu
+	/**
 	isDestroyed_ = false;
 	isCondemn_ = false;
 	numPacketsSent_ = 0;
@@ -154,34 +167,35 @@ void Channel::clear_channel(bool warnOnDiscard /*=false*/)
 	*/
 
 	/// clear the pendpoint
-	if( protocolType_ == PROTOCOL_TCP )
+	/*if( protocolType_ == PROTOCOL_TCP )
 	{
 
-		if( is_notified_send_ ) is_notified_send_ = false;
+	if( is_notified_send_ ) is_notified_send_ = false;
 
-		if( pNetworkInterface_ )
-		{
-			pNetworkInterface_->on_channel_left(this);
-		}
+	if( pNetworkInterface_ )
+	{
+	pNetworkInterface_->on_channel_left(this);
+	}
 
-		//@TEST
-		pEndPoint_->reactor()->remove_handler(pEndPoint_,
-			ACE_Event_Handler::DONT_CALL | ACE_Event_Handler::WRITE_MASK);
+	//@TEST
+	pEndPoint_->reactor()->remove_handler(pEndPoint_,
+	ACE_Event_Handler::DONT_CALL | ACE_Event_Handler::WRITE_MASK);
 
 	} else if( protocolType_ == PROTOCOL_UDP )
 	{
-		/// 由于pEndPoint通常由外部给入，必须释放，频道重新激活时会重新赋值
-		pEndPoint_->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
-	}
+	/// 由于pEndPoint通常由外部给入，必须释放，频道重新激活时会重新赋值
+	pEndPoint_->handle_close(ACE_INVALID_HANDLE, ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL);
+	}*/
 
-	pEndPoint_ = NULL;
+
+	if( is_notified_send_ ) is_notified_send_ = false;
 
 	if( pPacketReader_ )
 	{
 		PacketReader_Pool->Dtor(pPacketReader_);
 		pPacketReader_ = NULL;
 	}
-
+	pNetworkInterface_->on_channel_left(this);
 	//TRACE_RETURN_VOID();
 }
 
@@ -219,6 +233,7 @@ const char * Channel::c_str() const
 	//TRACE_RETURN(dodgyString);
 }
 
+//@Unused
 void Channel::clearBundles(void)
 {
 	//TRACE("Channel::clearBundle()");
@@ -236,17 +251,19 @@ void Channel::clearBundles(void)
 
 void Channel::startInactivityDetection(float period, float checkPeriod)
 {
+	TRACE("Channel::startInactivityDetection(f");
 	if( timerID_ != -1 ) this->pEndPoint_->reactor()->cancel_timer(timerID_);
 
 	if( period > 0.f )
 	{
 		inactivityExceptionPeriod_ = (ACE_UINT64) ( period * stampsPerSecond() );
 		lastRecvTime_ = timestamp();
-		ACE_Time_Value interval(checkPeriod, 0);
-		/*	interval.set_msec(( ACE_UINT64(checkPeriod * 1000) ));*/
+		//ACE_Time_Value interval(checkPeriod, 0);
+		ACE_Time_Value interval(period, 0);
 		timerID_ = this->pEndPoint_->reactor()->schedule_timer(pEndPoint_,
 			(void*) TIMEOUT_INACTIVITY_CHECK, ACE_Time_Value::zero, interval);
 	}
+	TRACE_RETURN_VOID();
 }
 
 bool Channel::initialize(ACE_INET_Addr* addr)
@@ -262,9 +279,6 @@ bool Channel::initialize(ACE_INET_Addr* addr)
 	//hand_shake();
 
 	startInactivityDetection(( channelScope_ == INTERNAL ) ? g_channelInternalTimeout : g_channelExternalTimeout);
-
-	/// @TEST
-	pEndPoint_->reactor()->register_handler(pEndPoint_, ACE_Event_Handler::WRITE_MASK);
 
 	return true;
 	//TRACE_RETURN(true);
@@ -321,7 +335,7 @@ void Channel::process_packets(Messages* pMsgHandlers)
 
 	//TRACE_RETURN_VOID();
 }
-
+//@Unused
 void Channel::send(Bundle * pBundle)
 {
 	//TRACE("Channel::send(Bundle * pBundle)");
@@ -416,11 +430,19 @@ void Channel::send_buffered_bundle()
 {
 	//TRACE("Channel::send(Bundle * pBundle)");
 
+	static Bundle::Packets::iterator  iter1;
+	static Bundle::Packets::iterator  end;
+	static size_t                              packets_cnt = 0;
+	static size_t                              sent_cnt = 0;
+	static bool                               should_wait_next_tick = true;
+	static Reason                           reason = REASON_SUCCESS;
+
 	/// check to see if the current channel is avaiable to use
 	if( isDestroyed_ )
 	{
 		ACE_DEBUG(( LM_ERROR, "Channel::send({%s}): channel has destroyed.\n", this->c_str() ));
 		clearBundles();
+		//pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
 		return;
 	}
 
@@ -431,160 +453,55 @@ void Channel::send_buffered_bundle()
 			c_str() ));
 		this->on_error();
 		clearBundles();
+		/*	pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);*/
 		return;
 	}
-	//staic bool should_wait_next_tick = true;
-	//if 包数量大于0
-	//{
-	//	/// 先发送所有的满载包，
-	//	包数量 = bundle.packets_.size();
-	//	for( i; i < 包数量 - 1; i++ )
-	//	{
-	//		send(bundle.packets_);
-	//	}
-	//	///最后一包单独处理 可能满载可能未满
-	//	if( last_packet 满 ) send(last_packet);
-	//	else
-	//	{
-	//		if( should_wait_next_tick )  should_wait_next_tick = false;
-	//		else  send(last_packet); should_wait_next_tick = true;
-	//	}
-	//}
+
 	/// if no bundle to send, we just stop here
-	static size_t packets_cnt;
-	if( !( packets_cnt = buffered_sending_bundle_.packets_.size() ) ) return;
-
-	/////////////////////////////////////////////////////// process_send();
-	static bool should_wait_next_tick = true;
-	static Reason reason = REASON_SUCCESS;
-
-	reason = REASON_SUCCESS;
-	Bundle::Packets::iterator iter1 = buffered_sending_bundle_.packets_.begin();
-	for( ; iter1 != buffered_sending_bundle_.packets_.end() - 1; ++iter1 )
+	if( !( packets_cnt = buffered_sending_bundle_.packets_.size() ) )
 	{
-		///////////////// process this packet starts /////////////////////////
-		/// filter the packet
-		if( canFilterPacket_ )
-		{
-			//filter_packet();
-		}
-
-		/// process filtered packets
-		if( protocolType_ == PROTOCOL_TCP )
-		{
-			if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
-			size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
-
-			if( sent_cnt == -1 )
-			{
-				reason = checkSocketErrors();
-			} else
-			{
-				( *iter1 )->buff->rd_ptr(sent_cnt);
-				on_packet_sent(sent_cnt, ( *iter1 )->length() == 0);
-			}
-
-		} else
-		{
-			/// TO-DO
-		}
-
-		if( reason != REASON_SUCCESS )
-		{
-			break;
-		} else
-		{
-			Packet_Pool->Dtor(( *iter1 ));
-		}
+		/*	pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);*/
+		return;
 	}
 
-	static Packet* end_packet = NULL;
-	end_packet = *iter1;
-	ACE_TEST_ASSERT(end_packet != NULL);
-	if( end_packet->buff->size() < PACKET_MAX_SIZE_TCP )
+	/// reset all states variables values
+	iter1 = buffered_sending_bundle_.packets_.begin();
+	end = iter1 + packets_cnt - 1;
+	reason = REASON_SUCCESS;
+	if( packets_cnt > 1 && should_wait_next_tick == false ) should_wait_next_tick = true;
+
+	for( ; iter1 != end; ++iter1 )
+	{
+		//process this packet 
+		SEND_METHOD();
+	}
+
+	ACE_TEST_ASSERT(( *iter1 ) != NULL);
+	if( ( *iter1 )->buff->length() < buffered_sending_bundle_.currPacketMaxSize )
 	{
 		if( should_wait_next_tick )
+		{
 			should_wait_next_tick = false;
-		else
+			buffered_sending_bundle_.packets_.erase(
+				buffered_sending_bundle_.packets_.begin(), iter1);
+			return;
+		} else
 		{
 			should_wait_next_tick = true;
-			/// filter the packet
-			if( canFilterPacket_ )
-			{
-				//filter_packet();
-			}
-
-			/// process filtered packets
-			if( protocolType_ == PROTOCOL_TCP )
-			{
-				if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
-				size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
-
-				if( sent_cnt == -1 )
-				{
-					reason = checkSocketErrors();
-				} else
-				{
-					( *iter1 )->buff->rd_ptr(sent_cnt);
-					on_packet_sent(sent_cnt, ( *iter1 )->length() == 0);
-				}
-
-			} else
-			{
-				/// TO-DO
-			}
-
-			if( reason != REASON_SUCCESS )
-			{
-				/// just instructive
-			} else
-			{
-				Packet_Pool->Dtor(( *iter1 ));
-			}
+			SEND_METHOD();
 		}
 	} else
 	{
-		/// filter the packet
-		if( canFilterPacket_ )
-		{
-			//filter_packet();
-		}
-
-		/// process filtered packets
-		if( protocolType_ == PROTOCOL_TCP )
-		{
-			if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
-			size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
-
-			if( sent_cnt == -1 )
-			{
-				reason = checkSocketErrors();
-			} else
-			{
-				( *iter1 )->buff->rd_ptr(sent_cnt);
-				on_packet_sent(sent_cnt, ( *iter1 )->length() == 0);
-			}
-
-		} else
-		{
-			/// TO-DO
-		}
-
-		if( reason != REASON_SUCCESS )
-		{
-			/// just instructive
-		} else
-		{
-			Packet_Pool->Dtor(( *iter1 ));
-		}
+		SEND_METHOD();
 	}
 
+	goto1:
 	if( reason == REASON_SUCCESS )
 	{
-		ACE_DEBUG(( LM_DEBUG, "%M::%IReason == REASON_SUCCESS\n" ));
 		if( buffered_sending_bundle_.pCurrPacket_ )
 			buffered_sending_bundle_.pCurrPacket_ = NULL;
 		buffered_sending_bundle_.packets_.clear();
+		//pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
 	} else
 	{
 		/// there are packets that are not sent, we first clear the sent ones from this bundle
@@ -597,12 +514,15 @@ void Channel::send_buffered_bundle()
 				"space(kbengine.xml->channelCommon->writeBufferSize->{%s})...\n",
 				reasonToString(checkSocketErrors()),
 				( channelScope_ == INTERNAL ? "internal" : "external" ) ));
+			//pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
 		} else
 		{
 			//this->dispatcher().errorReporter().reportException(reason, pEndpoint_->addr());
 			this->on_error();
 		}
 	}//////////////////////////////////// process this packet ends
+
+	packets_cnt = buffered_sending_bundle_.packets_.size();
 
 	if( g_sendWindowMessagesOverflowCritical > 0 &&
 		packets_cnt > g_sendWindowMessagesOverflowCritical )
@@ -658,7 +578,6 @@ void Channel::on_error(void)
 	if( !isDestroyed_ )
 	{
 		destroy();
-		pNetworkInterface_->deregister_channel(this);
 		Channel_Pool->Dtor(this);
 	}
 }
@@ -874,14 +793,16 @@ void Channel::update_recv_window(Packet* pPacket)
 	recvPackets_.push_back(pPacket);
 	size = recvPackets_.size();
 
-	///@Test
+	/////@Test
 	if( size )
 	{
 		this->process_packets(&TESTMSG::messageHandlers);
 		buffered_sending_bundle_.start_new_curr_message(TESTMSG::pmsg1);
-		buffered_sending_bundle_ << (ACE_UINT64) 1 << "hello,kidding-server...";
+		buffered_sending_bundle_
+			<< (ACE_UINT64) 1
+			<< "hello, world, rainie is a fool"
+			<< (ACE_INT16) 1;
 		buffered_sending_bundle_.end_new_curr_message();
-		this->send_buffered_bundle();
 	}///
 
 	if( g_receiveWindowMessagesOverflowCritical > 0 &&
@@ -916,6 +837,69 @@ void Channel::update_recv_window(Packet* pPacket)
 	}
 
 	//TRACE_RETURN_VOID();
+}
+
+RecvState Channel::checkSocketErrors(int len, bool expectingPacket)
+{
+	int err = kbe_lasterror();
+
+	// recv缓冲区已经无数据可读了
+	if( ( err == EAGAIN || err == EWOULDBLOCK ) && !expectingPacket )
+	{
+		return RecvState::RECV_STATE_BREAK;
+	}
+
+
+	if( err == EAGAIN ||							// 已经无数据可读了
+		err == ECONNREFUSED ||					// 连接被服务器拒绝
+		err == EHOSTUNREACH )						// 目的地址不可到达
+	{
+		pNetworkInterface_->nub_->pErrorReporter_->reportException(REASON_NO_SUCH_PORT);
+		return RecvState::RECV_STATE_BREAK;
+	}
+
+	/*
+	存在的连接被远程主机强制关闭。通常原因为：远程主机上对等方应用程序突然停止运行，或远程主机重新启动，
+	或远程主机在远程方套接字上使用了“强制”关闭（参见setsockopt(SO_LINGER)）。
+	另外，在一个或多个操作正在进行时，如果连接因“keep-alive”活动检测到一个失败而中断，也可能导致此错误。
+	此时，正在进行的操作以错误码WSAENETRESET失败返回，后续操作将失败返回错误码WSAECONNRESET
+	*/
+
+	if( err == WSAECONNRESET )
+	{
+		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
+			"Throwing REASON_GENERAL_NETWORK - WSAECONNRESET\n" ));
+		return RecvState::RECV_STATE_INTERRUPT;
+	}
+
+	if( err == WSAECONNABORTED )
+	{
+		ACE_DEBUG(( LM_WARNING, "processPendingEvents: "
+			"Throwing REASON_GENERAL_NETWORK - WSAECONNABORTED\n" ));
+		return RecvState::RECV_STATE_INTERRUPT;
+	}
+
+	ACE_DEBUG(( LM_WARNING,
+		"TCPPacketReceiver::processPendingEvents: "
+		"Throwing REASON_GENERAL_NETWORK (%s), will continue the reactor\n",
+		kbe_strerror() ));
+	pNetworkInterface_->nub_->pErrorReporter_->reportException(REASON_GENERAL_NETWORK);
+	return RecvState::RECV_STATE_CONTINUE;
+}
+Reason Channel::checkSocketErrors()
+{
+	Reason reason;
+	switch( kbe_lasterror() )
+	{
+		case ECONNREFUSED:	reason = REASON_NO_SUCH_PORT; break;
+		case EWOULDBLOCK:   reason = REASON_RESOURCE_UNAVAILABLE; break;
+		case EAGAIN:		        reason = REASON_RESOURCE_UNAVAILABLE; break;
+		case EPIPE:			        reason = REASON_CLIENT_DISCONNECTED; break;
+		case ECONNRESET:	    reason = REASON_CLIENT_DISCONNECTED; break;
+		case ENOBUFS:		        reason = REASON_TRANSMIT_QUEUE_FULL; break;
+		default:			                reason = REASON_GENERAL_NETWORK; break;
+	}
+	return reason;
 }
 
 void Channel::tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundle)
@@ -977,7 +961,6 @@ void Channel::tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundl
 	}
 	pBundle->recycle_all_packets();
 }
-
 void Channel::udp_send_single_bundle(UDP_SOCK_Handler* pEndpoint, Bundle* pBundle, ACE_INET_Addr& addr)
 {
 	Bundle::Packets::iterator iter = pBundle->packets_.begin();
