@@ -173,9 +173,9 @@ int Nub::startLoop(NetworkInterface* ni)
 		else if( result == -1 )
 			return -1;
 
-		ACE_DEBUG(( LM_DEBUG,
-			"%M::spareTime_(%f ms) \n",
-			( (double) spareTime_.stamp() ) / stampsPerSecondD() * 1000.f ));
+		//ACE_DEBUG(( LM_DEBUG,
+		//	"%M::spareTime_(%f ms) \n",
+		//	( (double) spareTime_.stamp() ) / stampsPerSecondD() * 1000.f ));
 	}
 	return 0;
 }
