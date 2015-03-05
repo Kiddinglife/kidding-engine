@@ -143,7 +143,7 @@ int TCP_SOCK_Handler::handle_input(ACE_HANDLE fd)
 			/* pass */;
 		}
 	}
-	this->reactor()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
+	//this->reactor()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
 	//TRACE_RETURN(0);
 	return 0;
 }
@@ -221,7 +221,6 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 
 int TCP_SOCK_Handler::handle_output(ACE_HANDLE fd)
 {
-	pChannel_->send_buffered_bundle();
 	return 0;
 }
 
