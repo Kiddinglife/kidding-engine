@@ -258,7 +258,8 @@ void Channel::startInactivityDetection(float period, float checkPeriod)
 	{
 		inactivityExceptionPeriod_ = (ACE_UINT64) ( period * stampsPerSecond() );
 		lastRecvTime_ = timestamp();
-		ACE_Time_Value interval(checkPeriod, 0);
+		//ACE_Time_Value interval(checkPeriod, 0);
+		ACE_Time_Value interval(period, 0);
 		timerID_ = this->pEndPoint_->reactor()->schedule_timer(pEndPoint_,
 			(void*) TIMEOUT_INACTIVITY_CHECK, ACE_Time_Value::zero, interval);
 	}
@@ -452,14 +453,14 @@ void Channel::send_buffered_bundle()
 			c_str() ));
 		this->on_error();
 		clearBundles();
-	/*	pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);*/
+		/*	pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);*/
 		return;
 	}
 
 	/// if no bundle to send, we just stop here
 	if( !( packets_cnt = buffered_sending_bundle_.packets_.size() ) )
 	{
-	/*	pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);*/
+		/*	pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);*/
 		return;
 	}
 

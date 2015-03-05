@@ -226,8 +226,8 @@ size_t Bundle::calculate_avaiable_space_of_curr_packet(size_t addsize, bool inse
 	//	currMsgLength_, pCurrPacket_->length() ));
 
 	//TRACE_RETURN(taddsize);
-	ACE_DEBUG(( LM_DEBUG,
-		"calculate_avaiable_space_of_curr_packet::, now taddsize=%d\n", taddsize ));
+	//ACE_DEBUG(( LM_DEBUG,
+	//	"calculate_avaiable_space_of_curr_packet::, now taddsize=%d\n", taddsize ));
 	return taddsize;
 }
 

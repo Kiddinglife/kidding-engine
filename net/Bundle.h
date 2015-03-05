@@ -317,9 +317,9 @@ struct Bundle
 		written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_LONG_LONG);
 		unwritten_bytes_cnt_ = ACE_SIZEOF_LONG_LONG - written_bytes_cnt_;
 
-		ACE_DEBUG(( LM_DEBUG,
-			"Bundle :: &operator<<( ACE_CDR::ULongLong value )"
-			"written_bytes_cnt_(%d), unwritten_bytes_cnt_(%d)\n", written_bytes_cnt_, unwritten_bytes_cnt_ ));
+		//ACE_DEBUG(( LM_DEBUG,
+		//	"Bundle :: &operator<<( ACE_CDR::ULongLong value )"
+		//	"written_bytes_cnt_(%d), unwritten_bytes_cnt_(%d)\n", written_bytes_cnt_, unwritten_bytes_cnt_ ));
 
 		if( !unwritten_bytes_cnt_ )
 		{
@@ -502,8 +502,8 @@ struct Bundle
 
 	Bundle &operator<<( const char *str )
 	{
-		ACE_DEBUG(( LM_DEBUG,
-			"Bundle &operator<<( const char *str )\n" ));
+		//ACE_DEBUG(( LM_DEBUG,
+		//	"Bundle &operator<<( const char *str )\n" ));
 
 		static size_t len = 0;  // +1为字符串尾部的0位置
 		static size_t addtotalsize = 0;
@@ -523,8 +523,8 @@ struct Bundle
 			addtotalsize += ilen;
 			/// update the actual written-len
 			len -= ilen;
-			ACE_DEBUG(( LM_DEBUG,
-				"Bundle &operator<<( const char *str )::len(%d)\n", len ));
+			//ACE_DEBUG(( LM_DEBUG,
+			//	"Bundle &operator<<( const char *str )::len(%d)\n", len ));
 		}
 		return *this;
 	}
