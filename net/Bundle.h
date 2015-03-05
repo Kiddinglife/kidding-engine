@@ -28,7 +28,7 @@ if( in.length() == 0 )                                                          
 {                                                                                                                               \
 	packets_.erase(packets_.begin());                                                                           \
 	if( packets_.size() == 0 ) return *this;                                                                     \
-	block->base(packets_[0]->buff->base(), packets_[0]->buff->length());                  \
+	block->base(packets_[0]->buff->base(), packets_[0]->buff->size());                  \
 	block->wr_ptr(packets_[0]->buff->wr_ptr());                                                         \
 }
 

@@ -33,6 +33,7 @@
     <ClInclude Include="strulti.h" />
     <ClInclude Include="timestamp.hpp" />
     <ClInclude Include="user_settings.h" />
+    <ClInclude Include="Watcher.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common.cpp" />
@@ -45,6 +46,7 @@
     <ClCompile Include="rsa.cpp" />
     <ClCompile Include="sha1.cpp" />
     <ClCompile Include="timestamp.cpp" />
+    <ClCompile Include="Watcher.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\openssl\vcbuild\libeay32\libeay32.vcxproj">
