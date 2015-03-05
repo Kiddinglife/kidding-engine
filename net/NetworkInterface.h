@@ -136,7 +136,7 @@ struct NetworkInterface
 
 int NetworkInterface::process_all_channels_buffered_sending_packets()
 {
-	TRACE("NetworkInterface::process_all_channels_buffered_sending_packets()");
+	//TRACE("NetworkInterface::process_all_channels_buffered_sending_packets()");
 
 	static ChannelMap::iterator iter = channelMap_.begin();
 	static ChannelMap::iterator end = channelMap_.end();
@@ -148,8 +148,8 @@ int NetworkInterface::process_all_channels_buffered_sending_packets()
 		iter->second->send_buffered_bundle();
 		++iter;
 	}
-
-	TRACE_RETURN(0);
+	return 0;
+	//TRACE_RETURN(0);
 }
 
 /// this method will go through all the channels and process its packets

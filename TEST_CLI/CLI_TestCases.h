@@ -61,7 +61,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 			0);
 	}
 
-	Sleep(100);
+	Sleep(1000);
 
 	Bundle_Pool->Dtor(p);
 	Packet* pReceiveWindow = Packet_Pool->Ctor();
@@ -82,8 +82,6 @@ TEST(PacketReaderTests, ctor_dtor_test)
 		}
 	}
 	Packet_Pool->Dtor(pReceiveWindow);
-
-	Sleep(20000);
-
+	Sleep(10000);
 	log.close();
 }

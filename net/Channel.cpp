@@ -427,7 +427,7 @@ void Channel::send(Bundle * pBundle)
 }
 void Channel::send_buffered_bundle()
 {
-	TRACE("Channel::send(Bundle * pBundle)");
+	//TRACE("Channel::send(Bundle * pBundle)");
 
 	static Bundle::Packets::iterator  iter1;
 	static Bundle::Packets::iterator  end;
@@ -570,7 +570,7 @@ void Channel::send_buffered_bundle()
 			}
 		}
 	}
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 void Channel::on_error(void)
 {

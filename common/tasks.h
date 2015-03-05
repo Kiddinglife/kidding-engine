@@ -32,11 +32,12 @@ class Tasks
 	}
 	void process()
 	{
-		Container::iterator iter = container_.begin();
-
+		static Container::iterator iter = container_.begin();
+		iter = container_.begin();
 		while( iter != container_.end() )
 		{
-			Task * pTask = *iter;
+			static Task * pTask = *iter;
+			pTask = *iter;
 			if( !pTask->process() )
 				iter = container_.erase(iter);
 			else

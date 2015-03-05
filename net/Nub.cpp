@@ -1,7 +1,7 @@
 #include "Nub.h"
 #include "net\NetworkInterface.h"
 #include "net\ErrorStatsMgr.h"
-
+#include "common\Profile.h"
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 //ProfileVal g_idleProfile("Idle");
 NETWORK_NAMESPACE_BEGIN_DECL
@@ -121,9 +121,18 @@ int Nub::startLoop(NetworkInterface* ni)
 		return 0;
 
 	ACE_UINT64 startTime = 0;
-	ACE_Time_Value maxWaitTime(1); // use 1 sec to ensure ther is always a timerout returned
+	ACE_Time_Value maxWaitTime; // use 1 sec to ensure ther is always a timerout returned
+	maxWaitTime.usec(10 * 1000);
+
 	while( 1 )
 	{
+
+		//#if ENABLE_WATCHERS
+		//		g_idleProfile.start();
+		//#else
+		//		startTime = timestamp();
+		//#endif
+
 		/// process tasks
 		frequentTasks_.process();
 
@@ -154,7 +163,7 @@ int Nub::startLoop(NetworkInterface* ni)
 		spareTime_.stamp(spareTime_.stamp() + g_idleProfile.lastTime_);
 #else
 		//spareTime_.stamp() += timestamp() - startTime;
-		spareTime_.stamp(spareTime_.stamp() + timestamp() - startTime);
+		spareTime_.stamp(spareTime_.stamp() + ( timestamp() - startTime ));
 #endif
 
 		ni->process_all_channels_buffered_sending_packets();
@@ -163,6 +172,10 @@ int Nub::startLoop(NetworkInterface* ni)
 			return 0;
 		else if( result == -1 )
 			return -1;
+
+		ACE_DEBUG(( LM_DEBUG,
+			"%M::spareTime_(%f ms) \n",
+			( (double) spareTime_.stamp() ) / stampsPerSecondD() * 1000.f ));
 	}
 	return 0;
 }

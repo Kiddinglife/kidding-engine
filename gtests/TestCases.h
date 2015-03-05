@@ -1306,40 +1306,41 @@
 //	pool->Dtor(p);
 //
 //}
-//#include "common\Profile.h"
-//static Profile _localProfile;
-//void hello()
-//{
-//	SCOPED_PROFILE(_localProfile);
-//	Sleep(100);
-//}
-//TEST(pROFILETESTS, aLLTESTS)
-//{
-//	hello();
-//	ACE_DEBUG(( LM_DEBUG,
-//		"%s::lastIntTime(%f), lastTime(%f), sumTime(%f), sumIntTime(%f),runningTime(%f) \n",
-//		_localProfile.name(),
-//		_localProfile.lastIntTimeInSeconds() * 1000,
-//		_localProfile.lastTimeInSeconds() * 1000,
-//		_localProfile.sumTimeInSeconds() * 1000,
-//		_localProfile.sumIntTimeInSeconds() * 1000,
-//		(double) runningTime() / stampsPerSecondD() * 1000 ));
-//}
-#include "net\ErrorStatsMgr.h"
-#include "net\Nub.h"
-TEST(ErrorStatsMgr, tESTTS)
+#include "common\Profile.h"
+static Profile _localProfile;
+void hello()
 {
-	ErrorSat stat;
-	stat.lastReportStamps = timestamp();
-	stat.count = 10;
-	Nub nub;
-	ErrorStatMgr mgr(&nub);
-
-	std::string error = "The send buf is full";
-	ACE_INET_Addr addr(20001, ACE_LOCALHOST);
-	/// if exceeeds the max report period it will be reported otherwise coutn_ will be updated
-	mgr.reportError(addr, "%s, %d", error.c_str(), 12);
-	/// report all errors true report all erros false report id it exceeds max report period
-	mgr.reportPendingExceptions(true);
-	nub.startLoop();
+	SCOPED_PROFILE(_localProfile);
+	Sleep(100);
 }
+TEST(pROFILETESTS, aLLTESTS)
+{
+	hello();
+	ACE_DEBUG(( LM_DEBUG,
+		"%s::lastIntTime(%f s), lastTime(%f s), sumTime(%f s),"
+		"sumIntTime(%f s),runningTime(%f s) \n",
+		_localProfile.name(),
+		_localProfile.lastIntTimeInSeconds(),
+		_localProfile.lastTimeInSeconds(),
+		_localProfile.sumTimeInSeconds(),
+		_localProfile.sumIntTimeInSeconds(),
+		(double) runningTime() / stampsPerSecondD() ));
+}
+//#include "net\ErrorStatsMgr.h"
+//#include "net\Nub.h"
+//TEST(ErrorStatsMgr, tESTTS)
+//{
+//	ErrorSat stat;
+//	stat.lastReportStamps = timestamp();
+//	stat.count = 10;
+//	Nub nub;
+//	ErrorStatMgr mgr(&nub);
+//
+//	std::string error = "The send buf is full";
+//	ACE_INET_Addr addr(20001, ACE_LOCALHOST);
+//	/// if exceeeds the max report period it will be reported otherwise coutn_ will be updated
+//	mgr.reportError(addr, "%s, %d", error.c_str(), 12);
+//	/// report all errors true report all erros false report id it exceeds max report period
+//	mgr.reportPendingExceptions(true);
+//	nub.startLoop();
+//}
