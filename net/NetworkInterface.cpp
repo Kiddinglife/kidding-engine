@@ -456,30 +456,8 @@ void NetworkInterface::on_channel_timeout(Channel* pChannel)
 	TRACE_RETURN_VOID();
 }
 
-/// this method will go through all the channels and process its packets
-void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
-{
-	TRACE("NetworkInterface::process_all_channels_packets()");
-	ChannelMap::iterator iter = channelMap_.begin();
-	while( iter != channelMap_.end() )
-	{
-		Channel* pChannel = iter->second;
 
-		if( pChannel->isDestroyed_ || pChannel->isCondemn_ )
-		{
-			++iter;
-			deregister_channel(pChannel);
-			pChannel->destroy();
-		} else
-		{
-			pChannel->process_packets(pMsgHandlers);
-			++iter;
-		}
-	}
-	TRACE_RETURN_VOID();
-}
-
-void NetworkInterface::close_listenning_sockets(void)
+void NetworkInterface::close_listenning_sockets()
 {
 	TRACE("NetworkInterface::close_socket()");
 	if( pExtListenerReceiver_ )
@@ -493,19 +471,5 @@ void NetworkInterface::close_listenning_sockets(void)
 	TRACE_RETURN_VOID();
 }
 
-int NetworkInterface::process_all_channels_buffered_sending_packets(void)
-{
-	TRACE("NetworkInterface::notify_all_output_events()");
-
-	static ChannelMap::iterator iter = channelMap_.begin();
-	iter = channelMap_.begin();
-	while( iter != channelMap_.end() )
-	{
-		iter->second->send_buffered_bundle();
-		++iter;
-	}
-
-	TRACE_RETURN(0);
-}
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

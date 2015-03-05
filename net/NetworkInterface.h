@@ -133,6 +133,47 @@ struct NetworkInterface
 	void close_listenning_sockets(void);
 
 };
+
+int NetworkInterface::process_all_channels_buffered_sending_packets()
+{
+	TRACE("NetworkInterface::process_all_channels_buffered_sending_packets()");
+
+	static ChannelMap::iterator iter = channelMap_.begin();
+	static ChannelMap::iterator end = channelMap_.end();
+
+	iter = channelMap_.begin();
+	end = channelMap_.end();
+	while( iter != end )
+	{
+		iter->second->send_buffered_bundle();
+		++iter;
+	}
+
+	TRACE_RETURN(0);
+}
+
+/// this method will go through all the channels and process its packets
+void NetworkInterface::process_all_channels_packets(Messages* pMsgHandlers)
+{
+	TRACE("NetworkInterface::process_all_channels_packets()");
+	ChannelMap::iterator iter = channelMap_.begin();
+	while( iter != channelMap_.end() )
+	{
+		Channel* pChannel = iter->second;
+
+		if( pChannel->isDestroyed_ || pChannel->isCondemn_ )
+		{
+			++iter;
+			deregister_channel(pChannel);
+			pChannel->destroy();
+		} else
+		{
+			pChannel->process_packets(pMsgHandlers);
+			++iter;
+		}
+	}
+	TRACE_RETURN_VOID();
+}
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include "ace\post.h"

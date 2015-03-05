@@ -1,6 +1,6 @@
 #include "Nub.h"
-#include "net\ErrorStatsMgr.h"
 #include "net\NetworkInterface.h"
+#include "net\ErrorStatsMgr.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 //ProfileVal g_idleProfile("Idle");

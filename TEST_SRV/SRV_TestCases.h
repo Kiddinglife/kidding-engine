@@ -25,8 +25,8 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	ACE_INT32     extlisteningPort_min = 20001;
 	ACE_INT32     extlisteningPort_max = 20005;
 	const char *    extlisteningInterface = "192.168.2.47";
-	ACE_UINT32   extrbuffer = 512 * 1024;
-	ACE_UINT32   extwbuffer = 512 * 1024;
+	ACE_UINT32   extrbuffer = 0;
+	ACE_UINT32   extwbuffer = 0;
 	ACE_INT32      intlisteningPort = 20006;
 	const char *    intlisteningInterface = "192.168.2.47";
 	ACE_UINT32   intrbuffer = 0;
@@ -44,5 +44,5 @@ TEST(PacketReaderTests, ctor_dtor_test)
 		intrbuffer,
 		intwbuffer);
 
-	pDispatcher.startLoop();
+	pDispatcher.startLoop(&in);
 }
