@@ -31,10 +31,7 @@ struct Nub
 	ACE_Time_Value      timeout_;
 
 	Nub::Nub();
-	~Nub()
-	{
-		SAFE_RELEASE(pErrorReporter_);
-	}
+	~Nub();
 
 	/// geterrs and setters
 	const TimeStamp& spareTime() const

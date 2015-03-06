@@ -15,6 +15,11 @@ pErrorReporter_(new ErrorStatMgr(this))
 	//Timers64* pTimers_;
 }
 
+Nub::~Nub()
+{
+	SAFE_RELEASE(pErrorReporter_);
+}
+
 int Nub::startLoop(ACE_Reactor::REACTOR_EVENT_HOOK eh)
 {
 	if( rec->reactor_event_loop_done() )

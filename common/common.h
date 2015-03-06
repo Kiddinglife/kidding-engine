@@ -326,7 +326,7 @@ typedef ACE_UINT32								CELL_ID;// CELL的id
 #define const_charptr							const char*
 #define PyObject_ptr							PyObject*
 #define UnorderedMap                            std::tr1::unordered_map
-#define KBEShared_ptr						    std::tr1::shared_ptr
+#define Shared_ptr						    std::tr1::shared_ptr
 #define ENTITY_TYPE_MAX                         ACE_UINT16_MAX
 #define IFNAMSIZ                                16
 #define CELL_DEF_MIN_AREA_SIZE		            500.0f /// 一个cell的默认的边界或者最小大小

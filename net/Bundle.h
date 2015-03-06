@@ -37,6 +37,7 @@ struct Bundle
 	/// the free space in the current packet to write
 	ACE_UINT16          unwritten_bytes_cnt_;
 	ACE_UINT16          written_bytes_cnt_;
+
 	typedef std::vector<Packet*> Packets;
 	Packets                  packets_;
 

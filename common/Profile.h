@@ -69,7 +69,7 @@ struct Profile
 	{
 		return sumInternalTime_;
 	}
-	const TimeStamp& Profile::lastTime() const
+	const TimeStamp Profile::lastTime() const
 	{
 		return this->running() ? TimeStamp(0) : lastTime_;
 	}
