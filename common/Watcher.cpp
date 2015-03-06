@@ -133,6 +133,60 @@ void WatcherPaths::addToStream(Bundle* s)
 void WatcherPaths::updateStream(Bundle* s)
 {
 }
+
+bool WatcherPaths::addWatcher(std::string path, Watcher* pwo)
+{
+	std::string szpath, name;
+	std::string::size_type fi = path.find_first_of('/');
+	if( fi == std::string::npos )
+	{
+		name = path;
+		szpath = "";
+	} else
+	{
+		std::vector<std::string> vec;
+		kbe_split(path, '/', vec);
+
+		std::vector<std::string>::size_type size = vec.size();
+		name = vec[size - 1];
+		szpath = path.erase(path.size() - name.size() - 1, path.size());
+	}
+
+	static WATCHER_ID id = 1;
+	pwo->id_ = id++;
+
+	return _addWatcher(szpath, pwo);
+}
+
+bool WatcherPaths::_addWatcher(std::string path, Watcher* pwo)
+{
+	if( path.size() > 0 )
+	{
+		std::vector<std::string> vec;
+		kbe_split(path, '/', vec);
+
+		path.erase(0, vec[0].size() + 1);
+
+		WatcherPathsMap::iterator iter = watcherPaths_.find(vec[0]);
+		if( iter != watcherPaths_.end() )
+		{
+			return iter->second->_addWatcher(path, pwo);
+		} else
+		{
+			WatcherPaths* watcherPaths = new WatcherPaths();
+			watcherPaths_[vec[0]].reset(watcherPaths);
+			return watcherPaths->_addWatcher(path, pwo);
+		}
+	}
+
+	if( !watchers_.addWatcher(path, pwo) )
+	{
+		ACE_ASSERT(false && "watcher is exist!\n");
+		return false;
+	}
+
+	return true;
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

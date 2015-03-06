@@ -350,6 +350,8 @@ struct WatcherPaths
 	WatcherPaths& WatcherPaths::root();
 	void WatcherPaths::addToStream(Bundle* s);
 	void WatcherPaths::updateStream(Bundle* s);
+	bool WatcherPaths::addWatcher(std::string path, Watcher* pwo);
+	bool WatcherPaths::_addWatcher(std::string path, Watcher* pwo);
 };
 
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
