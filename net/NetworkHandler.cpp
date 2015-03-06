@@ -106,12 +106,14 @@ int TCP_SOCK_Handler::open(void)
 	static ACE_TCHAR peer_name[MAXHOSTNAMELEN];
 	static ACE_INET_Addr peer_addr;
 
-	this->sock_.enable(ACE_NONBLOCK);
+	setnonblocking(true, this->sock_);
+	setnodelay(true, this->sock_);
+
 	if( this->sock_.get_remote_addr(peer_addr) == 0 &&
 		peer_addr.addr_to_string(peer_name, MAXHOSTNAMELEN) == 0 )
 		ACE_DEBUG(( LM_DEBUG, "(%P|%t) Connection from %s\n", peer_name ));
 
-	return this->reactor()->register_handler(this, ACE_Event_Handler::RWE_MASK);
+	return this->reactor()->register_handler(this, ACE_Event_Handler::READ_MASK);
 }
 
 int TCP_SOCK_Handler::handle_close(ACE_HANDLE, ACE_Reactor_Mask mask)
