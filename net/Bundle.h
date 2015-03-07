@@ -98,7 +98,7 @@ struct Bundle
 	 * *p >> id;
 	 * *p >> len;
 	 */
-	inline void init_instream(void);
+	 void init_instream(void);
 
 	/**
 	 * @para calpCurrPacket_
@@ -253,7 +253,6 @@ struct Bundle
 		PACKET_OUT_VALUE(v);
 		return *this;
 	}
-
 	Bundle &operator<<( ACE_CDR::Char value )
 	{
 		unwritten_bytes_cnt_ = ACE_SIZEOF_CHAR - calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_CHAR);
@@ -266,6 +265,7 @@ struct Bundle
 		PACKET_OUT_VALUE(value);
 		return *this;
 	}
+
 
 	Bundle &operator<<( ACE_CDR::UShort value )
 	{
@@ -289,11 +289,10 @@ struct Bundle
 		PACKET_OUT_VALUE(value);
 		return *this;
 	}
-
-	Bundle &operator<<( ACE_CDR::ULong value )
+	Bundle &operator<<( ACE_CDR::Short value )
 	{
-		written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_LONG);
-		unwritten_bytes_cnt_ = ACE_SIZEOF_LONG - written_bytes_cnt_;
+		written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_SHORT);
+		unwritten_bytes_cnt_ = ACE_SIZEOF_SHORT - written_bytes_cnt_;
 
 		if( !unwritten_bytes_cnt_ )
 		{
@@ -301,17 +300,20 @@ struct Bundle
 		} else
 		{
 			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->buff->wr_ptr(written_bytes_cnt_);
 			written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(unwritten_bytes_cnt_);
 			ACE_TEST_ASSERT(unwritten_bytes_cnt_ == written_bytes_cnt_);
 			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->buff->wr_ptr(written_bytes_cnt_);
 		}
 		return *this;
 	}
-	Bundle &operator>>( ACE_CDR::ULong& value )
+	Bundle &operator>>( ACE_CDR::Short& value )
 	{
 		PACKET_OUT_VALUE(value);
 		return *this;
 	}
+	
 
 	Bundle &operator<<( ACE_CDR::ULongLong value )
 	{
@@ -339,11 +341,10 @@ struct Bundle
 		PACKET_OUT_VALUE(v);
 		return *this;
 	}
-
-	Bundle &operator<<( ACE_CDR::Short value )
+	Bundle &operator<<( ACE_CDR::LongLong value )
 	{
-		written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_SHORT);
-		unwritten_bytes_cnt_ = ACE_SIZEOF_SHORT - written_bytes_cnt_;
+		written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_LONG_LONG);
+		unwritten_bytes_cnt_ = ACE_SIZEOF_LONG_LONG - written_bytes_cnt_;
 
 		if( !unwritten_bytes_cnt_ )
 		{
@@ -351,19 +352,19 @@ struct Bundle
 		} else
 		{
 			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
-			pCurrPacket_->buff->wr_ptr(written_bytes_cnt_);
 			written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(unwritten_bytes_cnt_);
 			ACE_TEST_ASSERT(unwritten_bytes_cnt_ == written_bytes_cnt_);
 			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
-			pCurrPacket_->buff->wr_ptr(written_bytes_cnt_);
 		}
 		return *this;
 	}
-	Bundle &operator>>( ACE_CDR::Short& value )
+	Bundle &operator>>( ACE_CDR::LongLong& value )
 	{
 		PACKET_OUT_VALUE(value);
 		return *this;
 	}
+
+
 
 	Bundle &operator<<( ACE_CDR::Long value )
 	{
@@ -387,11 +388,10 @@ struct Bundle
 		PACKET_OUT_VALUE(value);
 		return *this;
 	}
-
-	Bundle &operator<<( ACE_CDR::LongLong value )
+	Bundle &operator<<( ACE_CDR::ULong value )
 	{
-		written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_LONG_LONG);
-		unwritten_bytes_cnt_ = ACE_SIZEOF_LONG_LONG - written_bytes_cnt_;
+		written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_LONG);
+		unwritten_bytes_cnt_ = ACE_SIZEOF_LONG - written_bytes_cnt_;
 
 		if( !unwritten_bytes_cnt_ )
 		{
@@ -405,11 +405,12 @@ struct Bundle
 		}
 		return *this;
 	}
-	Bundle &operator>>( ACE_CDR::LongLong& value )
+	Bundle &operator>>( ACE_CDR::ULong& value )
 	{
 		PACKET_OUT_VALUE(value);
 		return *this;
 	}
+
 
 	Bundle &operator<<( ACE_CDR::Float value )
 	{
@@ -501,34 +502,6 @@ struct Bundle
 		return *this;
 	}
 
-	Bundle &operator<<( const char *str )
-	{
-		//ACE_DEBUG(( LM_DEBUG,
-		//	"Bundle &operator<<( const char *str )\n" ));
-
-		static size_t len = 0;  // +1为字符串尾部的0位置
-		static size_t addtotalsize = 0;
-		static size_t ilen = 0;
-
-		len = ACE_OS::strlen(str) + 1;
-		addtotalsize = ilen = 0;
-
-		while( len > 0 )
-		{
-			/// get the actual writable-len in the current packet
-			ilen = calculate_avaiable_space_of_curr_packet(len, false);
-			/// write it 
-			pCurrPacket_->os.write_char_array(str + addtotalsize, ilen);
-			//pCurrPacket_->buff->wr_ptr(ilen); the wd has been updated in call write_char_array()
-			/// update the new write start point after witting
-			addtotalsize += ilen;
-			/// update the actual written-len
-			len -= ilen;
-			//ACE_DEBUG(( LM_DEBUG,
-			//	"Bundle &operator<<( const char *str )::len(%d)\n", len ));
-		}
-		return *this;
-	}
 	/// read char string you need to make sure you have give a big=enough arr
 	Bundle &operator>>( char* str )
 	{
@@ -563,6 +536,34 @@ struct Bundle
 		}
 		//ACE_DEBUG(( LM_DEBUG, "Bundle &operator>>( char* str ) :: at end, in.rd_pos = %d\n", in.rd_ptr() ));
 
+		return *this;
+	}
+	Bundle &operator<<( const char *str )
+	{
+		//ACE_DEBUG(( LM_DEBUG,
+		//	"Bundle &operator<<( const char *str )\n" ));
+
+		static size_t len = 0;  // +1为字符串尾部的0位置
+		static size_t addtotalsize = 0;
+		static size_t ilen = 0;
+
+		len = ACE_OS::strlen(str) + 1;
+		addtotalsize = ilen = 0;
+
+		while( len > 0 )
+		{
+			/// get the actual writable-len in the current packet
+			ilen = calculate_avaiable_space_of_curr_packet(len, false);
+			/// write it 
+			pCurrPacket_->os.write_char_array(str + addtotalsize, ilen);
+			//pCurrPacket_->buff->wr_ptr(ilen); the wd has been updated in call write_char_array()
+			/// update the new write start point after witting
+			addtotalsize += ilen;
+			/// update the actual written-len
+			len -= ilen;
+			//ACE_DEBUG(( LM_DEBUG,
+			//	"Bundle &operator<<( const char *str )::len(%d)\n", len ));
+		}
 		return *this;
 	}
 

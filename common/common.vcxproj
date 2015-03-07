@@ -26,7 +26,6 @@
     <ClInclude Include="kbe_version.h" />
     <ClInclude Include="md5.hpp" />
     <ClInclude Include="memorystream_converter.hpp" />
-    <ClInclude Include="memory_stream.h" />
     <ClInclude Include="rsa.hpp" />
     <ClInclude Include="sha1.hpp" />
     <ClInclude Include="stringconv.hpp" />

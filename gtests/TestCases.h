@@ -1306,26 +1306,26 @@
 //	pool->Dtor(p);
 //
 //}
-#include "common\Profile.h"
-static Profile _localProfile;
-void hello()
-{
-	SCOPED_PROFILE(_localProfile);
-	Sleep(100);
-}
-TEST(pROFILETESTS, aLLTESTS)
-{
-	hello();
-	ACE_DEBUG(( LM_DEBUG,
-		"%s::lastIntTime(%f s), lastTime(%f s), sumTime(%f s),"
-		"sumIntTime(%f s),runningTime(%f s) \n",
-		_localProfile.name(),
-		_localProfile.lastIntTimeInSeconds(),
-		_localProfile.lastTimeInSeconds(),
-		_localProfile.sumTimeInSeconds(),
-		_localProfile.sumIntTimeInSeconds(),
-		(double) runningTime() / stampsPerSecondD() ));
-}
+//#include "common\Profile.h"
+//static Profile _localProfile;
+//void hello()
+//{
+//	SCOPED_PROFILE(_localProfile);
+//	Sleep(100);
+//}
+//TEST(pROFILETESTS, aLLTESTS)
+//{
+//	hello();
+//	ACE_DEBUG(( LM_DEBUG,
+//		"%s::lastIntTime(%f s), lastTime(%f s), sumTime(%f s),"
+//		"sumIntTime(%f s),runningTime(%f s) \n",
+//		_localProfile.name(),
+//		_localProfile.lastIntTimeInSeconds(),
+//		_localProfile.lastTimeInSeconds(),
+//		_localProfile.sumTimeInSeconds(),
+//		_localProfile.sumIntTimeInSeconds(),
+//		(double) runningTime() / stampsPerSecondD() ));
+//}
 //#include "net\ErrorStatsMgr.h"
 //#include "net\Nub.h"
 //TEST(ErrorStatsMgr, tESTTS)
@@ -1344,3 +1344,22 @@ TEST(pROFILETESTS, aLLTESTS)
 //	mgr.reportPendingExceptions(true);
 //	nub.startLoop();
 //}
+
+#include "common\Watcher.h"
+TEST(WatcherTest, watchertests)
+{
+	std::string path1 = "root/path1/path2/watcher1";
+	std::string path2 = "root/path1/watcher2";
+
+	ValueWatcher<int> value1(path1, 12);
+	ValueWatcher<int> value2(path2, 12);
+
+	//std::string name = "watcher1";
+	//path.erase(path.size() - name.size() - 1, name.size()+1);
+	//std::cout << path;
+
+	WatcherPaths::root().addWatcher(path1, &value1);
+	WatcherPaths::root().addWatcher(path2, &value2);
+	WatcherPaths::root().delWatcher(path1);
+	WatcherPaths::root().delWatcher(path2);
+}

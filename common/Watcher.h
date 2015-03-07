@@ -3,6 +3,7 @@
 
 #include "ace\pre.h"
 #include "common\common.h"
+#include "common\stringconv.hpp"
 #include "net\Bundle.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
@@ -39,8 +40,9 @@ struct Watcher
 	virtual void addToStream(Bundle* s) { };
 	template <class T> void updateStream(Bundle* s)
 	{
+		s->init_instream();
 		T v;
-		*s >> v;
+		(*s) >> v;
 		strval_ = StringConv::val2str(v);
 	}
 
@@ -343,15 +345,23 @@ struct WatcherPaths
 	typedef UnorderedMap<std::string, Shared_ptr<WatcherPaths> > WatcherPathsMap;
 	WatcherPathsMap watcherPaths_;
 	Watchers watchers_;
+	std::string name_;
 
 	WatcherPaths();
 	~WatcherPaths();
 
-	WatcherPaths& WatcherPaths::root();
+	static WatcherPaths& WatcherPaths::root();
 	void WatcherPaths::addToStream(Bundle* s);
 	void WatcherPaths::updateStream(Bundle* s);
+
 	bool WatcherPaths::addWatcher(std::string path, Watcher* pwo);
 	bool WatcherPaths::_addWatcher(std::string path, Watcher* pwo);
+
+	Watcher* WatcherPaths::addWatcherFromStream(std::string path, std::string name,
+		WATCHER_ID wid, WATCHER_VALUE_TYPE wtype, Bundle* s);
+
+	bool WatcherPaths::hasWatcherPath(const std::string& fullpath);
+	bool WatcherPaths::delWatcher(const std::string& fullpath);
 };
 
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

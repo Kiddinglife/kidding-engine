@@ -56,9 +56,6 @@
     <ClInclude Include="timestamp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="memory_stream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="deadline.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
