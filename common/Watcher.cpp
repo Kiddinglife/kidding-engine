@@ -29,13 +29,21 @@ numWitness_(0)
 }
 Watcher::~Watcher()
 {
+	TRACE("~Watcher()");
+	TRACE_RETURN_VOID();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 Watchers::Watchers() :watcherObjs_() { }
-Watchers::~Watchers() { watcherObjs_.clear(); }
+Watchers::~Watchers()
+{
+	TRACE("~WatcherPaths()");
+	watcherObjs_.clear();
+	TRACE_RETURN_VOID();
+
+}
 
 Watchers& Watchers::rootWatchers()
 {
@@ -71,21 +79,20 @@ bool Watchers::addWatcher(const std::string& path, Watcher* pwo)
 	watcherObjs_[pwo->name_].reset(pwo);
 
 	ACE_DEBUG(( LM_DEBUG,
-		"Watchers::addWatcher: path={%s}, name={%s}, id={%d}\n",
-		pwo->path_.c_str(), pwo->name_.c_str(), pwo->id_ ));
+		"Watchers::addWatcher: path={%s},"
+		"name={%s}, id={%d},watcherObjs_(%d, %s=>%@) \n",
+		pwo->path_.c_str(), pwo->name_.c_str(), pwo->id_, watcherObjs_.size(),
+		pwo->name_.c_str(), watcherObjs_[pwo->name_].get() ));
 
 	return true;
 }
 
 bool Watchers::delWatcher(const std::string& name)
 {
-	for( auto& x : watcherObjs_ )
-		std::cout << x.first << ": " << x.second << std::endl;
-
 	if( !hasWatcher(name) )
 		return false;
+	ACE_ASSERT(watcherObjs_[name].use_count() == 1);
 	watcherObjs_.erase(name);
-	ACE_DEBUG(( LM_DEBUG, "2Watchers::delWatcher: {%s}\n", name.c_str() ));
 	return true;
 }
 
@@ -110,10 +117,14 @@ Shared_ptr< Watcher > Watchers::getWatcher(const std::string& name)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 WatcherPaths::WatcherPaths() : watcherPaths_(), watchers_() { }
-WatcherPaths::~WatcherPaths() { watcherPaths_.clear(); }
+WatcherPaths::~WatcherPaths()
+{
+	TRACE("~WatcherPaths()");
+	watcherPaths_.clear();
+	TRACE_RETURN_VOID();
+}
 
 WatcherPaths& WatcherPaths::root()
 {
@@ -165,12 +176,11 @@ bool WatcherPaths::_addWatcher(std::string path, Watcher* pwo)
 		} else
 		{
 			WatcherPaths* watcherPaths = new WatcherPaths();
-			watcherPaths->name_ = vec[0] + "-WatcherPaths";
+			watcherPaths->name_ = vec[0];
 			watcherPaths_[vec[0]].reset(watcherPaths);
 			return watcherPaths->_addWatcher(path, pwo);
 		}
 	}
-	ACE_DEBUG(( LM_DEBUG, "add watcher (%s), watcher path (%s)\n", pwo->name_.c_str(), this->name_.c_str() ));
 
 	if( !watchers_.addWatcher(path, pwo) )
 	{
@@ -278,7 +288,7 @@ bool WatcherPaths::hasWatcherPath(const std::string& fullpath)
 
 bool WatcherPaths::delWatcher(const std::string& fullpath)
 {
-	if( hasWatcherPath(fullpath) == false )
+	if( !hasWatcherPath(fullpath) )
 	{
 		ACE_DEBUG(( LM_DEBUG, "WatcherPaths::delWatcher: not found {%s}\n", fullpath ));
 		return false;
@@ -300,13 +310,44 @@ bool WatcherPaths::delWatcher(const std::string& fullpath)
 		UnorderedMap<std::string, Shared_ptr<WatcherPaths> >::iterator fiter = paths.find(( *iter ));
 		if( fiter == paths.end() )
 			return false;
-
 		pCurrWatcherPaths = fiter->second.get();
 		if( pCurrWatcherPaths == NULL )
 			return false;
 	}
 
 	return pCurrWatcherPaths->watchers_.delWatcher(name);
+}
+
+Shared_ptr< Watcher > WatcherPaths::getWatcher(const std::string& fullpath)
+{
+	if( !hasWatcherPath(fullpath) )
+	{
+		ACE_DEBUG(( LM_DEBUG, "WatcherPaths::delWatcher: not found {%s}\n", fullpath ));
+		return false;
+	}
+
+	std::vector<std::string> vec;
+	kbe_split(fullpath, '/', vec);
+
+	if( vec.size() == 1 )
+		return false;
+
+	std::string name = ( *( vec.end() - 1 ) );
+	vec.erase(vec.end() - 1);
+
+	WatcherPaths* pCurrWatcherPaths = this;
+	for( std::vector<std::string>::iterator iter = vec.begin(); iter != vec.end(); ++iter )
+	{
+		WatcherPathsMap& paths = pCurrWatcherPaths->watcherPaths_;
+		UnorderedMap<std::string, Shared_ptr<WatcherPaths> >::iterator fiter = paths.find(( *iter ));
+		if( fiter == paths.end() )
+			return false;
+		pCurrWatcherPaths = fiter->second.get();
+		if( pCurrWatcherPaths == NULL )
+			return false;
+	}
+
+	return pCurrWatcherPaths->watchers_.getWatcher(name);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 

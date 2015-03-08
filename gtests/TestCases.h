@@ -1346,20 +1346,49 @@
 //}
 
 #include "common\Watcher.h"
+int hello()
+{
+	return 12;
+}
+struct tt
+{
+	int a;
+	int hello()
+	{
+		return 12;
+	}
+};
 TEST(WatcherTest, watchertests)
 {
-	std::string path1 = "root/path1/path2/watcher1";
-	std::string path2 = "root/path1/watcher2";
+	int a = 12;
+	tt t;
+	t.a = 1;
 
-	ValueWatcher<int> value1(path1, 12);
-	ValueWatcher<int> value2(path2, 12);
+	std::string path1 = "watcher1";
+	CRATE_WATCH_OBJECT(path1, a);
+	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path1).get() )->getValue()
+		<< std::endl;
 
-	//std::string name = "watcher1";
-	//path.erase(path.size() - name.size() - 1, name.size()+1);
-	//std::cout << path;
+	std::string path2 = "p0/p2/watcher2";
+	CRATE_WATCH_OBJECT(path2, t.a);
+	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path2).get() )->getValue()
+		<< std::endl;
 
-	WatcherPaths::root().addWatcher(path1, &value1);
-	WatcherPaths::root().addWatcher(path2, &value2);
-	WatcherPaths::root().delWatcher(path1);
-	WatcherPaths::root().delWatcher(path2);
+	std::string path3 = "path1/path2/p3/watcher3";
+	CRATE_WATCH_OBJECT(path3, &hello);
+	std::cout << ( ( FunctionWatcher<int>* )GET_WATCHER_OBJECT(path3).get() )->getValue()
+		<< std::endl;
+
+	std::string path4 = "path1/path2/p5/p4/watcher4";
+	CRATE_WATCH_OBJECT(path4, &t, &tt::hello);
+	std::cout << ( ( MethodWatcher<int, tt>* )GET_WATCHER_OBJECT(path4).get() )->
+		getValue() << std::endl;
+
+	a = 2;
+	t.a = 2;
+
+	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path1).get() )->getValue()
+		<< std::endl;
+	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path2).get() )->getValue()
+		<< std::endl;
 }

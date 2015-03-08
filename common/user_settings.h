@@ -9,4 +9,5 @@
 #define ACE_NTRACE 0
 #include "ace/mytrace.h"
 
+#define ENABLE_WATCHERS
 #endif

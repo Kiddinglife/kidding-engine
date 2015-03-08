@@ -1,3 +1,6 @@
+/**
+ * written by Jackie Zhang on 08/03/2015
+ */
 #ifndef Watcher_H_
 #define Watcher_H_
 
@@ -42,7 +45,7 @@ struct Watcher
 	{
 		s->init_instream();
 		T v;
-		(*s) >> v;
+		( *s ) >> v;
 		strval_ = StringConv::val2str(v);
 	}
 
@@ -205,7 +208,7 @@ struct ValueWatcher : public Watcher
 		( *s ) << id_ << watchVal_;
 	}
 
-	T getValue() { return watchVal_; }
+	const T& getValue() { return watchVal_; }
 	virtual WATCHER_VALUE_TYPE get_type_vtl() { return get_type_tpl<T>(); }
 };
 
@@ -315,7 +318,7 @@ watcher管理器
 */
 struct Watchers
 {
-	typedef UnorderedMap<std::string, Shared_ptr< Watcher > > WatchersMap;
+	typedef UnorderedMap<std::string, Shared_ptr< Watcher> > WatchersMap;
 	WatchersMap watcherObjs_;
 
 	Watchers();
@@ -330,7 +333,12 @@ struct Watchers
 	void readWatchers(Bundle* s);
 
 	bool addWatcher(const std::string& path, Watcher* pwo);
+
+	/**
+	* del will call the watcher's dtor
+	*/
 	bool delWatcher(const std::string& name);
+
 	bool hasWatcher(const std::string& name);
 
 	Shared_ptr< Watcher > getWatcher(const std::string& name);
@@ -362,7 +370,74 @@ struct WatcherPaths
 
 	bool WatcherPaths::hasWatcherPath(const std::string& fullpath);
 	bool WatcherPaths::delWatcher(const std::string& fullpath);
+	Shared_ptr< Watcher > WatcherPaths::getWatcher(const std::string& fullpath);
 };
+
+/**
+用于监视一个值
+int32 a = 1;
+addWatcher("a", a);
+
+AAA a;
+a.x = 2;
+addWatcher("a", a.x);
+*/
+template <class TYPE>
+inline Watcher* addWatcher(std::string path, const TYPE& get_type_tpl)
+{
+	ValueWatcher<TYPE>* pwo = new ValueWatcher<TYPE>(path, get_type_tpl);
+	WatcherPaths::root().addWatcher("root/" + path, pwo);
+	return pwo;
+};
+
+/**
+用于监视一个函数的返回值
+
+int32 func(){}
+
+addWatcher("func", &func);
+*/
+template <class RETURN_TYPE>
+inline Watcher* addWatcher(std::string path, RETURN_TYPE(*func)( ))
+{
+	FunctionWatcher<RETURN_TYPE>* pwo = new FunctionWatcher<RETURN_TYPE>(path, func);
+	WatcherPaths::root().addWatcher("root/" + path, pwo);
+	return pwo;
+};
+
+/**
+用于监视一个成员函数的返回值
+
+int32 AAA::func(){}
+AAA a;
+
+addWatcher("func", &a, &AAA::func);
+*/
+template <class RETURN_TYPE, class OBJ_TYPE>
+inline Watcher* addWatcher(std::string path, OBJ_TYPE* obj, RETURN_TYPE(OBJ_TYPE::*func)( ))
+{
+	MethodWatcher<RETURN_TYPE, OBJ_TYPE>* pwo = new MethodWatcher<RETURN_TYPE, OBJ_TYPE>(path, obj, func);
+	WatcherPaths::root().addWatcher("root/" + path, pwo);
+	return pwo;
+};
+template <class RETURN_TYPE, class OBJ_TYPE>
+inline Watcher* addWatcher(std::string path, OBJ_TYPE* obj,
+	RETURN_TYPE(OBJ_TYPE::*func)( )const)
+{
+	path = "root/" + path;
+	ConstMethodWatcher<RETURN_TYPE, OBJ_TYPE>* pwo = new ConstMethodWatcher<RETURN_TYPE, OBJ_TYPE>(path, obj, func);
+	WatcherPaths::root().addWatcher("root/" + path, pwo);
+	return pwo;
+};
+
+#ifdef ENABLE_WATCHERS
+#define CRATE_WATCH_OBJECT addWatcher
+#define DELETE_WATCHER_OBJECT(path)  WatcherPaths::root().delWatcher("root/" + path)
+#define GET_WATCHER_OBJECT(path)  WatcherPaths::root().getWatcher("root/"+path)
+#else
+inline Watcher* __addWatcher(...) { return NULL; }
+#define WATCH_OBJECT __addWatcher
+#endif
 
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include "ace\post.h"
