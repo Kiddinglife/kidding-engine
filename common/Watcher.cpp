@@ -2,6 +2,7 @@
 #include "ace\Singleton.h"
 #include "ace\Null_Mutex.h"
 #include <iostream>
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

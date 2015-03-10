@@ -11,19 +11,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{F13648CC-A1B0-40E6-9265-890CB5E1DAB0}</ProjectGuid>
+    <ProjectGuid>{656B64D5-5DDF-4BC8-8E1D-3E855B04031A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>net</RootNamespace>
+    <RootNamespace>MonoEmbedC</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -40,14 +40,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)\libs\$(Configuration)\</OutDir>
-    <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath); </IncludePath>
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)\libs\$(Configuration)\</OutDir>
-    <TargetName>$(ProjectName)_r</TargetName>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -55,19 +51,16 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..; ..\openssl\inc32\; D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Mono\include\mono-2.0;..;..\openssl\inc32;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\libs;..\libs\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mono-2.0.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <Lib>
-      <AdditionalLibraryDirectories>..\libs;..\libs\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -77,58 +70,34 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..; ..\openssl\inc32\; D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Mono\include\mono-2.0;..;..\openssl\inc32;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\libs;..\libs\Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mono-2.0.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <Lib>
-      <AdditionalLibraryDirectories>..\libs;..\libs\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
+    <ClCompile Include="..\monobind\class.cpp" />
+    <ClCompile Include="..\monobind\function.cpp" />
+    <ClCompile Include="..\monobind\scope.cpp" />
+    <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Bundle.h" />
-    <ClInclude Include="Channel.h" />
-    <ClInclude Include="DelayedChannelHandler.h" />
-    <ClInclude Include="ErrorStatsMgr.h" />
-    <ClInclude Include="FixedMessages.h" />
-    <ClInclude Include="Message.h" />
-    <ClInclude Include="Message_Defs.h" />
-    <ClInclude Include="NetStats.h" />
-    <ClInclude Include="NetworkHandler.h" />
-    <ClInclude Include="NetworkInterface.h" />
-    <ClInclude Include="net_common.h" />
-    <ClInclude Include="Nub.h" />
-    <ClInclude Include="Packet.h" />
-    <ClInclude Include="PacketReader.h" />
-    <ClInclude Include="Packet_Filter.h" />
-    <ClInclude Include="TestMsgs.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Bundlle.cpp" />
-    <ClCompile Include="Channel.cpp" />
-    <ClCompile Include="DelayedChannelHandler.cpp" />
-    <ClCompile Include="ErrorStatsMgr.cpp" />
-    <ClCompile Include="FixedMessages.cpp" />
-    <ClCompile Include="Message.cpp" />
-    <ClCompile Include="NetStats.cpp" />
-    <ClCompile Include="NetworkHandler.cpp" />
-    <ClCompile Include="NetworkInterface.cpp" />
-    <ClCompile Include="net_common.cpp" />
-    <ClCompile Include="Nub.cpp" />
-    <ClCompile Include="PacketReader.cpp" />
-    <ClCompile Include="Packet_Filter.cpp" />
-    <ClCompile Include="TestMsgs.cpp" />
+    <ClInclude Include="..\monobind\class.hpp" />
+    <ClInclude Include="..\monobind\config.hpp" />
+    <ClInclude Include="..\monobind\convert.hpp" />
+    <ClInclude Include="..\monobind\function.hpp" />
+    <ClInclude Include="..\monobind\module.hpp" />
+    <ClInclude Include="..\monobind\namespace.hpp" />
+    <ClInclude Include="..\monobind\pathutil.hpp" />
+    <ClInclude Include="..\monobind\scope.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

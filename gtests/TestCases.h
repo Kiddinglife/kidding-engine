@@ -21,7 +21,6 @@
 #include "ace/Auto_Ptr.h"
 #include "ace/ACE.h"
 #include "common/ace_object_pool.h"
-
 //TEST(ObjectPoolTest, Test)
 //{
 //	class Obj :public PoolObject
@@ -1345,50 +1344,233 @@
 //	nub.startLoop();
 //}
 
-#include "common\Watcher.h"
-int hello()
+//#include "common\Watcher.h"
+//int hello()
+//{
+//	return 12;
+//}
+//struct tt
+//{
+//	int a;
+//	int hello()
+//	{
+//		return 12;
+//	}
+//};
+//TEST(WatcherTest, watchertests)
+//{
+//	int a = 12;
+//	tt t;
+//	t.a = 1;
+//
+//	std::string path1 = "watcher1";
+//	CRATE_WATCH_OBJECT(path1, a);
+//	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path1).get() )->getValue()
+//		<< std::endl;
+//
+//	std::string path2 = "p0/p2/watcher2";
+//	CRATE_WATCH_OBJECT(path2, t.a);
+//	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path2).get() )->getValue()
+//		<< std::endl;
+//
+//	std::string path3 = "path1/path2/p3/watcher3";
+//	CRATE_WATCH_OBJECT(path3, &hello);
+//	std::cout << ( ( FunctionWatcher<int>* )GET_WATCHER_OBJECT(path3).get() )->getValue()
+//		<< std::endl;
+//
+//	std::string path4 = "path1/path2/p5/p4/watcher4";
+//	CRATE_WATCH_OBJECT(path4, &t, &tt::hello);
+//	std::cout << ( ( MethodWatcher<int, tt>* )GET_WATCHER_OBJECT(path4).get() )->
+//		getValue() << std::endl;
+//
+//	a = 2;
+//	t.a = 2;
+//
+//	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path1).get() )->getValue()
+//		<< std::endl;
+//	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path2).get() )->getValue()
+//		<< std::endl;
+//}
+
+#include <stdlib.h>
+#include <math.h>
+#include <string>
+#include <sstream>
+#include <vector>
+#include "boost/function.hpp"
+#include "boost/bind.hpp"
+#include <mono/jit/jit.h>
+#include <mono/metadata/mono-config.h>
+#include <mono/metadata/assembly.h>
+#include <mono/metadata/mono-debug.h>
+#include <mono/metadata/debug-helpers.h>
+#include <mono/metadata/appdomain.h>
+#include <mono/metadata/object.h>
+#include <mono/metadata/threads.h>
+#include <mono/metadata/environment.h>
+#include <mono/metadata/mono-gc.h>
+#include <monobind/function.hpp>
+#include <monobind/class.hpp>
+#include <monobind/namespace.hpp>
+#include <monobind/scope.hpp>
+#include <monobind/module.hpp>
+#include <monobind/PathUtil.h>
+static MonoString* gimme(int b, int a)
 {
-	return 12;
+	return mono_string_new(mono_domain_get(), "All your monos are belong to us!");
 }
-struct tt
+
+class TestClass2
 {
-	int a;
-	int hello()
+	public:
+	TestClass2() { zz = 98; }
+	TestClass2(int a) { zz = a; }
+	//TestClass2( int a ) { zz = 912; }
+	int test(float b)
 	{
-		return 12;
+		return zz;
+	}
+	std::string strfunc(const std::string& str)
+	{
+		std::stringstream result;
+		result << zz << str;
+		return result.str();
+	}
+	static int static_function(float b)
+	{
+		return b;
+	}
+
+	int zz;
+
+	class TestClass1
+	{
+	};
+};
+
+namespace monobind
+{
+
+	template <>
+	class convert_param < TestClass2* >
+	{
+		public:
+		typedef MonoObject* base;
+		static TestClass2* convert(MonoObject* monoObject)
+		{
+			MonoClassField* nativeClassField = mono_class_get_field_from_name(mono_object_get_class(monoObject), "_native");
+			TestClass2* ptr;
+			mono_field_get_value(monoObject, nativeClassField, &ptr);
+			return ptr;
+		}
+	};
+
+}
+
+class TestClass3
+{
+	public:
+	TestClass3() { }
+	TestClass3(int a) { }
+	void TestFun3(TestClass2* testClass)
+	{
+		testClass->test(40.0f);
 	}
 };
-TEST(WatcherTest, watchertests)
+
+static MonoAssembly* main_function(MonoDomain *domain, const char *file)
 {
-	int a = 12;
-	tt t;
-	t.a = 1;
+	MonoAssembly *assembly;
 
-	std::string path1 = "watcher1";
-	CRATE_WATCH_OBJECT(path1, a);
-	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path1).get() )->getValue()
-		<< std::endl;
+	assembly = mono_domain_assembly_open(domain, file);
+	if( !assembly )
+		exit(2);
 
-	std::string path2 = "p0/p2/watcher2";
-	CRATE_WATCH_OBJECT(path2, t.a);
-	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path2).get() )->getValue()
-		<< std::endl;
+	return assembly;
+}
 
-	std::string path3 = "path1/path2/p3/watcher3";
-	CRATE_WATCH_OBJECT(path3, &hello);
-	std::cout << ( ( FunctionWatcher<int>* )GET_WATCHER_OBJECT(path3).get() )->getValue()
-		<< std::endl;
+class Test
+{
+	virtual int test()
+	{
+		return 10;
+	}
+};
 
-	std::string path4 = "path1/path2/p5/p4/watcher4";
-	CRATE_WATCH_OBJECT(path4, &t, &tt::hello);
-	std::cout << ( ( MethodWatcher<int, tt>* )GET_WATCHER_OBJECT(path4).get() )->
-		getValue() << std::endl;
+class MObject
+{
+	public:
+	MObject(MonoImage* monoImage, MonoDomain* monoDomain)
+		: m_monoImage(monoImage), m_monoDomain(monoDomain)
+	{
+	}
+	protected:
+	MonoDomain* m_monoDomain;
+	MonoImage* m_monoImage;
+	MonoClass* m_monoClass;
+	MonoObject* m_monoObject;
+};
 
-	a = 2;
-	t.a = 2;
+class TestCS : public Test, public MObject
+{
+	public:
+	TestCS(MonoImage* monoImage, MonoDomain* monoDomain) : MObject(monoImage, monoDomain)
+	{
+		m_monoClass = mono_class_from_name(monoImage, "Embed", "TestClass");
+		m_monoObject = mono_object_new(m_monoDomain, m_monoClass);
 
-	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path1).get() )->getValue()
-		<< std::endl;
-	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path2).get() )->getValue()
-		<< std::endl;
+		MonoMethod* method = mono_class_get_method_from_name(m_monoClass, ".ctor", 0);
+		mono_runtime_invoke(method, m_monoObject, NULL, NULL);
+	}
+	virtual int test()
+	{
+		MonoMethod* method = mono_class_get_method_from_name(m_monoClass, "test", 0);
+		MonoObject* result = mono_runtime_invoke(method, m_monoObject, NULL, NULL);
+		return *(int*) mono_object_unbox(result);
+	}
+};
+using namespace monobind;
+TEST(MON0TEST, mponitests)
+{
+	mono_set_dirs(PathUtil::GetLibDirectory().c_str(), PathUtil::GetConfigDirectory().c_str());
+	// Required for mdb's to load for detailed stack traces etc.
+	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+	MonoDomain*  domain = mono_jit_init_version("MonoApplication", "v4.0.30319");
+	MonoAssembly *pMonoAssembly = mono_domain_assembly_open(mono_domain_get(), PathUtil::GetBinDirectory().append("ClassLibrary.dll").c_str());
+	MonoImage* monoImage = mono_assembly_get_image(pMonoAssembly);
+
+	module(monoImage, domain)
+		[
+			namespace_("Embed")
+			[
+				class_< TestClass2 >("TestClass2")
+				.def(constructor())
+				.def(constructor< int >())
+				.def("TestFun", &TestClass2::test)
+				.def("strfunc", &TestClass2::strfunc)
+				.def_readonly("aa", &TestClass2::zz)
+				.def_readwrite("bb", &TestClass2::zz)
+				.scope
+				[
+					//def( "static_function", &TestClass2::static_function ),
+					class_< TestClass2::TestClass1 >("TestClass1")
+					.def(constructor())
+				],
+				class_< TestClass3 >("TestClass3")
+				.def(constructor< int >())
+				.def("TestFun3", &TestClass3::TestFun3)
+			]
+		];
+
+	mono_add_internal_call("MonoEmbed::gimmebis", gimme);
+	mono_add_internal_call("MonoEmbed::gimme", gimme);
+
+	//mono_jit_exec(domain, monoAssembly, argc - 1, argv + 1);
+
+	TestCS testCS(monoImage, domain);
+	int a = testCS.test();
+
+	int32_t retval = mono_environment_exitcode_get();
+	mono_jit_cleanup(domain);
+
 }

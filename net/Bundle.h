@@ -32,7 +32,7 @@ if( in.length() == 0 )                                                          
 	block->wr_ptr(packets_[0]->buff->wr_ptr());                                                         \
 }
 
-struct Bundle
+struct ACE_Export Bundle
 {
 	/// the free space in the current packet to write
 	ACE_UINT16          unwritten_bytes_cnt_;
