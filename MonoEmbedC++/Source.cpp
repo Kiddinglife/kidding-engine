@@ -1,3 +1,4 @@
+#include "ace/ACE.h"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/mono-config.h>
@@ -27,6 +28,8 @@
 #include <monobind/module.hpp>
 #include <monobind/PathUtil.hpp>
 
+#include "common\Profile.h"
+
 using namespace monobind;
 
 /*
@@ -37,7 +40,6 @@ using namespace monobind;
 * Run with:
 * 	./teste test.exe
 */
-
 static MonoString* gimme(int b, int a)
 {
 	return mono_string_new(mono_domain_get(), "All your monos are belong to us!");
@@ -114,6 +116,10 @@ static MonoAssembly* main_function(MonoDomain *domain, const char *file)
 
 class Test
 {
+	public:
+	MonoMethod* method_;
+	MonoObject* result_;
+
 	virtual int test()
 	{
 		return 10;
@@ -137,20 +143,21 @@ class MObject
 class TestCS : public Test, public MObject
 {
 	public:
-	TestCS(MonoImage* monoImage, MonoDomain* monoDomain) : MObject(monoImage, monoDomain)
+	TestCS(MonoImage* monoImage, MonoDomain* monoDomain) : Test(), MObject(monoImage, monoDomain)
 	{
 		m_monoClass = mono_class_from_name(monoImage, "Embed", "TestClass");
 		m_monoObject = mono_object_new(m_monoDomain, m_monoClass);
 		MonoMethod* method = mono_class_get_method_from_name(m_monoClass, ".ctor", 0);
 		mono_runtime_invoke(method, m_monoObject, NULL, NULL);
+		method_ = mono_class_get_method_from_name(m_monoClass, "test", 0);
 	}
 	virtual int test()
 	{
-		MonoMethod* method = mono_class_get_method_from_name(m_monoClass, "test", 0);
-		MonoObject* result = mono_runtime_invoke(method, m_monoObject, NULL, NULL);
-		return *(int*) mono_object_unbox(result);
+		result_ = mono_runtime_invoke(method_, m_monoObject, NULL, NULL);
+		return *(int*) mono_object_unbox(result_);
 	}
 };
+
 
 int main(int argc, char* argv[ ])
 {
@@ -188,7 +195,17 @@ int main(int argc, char* argv[ ])
 	mono_add_internal_call("monoembed::gimme", gimme);
 
 	TestCS testCS(monoImage, domain);
-	int a = testCS.test();
+	Profile _localProfile;
+	{SCOPED_PROFILE(_localProfile); testCS.test(); }
+	ACE_DEBUG(( LM_DEBUG,
+		"%s::lastIntTime(%f s), lastTime(%f s), sumTime(%f s),"
+		"sumIntTime(%f s),runningTime(%f s) \n",
+		_localProfile.name(),
+		_localProfile.lastIntTimeInSeconds(),
+		_localProfile.lastTimeInSeconds(),
+		_localProfile.sumTimeInSeconds(),
+		_localProfile.sumIntTimeInSeconds(),
+		(double) runningTime() / stampsPerSecondD() ));
 
 	int retval = mono_environment_exitcode_get();
 	mono_jit_cleanup(domain);

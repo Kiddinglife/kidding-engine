@@ -237,6 +237,7 @@
       <XMLDocumentationFileName>../../../_objs\$(ProjectName)_d\</XMLDocumentationFileName>
       <BrowseInformation>true</BrowseInformation>
       <CompileAs>Default</CompileAs>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -246,7 +247,8 @@
       <OutputFile>../../../libs/$(ProjectName)_d.lib</OutputFile>
     </Lib>
     <Bscmake>
-      <OutputFile> </OutputFile>
+      <OutputFile>
+      </OutputFile>
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

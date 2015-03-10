@@ -4,49 +4,6 @@ using System.Runtime.InteropServices;
 
 namespace Embed
 {
-
-	class TestClass
-	{
-		public TestClass()
-		{
-			bb = 2131;
-		}
-		int b;
-		public int bb
-		{
-			get { return b; }
-			set { b = value; }
-		}
-		public int test()
-		{
-
-			Embed.TestClass2 tc2 = new Embed.TestClass2(30);
-			Embed.TestClass2 tc3 = new Embed.TestClass2(40);
-			Embed.TestClass3 tc4 = new Embed.TestClass3();
-			//tc3.bb = 14323;
-			Console.WriteLine(tc3.bb);
-			Console.WriteLine(tc3.strfunc("didum"));
-
-			tc4.TestFun3(tc2);
-			//Console.WriteLine( tc2.test() );
-			Console.WriteLine(tc2.TestFun(52.5f));
-			Console.WriteLine(tc3.TestFun(52.5f));
-			Console.WriteLine(tc2.bb);
-
-			Console.WriteLine(gimme(30));
-
-			Embed.TestClass tc = new Embed.TestClass();
-			Console.WriteLine(tc.bb);
-
-			int a = 0;
-			for (int i = 0; i < 100000; ++i)
-			{
-				//a = i;
-				tc3.bb = i;
-			}
-			return bb;
-		}
-	}
 	class TestClass2
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -102,12 +59,57 @@ namespace Embed
 
 		public IntPtr _native;
 	}
+
+	class TestClass
+	{
+		int b;
+		Embed.TestClass2 tc2;
+		Embed.TestClass2 tc3;
+		Embed.TestClass3 tc4;
+		Embed.TestClass tc;
+
+		public TestClass()
+		{
+			bb = 2131;
+			tc2 = new Embed.TestClass2(30);
+			tc3 = new Embed.TestClass2(40);
+			tc4 = new Embed.TestClass3();
+		}
+		public int bb
+		{
+			get { return b; }
+			set { b = value; }
+		}
+		public int test()
+		{
+			tc3.bb = 14323;
+			//Console.WriteLine("tc3.bb->"+tc3.bb);
+			//Console.WriteLine("tc3.strfunc(didum)->"+tc3.strfunc("didum"));
+			//tc4.TestFun3(tc2);
+			//Console.WriteLine( tc2.test() );
+			//Console.WriteLine("tc2.TestFun(52.5f)->" + tc2.TestFun(52.5f));
+			//Console.WriteLine("tc3.TestFun(52.5f)->" + tc3.TestFun(52.5f));
+			//Console.WriteLine("tc2.bb->" + tc2.bb);
+
+			Embed.TestClass tc = new Embed.TestClass();
+			//Console.WriteLine(tc.bb);
+
+			//int a = 0;
+			//for (int i = 0; i < 100000; ++i)
+			//{
+			//	//a = i;
+			//	tc3.bb = i;
+			//}
+			return bb;
+		}
+	}
 }
 
 public class MonoEmbed
 {
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
 	extern static string gimme(int a);
+
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
 	extern static string gimmebis(int a);
 }

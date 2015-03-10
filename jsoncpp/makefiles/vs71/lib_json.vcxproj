@@ -87,6 +87,7 @@
       <XMLDocumentationFileName>..\..\..\..\..\_objs\jsoncpp_d/</XMLDocumentationFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Lib>
       <OutputFile>..\..\..\..\..\libs\jsoncpp_d.lib</OutputFile>
