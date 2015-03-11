@@ -28,11 +28,11 @@ if( in.length() == 0 )                                                          
 {                                                                                                                               \
 	packets_.erase(packets_.begin());                                                                           \
 	if( packets_.size() == 0 ) return *this;                                                                     \
-	block->base(packets_[0]->buff->base(), packets_[0]->buff->size());                  \
+	block->base(packets_[0]->buff->base(), packets_[0]->buff->size());                      \
 	block->wr_ptr(packets_[0]->buff->wr_ptr());                                                         \
 }
 
-struct ACE_Export Bundle
+struct  Bundle
 {
 	/// the free space in the current packet to write
 	ACE_UINT16          unwritten_bytes_cnt_;
@@ -98,7 +98,7 @@ struct ACE_Export Bundle
 	 * *p >> id;
 	 * *p >> len;
 	 */
-	 void init_instream(void);
+	void init_instream(void);
 
 	/**
 	 * @para calpCurrPacket_
@@ -313,7 +313,7 @@ struct ACE_Export Bundle
 		PACKET_OUT_VALUE(value);
 		return *this;
 	}
-	
+
 
 	Bundle &operator<<( ACE_CDR::ULongLong value )
 	{

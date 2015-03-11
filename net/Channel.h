@@ -48,7 +48,7 @@ else\
 	goto goto1;\
 }
 
-struct ACE_Export Channel
+struct  Channel
 {
 	/// 超时检查的目的标志，例如这是一个非活动通道的检查
 	/// This is the waht to be checked when timeout

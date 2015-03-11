@@ -2,14 +2,14 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Embed
+namespace KBEngine
 {
-	class TestClass2
+	public class Base
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern public TestClass2();
+		extern public Base();
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern public TestClass2(int a);
+		extern public Base(int a);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern public int TestFun(IntPtr wrapper, float z);
@@ -22,7 +22,7 @@ namespace Embed
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern public string strfunc(IntPtr wrapper, string param);
 		static readonly IntPtr strfunc_wrapper;
-		public string strfunc(string param)
+		public override string strfunc(string param)
 		{
 			return strfunc(strfunc_wrapper, param);
 		}
@@ -42,17 +42,22 @@ namespace Embed
 			get { return get_bb(get_bb_wrapper); }
 			set { set_bb(set_bb_wrapper, value); }
 		}
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern public static int static_function(float b);
+
 		public IntPtr _native;
 	}
+
 	class TestClass3
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern public TestClass3();
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern public int TestFun3(IntPtr wrapper, TestClass2 test);
+		extern public int TestFun3(IntPtr wrapper, Base test);
 		static readonly IntPtr TestFun3_wrapper;
-		public int TestFun3(TestClass2 test)
+		public int TestFun3(Base test)
 		{
 			return TestFun3(TestFun3_wrapper, test);
 		}
@@ -60,47 +65,40 @@ namespace Embed
 		public IntPtr _native;
 	}
 
-	class TestClass
+	public class MyBase : Base
+	{
+		public string strfunc(string param)
+		{
+			base.strfunc(param);
+			return "MyBase+" + base.strfunc(param);
+		}
+	}
+	public class TestClass
 	{
 		int b;
-		Embed.TestClass2 tc2;
-		Embed.TestClass2 tc3;
-		Embed.TestClass3 tc4;
-		Embed.TestClass tc;
-
+		KBEngine.Base tc2;
+		KBEngine.Base tc3;
+		KBEngine.TestClass3 tc4;
+		KBEngine.MyBase tc5;
 		public TestClass()
 		{
 			bb = 2131;
-			tc2 = new Embed.TestClass2(30);
-			tc3 = new Embed.TestClass2(40);
-			tc4 = new Embed.TestClass3();
+			tc2 = new KBEngine.Base(30);
+			tc3 = new KBEngine.Base(40);
+			tc4 = new KBEngine.TestClass3();
+			tc5 = new KBEngine.MyBase();
 		}
 		public int bb
 		{
 			get { return b; }
 			set { b = value; }
 		}
-		public int test()
+		public void test()
 		{
-			tc3.bb = 14323;
-			//Console.WriteLine("tc3.bb->"+tc3.bb);
-			//Console.WriteLine("tc3.strfunc(didum)->"+tc3.strfunc("didum"));
-			//tc4.TestFun3(tc2);
-			//Console.WriteLine( tc2.test() );
-			//Console.WriteLine("tc2.TestFun(52.5f)->" + tc2.TestFun(52.5f));
-			//Console.WriteLine("tc3.TestFun(52.5f)->" + tc3.TestFun(52.5f));
-			//Console.WriteLine("tc2.bb->" + tc2.bb);
-
-			Embed.TestClass tc = new Embed.TestClass();
-			//Console.WriteLine(tc.bb);
-
-			//int a = 0;
-			//for (int i = 0; i < 100000; ++i)
-			//{
-			//	//a = i;
-			//	tc3.bb = i;
-			//}
-			return bb;
+			tc5.TestFun(12f);
+			tc5.strfunc("hello");
+			MonoEmbed.static_function(2f);
+			MonoEmbed.gimme(2);
 		}
 	}
 }
@@ -108,9 +106,9 @@ namespace Embed
 public class MonoEmbed
 {
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
-	extern static string gimme(int a);
+	public extern static string gimme(int a);
 
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
-	extern static string gimmebis(int a);
+	public extern static int static_function(float a);
 }
 
