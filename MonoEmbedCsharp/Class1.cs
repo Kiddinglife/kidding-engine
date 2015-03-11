@@ -22,7 +22,7 @@ namespace KBEngine
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern public string strfunc(IntPtr wrapper, string param);
 		static readonly IntPtr strfunc_wrapper;
-		public override string strfunc(string param)
+		public virtual string strfunc(string param)
 		{
 			return strfunc(strfunc_wrapper, param);
 		}
@@ -69,8 +69,7 @@ namespace KBEngine
 	{
 		public string strfunc(string param)
 		{
-			base.strfunc(param);
-			return "MyBase+" + base.strfunc(param);
+			return "base" + base.strfunc("hello base");
 		}
 	}
 	public class TestClass
@@ -79,7 +78,7 @@ namespace KBEngine
 		KBEngine.Base tc2;
 		KBEngine.Base tc3;
 		KBEngine.TestClass3 tc4;
-		KBEngine.MyBase tc5;
+		KBEngine.Base tc5;
 		public TestClass()
 		{
 			bb = 2131;
