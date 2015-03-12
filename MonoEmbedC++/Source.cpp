@@ -30,7 +30,7 @@
 #include <monobind/PathUtil.hpp>
 
 #include "common\Profile.h"
-
+#include <iostream>
 using namespace monobind;
 
 /*
@@ -78,17 +78,17 @@ class Base
 namespace monobind
 {
 
-	template <>
-	class convert_param < Base* >
+	template <> class convert_param < Base* >
 	{
 		public:
 		typedef MonoObject* base;
 		static Base* convert(MonoObject* monoObject)
 		{
-			static MonoClassField* nativeClassField = mono_class_get_field_from_name(mono_object_get_class(monoObject), "_native");
-			static Base* ptr;
-			mono_field_get_value(monoObject, nativeClassField, &ptr);
-			return ptr;
+			//ACE_DEBUG((LM_DEBUG, "COVERT\n"));
+			//Base* ptr;
+			//mono_field_get_value(monoObject, mono_class_get_field_from_name(mono_object_get_class(monoObject), "_native"), &ptr);
+			//return ptr;
+			return 0;
 		}
 	};
 
@@ -132,9 +132,11 @@ class MObject
 	uint32_t         m_gc_handle_;
 	MonoMethod* method_;
 	MonoObject* result_;
-	typedef void(*FUNC) ( );
+
+	typedef void(__stdcall *FUNC) ( );
 	FUNC func_;
 };
+
 
 class TestCS : public Test, public MObject
 {
@@ -142,16 +144,18 @@ class TestCS : public Test, public MObject
 	TestCS(MonoImage* monoImage, MonoDomain* monoDomain) : Test(), MObject(monoImage, monoDomain)
 	{
 		m_monoClass = mono_class_from_name(monoImage, "KBEngine", "TestClass");
+
+		method_ = mono_class_get_method_from_name(m_monoClass, "untank", 0);
+		func_ = (FUNC) mono_method_get_unmanaged_thunk(method_);
+
 		m_monoObject = mono_object_new(m_monoDomain, m_monoClass);
 		m_gc_handle_ = mono_gchandle_new(m_monoObject, false);
 		MonoMethod* method = mono_class_get_method_from_name(m_monoClass, ".ctor", 0);
 		mono_runtime_invoke(method, m_monoObject, NULL, NULL);
 		method_ = mono_class_get_method_from_name(m_monoClass, "test", 0);
-		func_ = (FUNC) mono_method_get_unmanaged_thunk(method_);
 	}
 	virtual void TestFun()
 	{
-		//return func_();
 		result_ = mono_runtime_invoke(method_, mono_gchandle_get_target(m_gc_handle_), NULL, NULL);
 		//return *(int*) mono_object_unbox(result_);
 	}
@@ -198,16 +202,22 @@ int main(int argc, char* argv[ ])
 	mono_add_internal_call("MonoEmbed::static_function", Base::static_function);
 
 	TestCS* testCS = new TestCS(monoImage, domain);
-	Profile _localProfile; {SCOPED_PROFILE(_localProfile); testCS->TestFun(); }
-	ACE_DEBUG(( LM_DEBUG,
-		"%s::lastIntTime(%f ms), lastTime(%f ms), sumTime(%f ms),"
-		"sumIntTime(%f ms),runningTime(%f ms) \n",
-		_localProfile.name(),
-		_localProfile.lastIntTimeInSeconds()*1000.f,
-		_localProfile.lastTimeInSeconds()*1000.f,
-		_localProfile.sumTimeInSeconds()*1000.f,
-		_localProfile.sumIntTimeInSeconds()*1000.f,
-		(double) runningTime() / stampsPerSecondD()*1000.f ));
+	Profile _localProfile;
+	for( int i = 0; i < 10; i++ )
+	{
+		{
+			{ 	SCOPED_PROFILE(_localProfile); 	testCS->TestFun(); };
+			ACE_DEBUG(( LM_DEBUG,
+				"%s::lastIntTime(%f s), lastTime(%f s), sumTime(%f s),"
+				"sumIntTime(%f s),runningTime(%f s) \n",
+				_localProfile.name(),
+				_localProfile.lastIntTimeInSeconds(),
+				_localProfile.lastTimeInSeconds(),
+				_localProfile.sumTimeInSeconds(),
+				_localProfile.sumIntTimeInSeconds(),
+				(double) runningTime() / stampsPerSecondD() ));
+		}
+	}
 	delete testCS;
 
 	int retval = mono_environment_exitcode_get();

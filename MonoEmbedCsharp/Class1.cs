@@ -43,9 +43,6 @@ namespace KBEngine
 			set { set_bb(set_bb_wrapper, value); }
 		}
 
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern public static int static_function(float b);
-
 		public IntPtr _native;
 	}
 
@@ -69,7 +66,7 @@ namespace KBEngine
 	{
 		public string strfunc(string param)
 		{
-			return "base" + base.strfunc("hello base");
+			return base.strfunc("hello base");
 		}
 	}
 	public class TestClass
@@ -99,6 +96,11 @@ namespace KBEngine
 			MonoEmbed.static_function(2f);
 			MonoEmbed.gimme(2);
 		}
+
+		public void untank()
+		{
+			Console.WriteLine("untank");
+		}
 	}
 }
 
@@ -109,5 +111,6 @@ public class MonoEmbed
 
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
 	public extern static int static_function(float a);
+
 }
 

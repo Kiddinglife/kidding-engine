@@ -1305,26 +1305,29 @@
 //	pool->Dtor(p);
 //
 //}
-//#include "common\Profile.h"
-//static Profile _localProfile;
-//void hello()
-//{
-//	SCOPED_PROFILE(_localProfile);
-//	Sleep(100);
-//}
-//TEST(pROFILETESTS, aLLTESTS)
-//{
-//	hello();
-//	ACE_DEBUG(( LM_DEBUG,
-//		"%s::lastIntTime(%f s), lastTime(%f s), sumTime(%f s),"
-//		"sumIntTime(%f s),runningTime(%f s) \n",
-//		_localProfile.name(),
-//		_localProfile.lastIntTimeInSeconds(),
-//		_localProfile.lastTimeInSeconds(),
-//		_localProfile.sumTimeInSeconds(),
-//		_localProfile.sumIntTimeInSeconds(),
-//		(double) runningTime() / stampsPerSecondD() ));
-//}
+#include "common\Profile.h"
+void hello()
+{
+}
+TEST(pROFILETESTS, aLLTESTS)
+{
+	for( int i = 0; i < 10; i++ )
+	{
+		Profile _localProfile;
+		{
+			{ 	SCOPED_PROFILE(_localProfile); 	hello(); };
+			ACE_DEBUG(( LM_DEBUG,
+				"%s::lastIntTime(%f s), lastTime(%f s), sumTime(%f s),"
+				"sumIntTime(%f s),runningTime(%f s) \n",
+				_localProfile.name(),
+				_localProfile.lastIntTimeInSeconds(),
+				_localProfile.lastTimeInSeconds(),
+				_localProfile.sumTimeInSeconds(),
+				_localProfile.sumIntTimeInSeconds(),
+				(double) runningTime() / stampsPerSecondD() ));
+		}
+		}
+}
 //#include "net\ErrorStatsMgr.h"
 //#include "net\Nub.h"
 //TEST(ErrorStatsMgr, tESTTS)
