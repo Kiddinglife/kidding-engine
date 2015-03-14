@@ -8,6 +8,7 @@
 
 #include "ace\pre.h"
 #include "ace\Event_Handler.h"
+#include "ace\Intrusive_Auto_Ptr.h"
 #include "Bundle.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
@@ -48,7 +49,7 @@ else\
 	goto goto1;\
 }
 
-struct  Channel
+struct  Channel 
 {
 	/// 超时检查的目的标志，例如这是一个非活动通道的检查
 	/// This is the waht to be checked when timeout

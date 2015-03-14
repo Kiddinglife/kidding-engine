@@ -115,6 +115,8 @@ inline bool kbe_is_little_endian()
 #define KBE_PLATFORM_TEXT "Win32"
 #define KBE_MIN(a,b) min(a,b)
 #define KBE_MAX(a,b) max(a,b)
+#pragma warning (disable : 4910)
+#pragma warning (disable : 4251)
 #elif defined( __INTEL_COMPILER )
 #define KBE_PLATFORM PLATFORM_INTEL
 #elif defined( __APPLE_CC__ )
