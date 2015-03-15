@@ -51,7 +51,7 @@ Watchers& Watchers::rootWatchers()
 	return *ACE_Singleton<Watchers, ACE_Null_Mutex>::instance();;
 }
 
-void Watchers::addToStream(Bundle* s)
+void Watchers::addToStream(Packet* s)
 {
 	WatchersMap::iterator iter = watcherObjs_.begin();
 	for( ; iter != watcherObjs_.end(); ++iter )
@@ -60,7 +60,7 @@ void Watchers::addToStream(Bundle* s)
 	}
 }
 
-void Watchers::updateStream(Bundle* s)
+void Watchers::updateStream(Packet* s)
 {
 }
 
@@ -97,7 +97,7 @@ bool Watchers::delWatcher(const std::string& name)
 	return true;
 }
 
-void Watchers::readWatchers(Bundle* s)
+void Watchers::readWatchers(Packet* s)
 {
 	WatchersMap::iterator iter = watcherObjs_.begin();
 	WatchersMap::iterator end = watcherObjs_.end();
@@ -132,11 +132,11 @@ WatcherPaths& WatcherPaths::root()
 	return *ACE_Singleton<WatcherPaths, ACE_Null_Mutex>::instance();
 }
 
-void WatcherPaths::addToStream(Bundle* s)
+void WatcherPaths::addToStream(Packet* s)
 {
 }
 
-void WatcherPaths::updateStream(Bundle* s)
+void WatcherPaths::updateStream(Packet* s)
 {
 }
 
@@ -193,7 +193,7 @@ bool WatcherPaths::_addWatcher(std::string path, Watcher* pwo)
 }
 
 Watcher* WatcherPaths::addWatcherFromStream(std::string path, std::string name,
-	WATCHER_ID wid, WATCHER_VALUE_TYPE wtype, Bundle* s)
+	WATCHER_ID wid, WATCHER_VALUE_TYPE wtype, Packet* s)
 {
 	Watcher* pWobj = NULL;
 

@@ -7,7 +7,7 @@
 #include "ace\pre.h"
 #include "common\common.h"
 #include "common\stringconv.hpp"
-#include "net\Bundle.h"
+#include "net\Packet.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -39,13 +39,13 @@ struct Watcher
 	Watcher(std::string path = "NULL");
 	virtual ~Watcher();
 
-	virtual void addToInitStream(Bundle* s) { };
-	virtual void addToStream(Bundle* s) { };
-	template <class T> void updateStream(Bundle* s)
+	virtual void addToInitStream(Packet* s) { };
+	virtual void addToStream(Packet* s) { };
+	template <class T> void updateStream(Packet* s)
 	{
-		s->init_instream();
+		//s->init_instream();
 		T v;
-		( *s ) >> v;
+		s->in >> v;
 		strval_ = StringConv::val2str(v);
 	}
 
@@ -160,31 +160,31 @@ inline WATCHER_VALUE_TYPE Watcher::get_type_tpl<KBE_SRV_COMPONENT_TYPE>()const
 }
 
 template <>
-inline void Watcher::updateStream<std::string>(Bundle* s)
+inline void Watcher::updateStream<std::string>(Packet* s)
 {
-	( *s ) >> strval_;
+	s->in >> strval_;
 }
 
 template <>
-inline void Watcher::updateStream<std::string&>(Bundle* s)
-{
-	updateStream<std::string>(s);
-}
-
-template <>
-inline void Watcher::updateStream<const std::string&>(Bundle* s)
+inline void Watcher::updateStream<std::string&>(Packet* s)
 {
 	updateStream<std::string>(s);
 }
 
 template <>
-inline void Watcher::updateStream<char*>(Bundle* s)
+inline void Watcher::updateStream<const std::string&>(Packet* s)
 {
 	updateStream<std::string>(s);
 }
 
 template <>
-inline void Watcher::updateStream<const char*>(Bundle* s)
+inline void Watcher::updateStream<char*>(Packet* s)
+{
+	updateStream<std::string>(s);
+}
+
+template <>
+inline void Watcher::updateStream<const char*>(Packet* s)
 {
 	updateStream<std::string>(s);
 }
@@ -198,12 +198,12 @@ struct ValueWatcher : public Watcher
 	ValueWatcher(std::string path, const T& pVal) :Watcher(path), watchVal_(pVal) { }
 	virtual ~ValueWatcher() { }
 
-	virtual void addToInitStream(Bundle* s)
+	virtual void addToInitStream(Packet* s)
 	{
 		( *s ) << path_.c_str() << name_ << id_ << get_type_tpl<T>() << watchVal_;
 	}
 
-	virtual void addToStream(Bundle* s)
+	virtual void addToStream(Packet* s)
 	{
 		( *s ) << id_ << watchVal_;
 	}
@@ -228,12 +228,12 @@ struct FunctionWatcher : public Watcher
 	{
 	}
 
-	virtual void addToInitStream(Bundle* s)
+	virtual void addToInitStream(Packet* s)
 	{
 		( *s ) << path_ << name_ << id_ << get_type_tpl<RETURN_TYPE>() << ( *func_ )( );
 	};
 
-	virtual void addToStream(Bundle* s)
+	virtual void addToStream(Packet* s)
 	{
 		( *s ) << id_ << ( *func_ )( );
 	};
@@ -263,12 +263,12 @@ struct MethodWatcher : public Watcher
 	{
 	}
 
-	void addToInitStream(Bundle* s)
+	void addToInitStream(Packet* s)
 	{
 		( *s ) << path_ << name_ << id_ << get_type_tpl<RETURN_TYPE>() << ( obj_->*func_ )( );
 	};
 
-	void addToStream(Bundle* s)
+	void addToStream(Packet* s)
 	{
 		( *s ) << id_ << ( obj_->*func_ )( );
 	};
@@ -294,13 +294,13 @@ struct ConstMethodWatcher : public Watcher
 	{
 	}
 
-	void addToInitStream(Bundle* s)
+	void addToInitStream(Packet* s)
 	{
 		RETURN_TYPE v = ( obj_->*func_ )( );
 		( *s ) << path_ << name_ << id_ << get_type_tpl<RETURN_TYPE>() << v;
 	};
 
-	void addToStream(Bundle* s)
+	void addToStream(Packet* s)
 	{
 		( *s ) << id_ << ( obj_->*func_ )( );
 	};
@@ -328,9 +328,9 @@ struct Watchers
 
 	static Watchers& rootWatchers();
 
-	void addToStream(Bundle* s);
+	void addToStream(Packet* s);
 
-	void readWatchers(Bundle* s);
+	void readWatchers(Packet* s);
 
 	bool addWatcher(const std::string& path, Watcher* pwo);
 
@@ -343,7 +343,7 @@ struct Watchers
 
 	Shared_ptr< Watcher > getWatcher(const std::string& name);
 
-	void updateStream(Bundle* s);
+	void updateStream(Packet* s);
 
 	WatchersMap& get_watchers_map() { return watcherObjs_; }
 };
@@ -359,14 +359,14 @@ struct WatcherPaths
 	~WatcherPaths();
 
 	static WatcherPaths& WatcherPaths::root();
-	void WatcherPaths::addToStream(Bundle* s);
-	void WatcherPaths::updateStream(Bundle* s);
+	void WatcherPaths::addToStream(Packet* s);
+	void WatcherPaths::updateStream(Packet* s);
 
 	bool WatcherPaths::addWatcher(std::string path, Watcher* pwo);
 	bool WatcherPaths::_addWatcher(std::string path, Watcher* pwo);
 
 	Watcher* WatcherPaths::addWatcherFromStream(std::string path, std::string name,
-		WATCHER_ID wid, WATCHER_VALUE_TYPE wtype, Bundle* s);
+		WATCHER_ID wid, WATCHER_VALUE_TYPE wtype, Packet* s);
 
 	bool WatcherPaths::hasWatcherPath(const std::string& fullpath);
 	bool WatcherPaths::delWatcher(const std::string& fullpath);

@@ -19,17 +19,30 @@ struct Message;
 #define TCP_PACKET_MAX_CHUNK_SIZE  PACKET_MAX_SIZE_TCP - ENCRYPTTION_WASTAGE_SIZE
 #define UDP_PACKET_MAX_CHUNK_SIZE PACKET_MAX_SIZE_UDP - ENCRYPTTION_WASTAGE_SIZE
 
+//#define PACKET_OUT_VALUE(v)                                                                                \
+//if( packets_.size() <= 0 ) return *this;                                                                         \
+//static ACE_Message_Block* block = const_cast<ACE_Message_Block*>( in.start() );    \
+//in >> v;                                                                                                                    \
+//packets_[0]->osbuff_->rd_ptr(in.rd_ptr());                                                                       \
+//if( in.length() == 0 )                                                                                                  \
+//{                                                                                                                               \
+//	packets_.erase(packets_.begin());                                                                           \
+//	if( packets_.size() == 0 ) return *this;                                                                     \
+//	block->base(packets_[0]->osbuff_->base(), packets_[0]->osbuff_->size());                      \
+//	block->wr_ptr(packets_[0]->osbuff_->wr_ptr());                                                         \
+//}
+
 #define PACKET_OUT_VALUE(v)                                                                                \
 if( packets_.size() <= 0 ) return *this;                                                                         \
-static ACE_Message_Block* block = const_cast<ACE_Message_Block*>( in.start() );    \
-in >> v;                                                                                                                    \
-packets_[0]->osbuff_->rd_ptr(in.rd_ptr());                                                                       \
+packets_[0]->in >> v;                                                                                               \
+packets_[0]->osbuff_->rd_ptr(in.rd_ptr());                                                                  \
 if( in.length() == 0 )                                                                                                  \
 {                                                                                                                               \
 	packets_.erase(packets_.begin());                                                                           \
 	if( packets_.size() == 0 ) return *this;                                                                     \
-	block->base(packets_[0]->osbuff_->base(), packets_[0]->osbuff_->size());                      \
-	block->wr_ptr(packets_[0]->osbuff_->wr_ptr());                                                         \
+	packets_[0]->inbuff_->\
+    base(packets_[0]->osbuff_->base(), packets_[0]->osbuff_->size());                         \
+	packets_[0]->inbuff_->wr_ptr(packets_[0]->osbuff_->wr_ptr());                              \
 }
 
 struct  Bundle
@@ -596,14 +609,15 @@ struct  Bundle
 		///Erases the contents of the string, 
 		/// which becomes an empty string (with a length of 0 characters).
 		value.clear();
-		static ACE_Message_Block* block = const_cast<ACE_Message_Block*>( in.start() );
+		//static ACE_Message_Block* block = const_cast<ACE_Message_Block*>( in.start() );
 		static char cnt = '1';
 		cnt = '1';
 		while( cnt )
 		{
 			while( in.length() > 0 )
 			{
-				in >> cnt;
+				//in >> cnt;
+				packets_[0]->in >> cnt;
 				packets_[0]->osbuff_->rd_ptr(in.rd_ptr());
 				if( cnt == 0 )
 				{
@@ -616,9 +630,9 @@ struct  Bundle
 			{
 				packets_.erase(packets_.begin());
 				if( packets_.size() == 0 ) return *this;
-				block->base(packets_[0]->osbuff_->base(),
+				packets_[0]->inbuff_->base(packets_[0]->osbuff_->base(),
 					packets_[0]->osbuff_->length());
-				block->wr_ptr(packets_[0]->osbuff_->wr_ptr());
+				packets_[0]->inbuff_->wr_ptr(packets_[0]->osbuff_->wr_ptr());
 			}
 		}
 		return *this;
