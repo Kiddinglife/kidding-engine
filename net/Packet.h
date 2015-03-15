@@ -115,47 +115,47 @@ inline extern ACE_Export ACE_CDR::Boolean operator<< ( ACE_OutputCDR &os,
 }
 
 
-inline extern ACE_Export Packet& operator>> ( Packet &in,
+inline extern ACE_Export ACE_CDR::Boolean operator>> ( ACE_InputCDR &in,
 	ACE_CDR::Char* str )
 {
 	TRACE("char* >>");
 	static char c;
 	while( in.length() > 0 )
 	{
-		in.in.read_char(c);
+		in.read_char(c);
 		if( c == 0 )
 			break;
 
 		*( str++ ) = c;
 	}
 	*str = '\0';
-	TRACE_RETURN(in);
+	TRACE_RETURN(in.good_bit());
 }
 
-inline extern ACE_Export Packet & operator<< ( Packet &os,
+inline extern ACE_Export ACE_CDR::Boolean operator<< ( ACE_OutputCDR &os,
 	const ACE_CDR::Char* x )
 {
 	TRACE("char* <<");
-	x ? os.os.write_char_array(x, strlen(x) + 1) : os.os.write_char(0);
-	TRACE_RETURN(os);
+	x ? os.write_char_array(x, strlen(x) + 1) : os.write_char(0);
+	TRACE_RETURN(os.good_bit());
 }
 
-inline extern ACE_Export ACE_InputCDR & operator>> ( ACE_InputCDR &in,
+inline extern ACE_Export ACE_CDR::Boolean operator>> ( ACE_InputCDR &in,
 	ACE_CDR::Octet& value )
 {
 	TRACE("ACE_CDR::Octet value >>");
 	ACE_InputCDR::to_octet v(value);
 	in >> v;
-	TRACE_RETURN(in);
+	TRACE_RETURN(in.good_bit());
 }
 
-inline extern ACE_Export ACE_OutputCDR& operator<< ( ACE_OutputCDR &os,
+inline extern ACE_Export ACE_CDR::Boolean operator<< ( ACE_OutputCDR &os,
 	ACE_CDR::Octet value )
 {
 	TRACE("ACE_CDR::Octet value  <<");
 	ACE_OutputCDR::from_octet v(value);
 	os << v;
-	TRACE_RETURN(os);
+	TRACE_RETURN(os.good_bit());
 }
 
 inline extern ACE_Export ACE_CDR::Boolean operator>> ( ACE_InputCDR &in,
@@ -168,21 +168,21 @@ inline extern ACE_Export ACE_CDR::Boolean operator>> ( ACE_InputCDR &in,
 	TRACE_RETURN(in.good_bit());
 }
 
-inline extern ACE_Export ACE_OutputCDR& operator<< ( ACE_OutputCDR &os,
+inline extern ACE_Export ACE_CDR::Boolean operator<< ( ACE_OutputCDR &os,
 	KBE_SRV_COMPONENT_TYPE x )
 {
 	TRACE("KBE_SRV_COMPONENT_TYPE* <<");
 	os << ( ACE_CDR::Octet ) x;
-	TRACE_RETURN(os);
+	TRACE_RETURN(os.good_bit());
 }
 
-inline extern ACE_Export ACE_InputCDR& operator>> ( ACE_InputCDR &in,
+inline extern ACE_Export ACE_CDR::Boolean operator>> ( ACE_InputCDR &in,
 	ACE_CDR::Boolean& value )
 {
 	TRACE("KBE_SRV_COMPONENT_TYPE* >>");
 	ACE_InputCDR::to_boolean v(value);
 	in >> v;
-	TRACE_RETURN(in);
+	TRACE_RETURN(in.good_bit());
 }
 
 inline extern ACE_Export ACE_CDR::Boolean operator<< ( ACE_OutputCDR &os,

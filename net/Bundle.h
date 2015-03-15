@@ -35,11 +35,13 @@ struct Message;
 #define PACKET_OUT_VALUE(v)                                                                                \
 if( packets_.size() <= 0 ) return *this;                                                                         \
 packets_[0]->in >> v;                                                                                               \
-packets_[0]->osbuff_->rd_ptr(packets_[0]->in.rd_ptr());                                                                  \
-if( packets_[0]->in.length() == 0 )                                                                                                  \
+packets_[0]->osbuff_->rd_ptr(in.rd_ptr());                                                                  \
+if( in.length() == 0 )                                                                                                  \
 {                                                                                                                               \
 	packets_.erase(packets_.begin());                                                                           \
 	if( packets_.size() == 0 ) return *this;                                                                     \
+	packets_[0]->inbuff_->\
+    base(packets_[0]->osbuff_->base(), packets_[0]->osbuff_->size());                         \
 	packets_[0]->inbuff_->wr_ptr(packets_[0]->osbuff_->wr_ptr());                              \
 }
 
