@@ -19,7 +19,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	ACE_TEST_ASSERT(TESTMSG::pmsg1 != NULL);
 	Bundle* p = Bundle_Pool->Ctor();
 	p->start_new_curr_message(TESTMSG::pmsg1);
-	*p << (ACE_UINT64) 123456789 << (ACE_INT16) 1;
+	*p << (ACE_UINT64) 123456789 << "helloman";
 	p->end_new_curr_message();
 
 	////////////////////////////////////////////////////////////////////////////////////////
