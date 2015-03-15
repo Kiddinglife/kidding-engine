@@ -26,6 +26,10 @@
 #pragma warning(disable:4049)
 #pragma warning(disable:4217)
 #pragma warning(disable:4006)
+#pragma warning(disable:4005)
+#pragma warning(disable:4244)
+#pragma warning(disable:4002)
+#pragma warning(disable:4102)
 #include <winsock2.h>		// 必须在windows.h之前包含， 否则网络模块编译会出错
 #include <mswsock.h> 
 #include <windows.h> 

@@ -35,12 +35,12 @@ struct Message;
 #define PACKET_OUT_VALUE(v)                                                                                \
 if( packets_.size() <= 0 ) return *this;                                                                         \
 packets_[0]->in >> v;                                                                                               \
-packets_[0]->osbuff_->rd_ptr(packets_[0]->in.rd_ptr());                                                                  \
-if( packets_[0]->in.length() == 0 )                                                                                                  \
+packets_[0]->osbuff_->rd_ptr(packets_[0]->in.rd_ptr());                                              \
+if( packets_[0]->in.length() == 0 )                                                                              \
 {                                                                                                                               \
-	packets_.erase(packets_.begin());                                                                           \
-	if( packets_.size() == 0 ) return *this;                                                                     \
-	packets_[0]->inbuff_->wr_ptr(packets_[0]->osbuff_->wr_ptr());                              \
+    packets_.erase(packets_.begin());                                                                          \
+	if( packets_.size() == 0 ) return *this;                                                                    \
+	packets_[0]->inbuff_->wr_ptr(packets_[0]->osbuff_->wr_ptr());                             \
 }
 
 struct  Bundle
@@ -704,7 +704,6 @@ struct  Bundle
 		static size_t addtotalsize = 0;
 		static size_t ilen = 0;
 		addtotalsize = ilen = 0;
-
 		while( len > 0 )
 		{
 			/// get the actual writable-len in the current packet

@@ -59,6 +59,7 @@
       <AdditionalIncludeDirectories>..; ..\openssl\inc32\; D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

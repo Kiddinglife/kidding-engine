@@ -57,6 +57,7 @@
       </AdditionalUsingDirectories>
       <AdditionalIncludeDirectories>..;..\openssl\inc32;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers;</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
