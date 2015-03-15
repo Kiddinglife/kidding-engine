@@ -614,7 +614,7 @@ struct  Bundle
 		cnt = '1';
 		while( cnt )
 		{
-			while( in.length() > 0 )
+			while( packets_[0]->in.length() > 0 )
 			{
 				//in >> cnt;
 				packets_[0]->in >> cnt;
@@ -626,7 +626,7 @@ struct  Bundle
 				value += cnt;
 			}
 
-			if( in.length() == 0 )
+			if( packets_[0]->in.length() == 0 )
 			{
 				packets_.erase(packets_.begin());
 				if( packets_.size() == 0 ) return *this;
@@ -673,26 +673,25 @@ struct  Bundle
 	{
 		if( packets_.size() <= 0 ) return *this;
 
-		static ACE_Message_Block* block = const_cast<ACE_Message_Block*>( in.start() );
 		static size_t advance = 0;
 		advance = 0;
 
-		while( in.length() < len )
+		while( packets_[0]->in.length() < len )
 		{
 			len -= in.length();
 			advance = in.length();
-			in.read_char_array(blob, in.length());
+			packets_[0]->in.read_char_array(blob, in.length());
 			packets_[0]->osbuff_->rd_ptr(in.rd_ptr());
 
 			packets_.erase(packets_.begin());
-			block->base(packets_[0]->osbuff_->base(),
+			packets_[0]->inbuff_->base(packets_[0]->osbuff_->base(),
 				packets_[0]->osbuff_->length());
-			block->wr_ptr(packets_[0]->osbuff_->wr_ptr());
+			packets_[0]->inbuff_->wr_ptr(packets_[0]->osbuff_->wr_ptr());
 
 			blob += advance;
 		}
-		in.read_char_array(blob, len);
-		packets_[0]->osbuff_->rd_ptr(in.rd_ptr());
+		packets_[0]->in.read_char_array(blob, len);
+		packets_[0]->osbuff_->rd_ptr(packets_[0]->in.rd_ptr());
 		return *this;
 	}
 
