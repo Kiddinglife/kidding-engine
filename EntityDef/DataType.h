@@ -14,9 +14,8 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 // linux include
 #endif
 
-class DataType 
+struct DataType : public Intrusive_Auto_Ptr
 {
-	public:
 	DataType();
 	virtual ~DataType();
 };

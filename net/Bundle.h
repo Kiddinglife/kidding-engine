@@ -23,13 +23,13 @@ struct Message;
 if( packets_.size() <= 0 ) return *this;                                                                         \
 static ACE_Message_Block* block = const_cast<ACE_Message_Block*>( in.start() );    \
 in >> v;                                                                                                                    \
-packets_[0]->buff->rd_ptr(in.rd_ptr());                                                                       \
+packets_[0]->osbuff_->rd_ptr(in.rd_ptr());                                                                       \
 if( in.length() == 0 )                                                                                                  \
 {                                                                                                                               \
 	packets_.erase(packets_.begin());                                                                           \
 	if( packets_.size() == 0 ) return *this;                                                                     \
-	block->base(packets_[0]->buff->base(), packets_[0]->buff->size());                      \
-	block->wr_ptr(packets_[0]->buff->wr_ptr());                                                         \
+	block->base(packets_[0]->osbuff_->base(), packets_[0]->osbuff_->size());                      \
+	block->wr_ptr(packets_[0]->osbuff_->wr_ptr());                                                         \
 }
 
 struct  Bundle
@@ -277,10 +277,10 @@ struct  Bundle
 			pCurrPacket_->os << value;
 		} else
 		{
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 			written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(unwritten_bytes_cnt_);
 			ACE_TEST_ASSERT(unwritten_bytes_cnt_ == written_bytes_cnt_);
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 		}
 		return *this;
 	}
@@ -299,12 +299,12 @@ struct  Bundle
 			pCurrPacket_->os << value;
 		} else
 		{
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
-			pCurrPacket_->buff->wr_ptr(written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->osbuff_->wr_ptr(written_bytes_cnt_);
 			written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(unwritten_bytes_cnt_);
 			ACE_TEST_ASSERT(unwritten_bytes_cnt_ == written_bytes_cnt_);
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
-			pCurrPacket_->buff->wr_ptr(written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->osbuff_->wr_ptr(written_bytes_cnt_);
 		}
 		return *this;
 	}
@@ -329,10 +329,10 @@ struct  Bundle
 			pCurrPacket_->os << value;
 		} else
 		{
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 			written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(unwritten_bytes_cnt_);
 			ACE_TEST_ASSERT(unwritten_bytes_cnt_ == written_bytes_cnt_);
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 		}
 		return *this;
 	}
@@ -351,10 +351,10 @@ struct  Bundle
 			pCurrPacket_->os << value;
 		} else
 		{
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 			written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(unwritten_bytes_cnt_);
 			ACE_TEST_ASSERT(unwritten_bytes_cnt_ == written_bytes_cnt_);
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 		}
 		return *this;
 	}
@@ -376,10 +376,10 @@ struct  Bundle
 			pCurrPacket_->os << value;
 		} else
 		{
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 			written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(unwritten_bytes_cnt_);
 			ACE_TEST_ASSERT(unwritten_bytes_cnt_ == written_bytes_cnt_);
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 		}
 		return *this;
 	}
@@ -398,10 +398,10 @@ struct  Bundle
 			pCurrPacket_->os << value;
 		} else
 		{
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 			written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(unwritten_bytes_cnt_);
 			ACE_TEST_ASSERT(unwritten_bytes_cnt_ == written_bytes_cnt_);
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 		}
 		return *this;
 	}
@@ -422,10 +422,10 @@ struct  Bundle
 			pCurrPacket_->os << value;
 		} else
 		{
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 			written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(unwritten_bytes_cnt_);
 			ACE_TEST_ASSERT(unwritten_bytes_cnt_ == written_bytes_cnt_);
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 		}
 		//calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_FLOAT);
 		//pCurrPacket_->os << value;
@@ -447,10 +447,10 @@ struct  Bundle
 			pCurrPacket_->os << value;
 		} else
 		{
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 			written_bytes_cnt_ = calculate_avaiable_space_of_curr_packet(unwritten_bytes_cnt_);
 			ACE_TEST_ASSERT(unwritten_bytes_cnt_ == written_bytes_cnt_);
-			pCurrPacket_->os.write_char_array(pCurrPacket_->buff->rd_ptr(), written_bytes_cnt_);
+			pCurrPacket_->os.write_char_array(pCurrPacket_->osbuff_->rd_ptr(), written_bytes_cnt_);
 		}
 		//calculate_avaiable_space_of_curr_packet(ACE_SIZEOF_DOUBLE);
 		//pCurrPacket_->os << value;
@@ -516,7 +516,7 @@ struct  Bundle
 			while( in.length() > 0 )
 			{
 				in.read_char(*str);
-				packets_[0]->buff->rd_ptr(in.rd_ptr());
+				packets_[0]->osbuff_->rd_ptr(in.rd_ptr());
 				if( ( *str ) == 0 )
 				{
 					//ACE_DEBUG(( LM_DEBUG, "Bundle &operator>>( char* str ) :: cnt = 0, break\n" ));
@@ -529,9 +529,9 @@ struct  Bundle
 			{
 				packets_.erase(packets_.begin());
 				if( packets_.size() == 0 ) return *this;
-				block->base(packets_[0]->buff->base(),
-					packets_[0]->buff->length());
-				block->wr_ptr(packets_[0]->buff->wr_ptr());
+				block->base(packets_[0]->osbuff_->base(),
+					packets_[0]->osbuff_->length());
+				block->wr_ptr(packets_[0]->osbuff_->wr_ptr());
 			}
 		}
 		//ACE_DEBUG(( LM_DEBUG, "Bundle &operator>>( char* str ) :: at end, in.rd_pos = %d\n", in.rd_ptr() ));
@@ -556,7 +556,7 @@ struct  Bundle
 			ilen = calculate_avaiable_space_of_curr_packet(len, false);
 			/// write it 
 			pCurrPacket_->os.write_char_array(str + addtotalsize, ilen);
-			//pCurrPacket_->buff->wr_ptr(ilen); the wd has been updated in call write_char_array()
+			//pCurrPacket_->osbuff_->wr_ptr(ilen); the wd has been updated in call write_char_array()
 			/// update the new write start point after witting
 			addtotalsize += ilen;
 			/// update the actual written-len
@@ -604,7 +604,7 @@ struct  Bundle
 			while( in.length() > 0 )
 			{
 				in >> cnt;
-				packets_[0]->buff->rd_ptr(in.rd_ptr());
+				packets_[0]->osbuff_->rd_ptr(in.rd_ptr());
 				if( cnt == 0 )
 				{
 					break;
@@ -616,9 +616,9 @@ struct  Bundle
 			{
 				packets_.erase(packets_.begin());
 				if( packets_.size() == 0 ) return *this;
-				block->base(packets_[0]->buff->base(),
-					packets_[0]->buff->length());
-				block->wr_ptr(packets_[0]->buff->wr_ptr());
+				block->base(packets_[0]->osbuff_->base(),
+					packets_[0]->osbuff_->length());
+				block->wr_ptr(packets_[0]->osbuff_->wr_ptr());
 			}
 		}
 		return *this;
@@ -632,11 +632,11 @@ struct  Bundle
 		Packets::iterator iter = bundle.packets_.begin();
 		for( ; iter != bundle.packets_.end(); ++iter )
 		{
-			write_char_arr(( *iter )->buff->base(), ( *iter )->length());
+			write_char_arr(( *iter )->osbuff_->base(), ( *iter )->length());
 		}
 
 		return  bundle.pCurrPacket_ == NULL ? *this :
-			write_char_arr(bundle.pCurrPacket_->buff->base(), bundle.pCurrPacket_->length());
+			write_char_arr(bundle.pCurrPacket_->osbuff_->base(), bundle.pCurrPacket_->length());
 
 	}
 
@@ -644,7 +644,7 @@ struct  Bundle
 	Bundle& operator<<( Packet& packet )
 	{
 		if( packet.length() > 0 )
-			write_char_arr(packet.buff->rd_ptr(), packet.length());
+			write_char_arr(packet.osbuff_->rd_ptr(), packet.length());
 		else
 			return *this;
 	}
@@ -668,17 +668,17 @@ struct  Bundle
 			len -= in.length();
 			advance = in.length();
 			in.read_char_array(blob, in.length());
-			packets_[0]->buff->rd_ptr(in.rd_ptr());
+			packets_[0]->osbuff_->rd_ptr(in.rd_ptr());
 
 			packets_.erase(packets_.begin());
-			block->base(packets_[0]->buff->base(),
-				packets_[0]->buff->length());
-			block->wr_ptr(packets_[0]->buff->wr_ptr());
+			block->base(packets_[0]->osbuff_->base(),
+				packets_[0]->osbuff_->length());
+			block->wr_ptr(packets_[0]->osbuff_->wr_ptr());
 
 			blob += advance;
 		}
 		in.read_char_array(blob, len);
-		packets_[0]->buff->rd_ptr(in.rd_ptr());
+		packets_[0]->osbuff_->rd_ptr(in.rd_ptr());
 		return *this;
 	}
 

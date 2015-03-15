@@ -172,13 +172,13 @@ bool TCP_SOCK_Handler::process_recv(bool expectingPacket)
 
 	pReceiveWindow = Packet_Pool->Ctor();
 
-	len = sock_.recv(pReceiveWindow->buff->wr_ptr(), pReceiveWindow->buff->size());
+	len = sock_.recv(pReceiveWindow->osbuff_->wr_ptr(), pReceiveWindow->osbuff_->size());
 
 	if( len > 0 )
 	{
-		pReceiveWindow->buff->wr_ptr(len);
+		pReceiveWindow->osbuff_->wr_ptr(len);
 		// 注意:必须在大于0的时候否则DEBUG_MSG将会导致WSAGetLastError返回0从而陷入死循环
-		//ACE_DEBUG(( LM_DEBUG, "%M::TCP_SOCK_Handler::process_recv(): datasize={%d}, wpos={%d}.\n", len, pReceiveWindow->buff->wr_ptr() ));
+		//ACE_DEBUG(( LM_DEBUG, "%M::TCP_SOCK_Handler::process_recv(): datasize={%d}, wpos={%d}.\n", len, pReceiveWindow->osbuff_->wr_ptr() ));
 	}
 
 	if( len < 0 )

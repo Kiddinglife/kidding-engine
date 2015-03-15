@@ -136,8 +136,8 @@ void TRACE_MESSAGE_PACKET(
 	{
 		ACE_DEBUG(( LM_INFO,
 			"%M::The curr packet rd pos = %d, wr pos = %d\n",
-			pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
-		ACE_HEX_DUMP(( LM_INFO, pPacket->buff->rd_ptr(), pPacket->length() ));
+			pPacket->osbuff_->rd_ptr(), pPacket->osbuff_->wr_ptr() ));
+		ACE_HEX_DUMP(( LM_INFO, pPacket->osbuff_->rd_ptr(), pPacket->length() ));
 	}
 
 	if( g_trace_packet_use_logfile )

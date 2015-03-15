@@ -27,13 +27,13 @@ if( canFilterPacket_ )\
 }\
 if( protocolType_ == PROTOCOL_TCP )\
 {\
-	sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());\
+	sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->osbuff_->rd_ptr(), ( *iter1 )->length());\
 	if( sent_cnt == -1 )\
 		{\
 		reason = checkSocketErrors();\
 		} else\
 	{\
-		( *iter1 )->buff->rd_ptr(sent_cnt);\
+		( *iter1 )->osbuff_->rd_ptr(sent_cnt);\
 		packet_all_sent = ( *iter1 )->length() == 0;\
 		on_packet_sent(sent_cnt, packet_all_sent);\
 	}\

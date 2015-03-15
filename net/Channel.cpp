@@ -470,7 +470,7 @@ void Channel::send_buffered_bundle()
 	}
 
 	ACE_TEST_ASSERT(( *iter1 ) != NULL);
-	if( ( *iter1 )->buff->length() < buffered_sending_bundle_.currPacketMaxSize )
+	if( ( *iter1 )->osbuff_->length() < buffered_sending_bundle_.currPacketMaxSize )
 	{
 		if( should_wait_next_tick )
 		{
@@ -607,14 +607,14 @@ bool Channel::process_send()
 			if( protocolType_ == PROTOCOL_TCP )
 			{
 				if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
-				size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
+				size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->osbuff_->rd_ptr(), ( *iter1 )->length());
 
 				if( sent_cnt == -1 )
 				{
 					reason = checkSocketErrors();
 				} else
 				{
-					( *iter1 )->buff->rd_ptr(sent_cnt);
+					( *iter1 )->osbuff_->rd_ptr(sent_cnt);
 					bool sent_completely = ( *iter1 )->length() == 0;
 					on_packet_sent(sent_cnt, sent_completely);
 				}
@@ -908,11 +908,11 @@ void Channel::tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundl
 		while( true )
 		{
 			++retries;
-			int slen = pEndpoint->sock_.send(pPacket->buff->rd_ptr(),
+			int slen = pEndpoint->sock_.send(pPacket->osbuff_->rd_ptr(),
 				pPacket->length());
 
 			if( slen > 0 )
-				pPacket->buff->rd_ptr(slen);
+				pPacket->osbuff_->rd_ptr(slen);
 
 			if( pPacket->length() > 0 )
 			{
@@ -967,11 +967,11 @@ void Channel::udp_send_single_bundle(UDP_SOCK_Handler* pEndpoint, Bundle* pBundl
 		while( true )
 		{
 			++retries;
-			int slen = pEndpoint->sock_.send(pPacket->buff->rd_ptr(),
+			int slen = pEndpoint->sock_.send(pPacket->osbuff_->rd_ptr(),
 				pPacket->length(), addr);
 
 			if( slen > 0 )
-				pPacket->buff->rd_ptr(slen);
+				pPacket->osbuff_->rd_ptr(slen);
 
 			if( pPacket->length() > 0 )
 			{

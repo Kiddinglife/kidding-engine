@@ -1326,7 +1326,7 @@ TEST(pROFILETESTS, aLLTESTS)
 				_localProfile.sumIntTimeInSeconds(),
 				(double) runningTime() / stampsPerSecondD() ));
 		}
-		}
+	}
 }
 //#include "net\ErrorStatsMgr.h"
 //#include "net\Nub.h"
@@ -1394,3 +1394,18 @@ TEST(pROFILETESTS, aLLTESTS)
 //	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path2).get() )->getValue()
 //		<< std::endl;
 //}
+
+#include "net\Packet.h"
+TEST(PacketTest, tests)
+{
+	Packet p;
+
+	p.os << (int) 12;
+	p.inbuff_->wr_ptr(p.osbuff_->wr_ptr());
+
+	int a;
+	p.in >> a;
+	p.osbuff_->rd_ptr(p.inbuff_->rd_ptr());
+
+	std::cout << "a()" << a;
+}

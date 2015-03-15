@@ -687,6 +687,48 @@ extern KBE_SRV_COMPONENT_ORDER                  g_componentGlobalOrder;
 extern KBE_SRV_COMPONENT_ORDER                  g_componentGroupOrder;
 extern GAME_TIME                                               g_kbetime;  /// kbe时间 
 
+struct Intrusive_Auto_Ptr
+{
+	inline void incRef(void) const
+	{
+		++refCount_;
+	}
+
+	inline void decRef(void) const
+	{
+
+		int currRef = --refCount_;
+		ACE_ASSERT(currRef >= 0 && "RefCountable:currRef maybe a error!");
+		if( 0 >= currRef )
+			onRefOver();											// 引用结束了
+	}
+
+	virtual void onRefOver(void) const
+	{
+		delete const_cast<Intrusive_Auto_Ptr*>( this );
+	}
+
+	void setRefCount(int n)
+	{
+		refCount_ = n;
+	}
+
+	int getRefCount(void) const
+	{
+		return refCount_;
+	}
+
+	Intrusive_Auto_Ptr(void) : refCount_(0)
+	{
+	}
+
+	virtual ~Intrusive_Auto_Ptr(void)
+	{
+		ACE_ASSERT(0 == refCount_ && "RefCountable:currRef maybe a error!");
+	}
+
+	volatile mutable long refCount_;
+};
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include "ace/post.h"
 #endif

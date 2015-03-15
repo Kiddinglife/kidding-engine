@@ -50,9 +50,9 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 		pCurrPacket_ = ( *iter );
 
 		/// reset the related values in the block based on the current packet
-		block_->base(pCurrPacket_->buff->base(), pCurrPacket_->buff->size());
-		block_->wr_ptr(pCurrPacket_->buff->wr_ptr());
-		block_->rd_ptr(pCurrPacket_->buff->rd_ptr());
+		block_->base(pCurrPacket_->osbuff_->base(), pCurrPacket_->osbuff_->size());
+		block_->wr_ptr(pCurrPacket_->osbuff_->wr_ptr());
+		block_->rd_ptr(pCurrPacket_->osbuff_->rd_ptr());
 
 		while( pCurrPacket_->length() || pFragmentPacket_->length() )
 		{
@@ -69,14 +69,14 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 						if( fragmentsFlag_ == FRAGMENT_DATA_MESSAGE_BODY )
 						{
 							/// first, fillout with the left space in the pFragmentPacket_ buffer 
-							in_.read_char_array(pFragmentPacket_->buff->wr_ptr(), pFragmentsRemainning_);
-							pFragmentPacket_->buff->wr_ptr(pFragmentsRemainning_);
+							in_.read_char_array(pFragmentPacket_->osbuff_->wr_ptr(), pFragmentsRemainning_);
+							pFragmentPacket_->osbuff_->wr_ptr(pFragmentsRemainning_);
 						} else
 						{
 							in_.read_char_array(pFragmentsWpos_, pFragmentsRemainning_);
 						}
 
-						pCurrPacket_->buff->rd_ptr(in_.rd_ptr());
+						pCurrPacket_->osbuff_->rd_ptr(in_.rd_ptr());
 						fragmentsFlag_ = FRAGMENT_DATA_UNKNOW;
 						pFragmentsRemainning_ = 0;
 
@@ -85,9 +85,9 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 						if( fragmentsFlag_ == FRAGMENT_DATA_MESSAGE_BODY )
 						{
 							/// copy the existing bytes in the packet into pFragments_
-							in_.read_char_array(pFragmentPacket_->buff->wr_ptr(), opsize);
-							pFragmentPacket_->buff->wr_ptr(opsize);
-							pCurrPacket_->buff->rd_ptr(opsize);
+							in_.read_char_array(pFragmentPacket_->osbuff_->wr_ptr(), opsize);
+							pFragmentPacket_->osbuff_->wr_ptr(opsize);
+							pCurrPacket_->osbuff_->rd_ptr(opsize);
 							pFragmentsRemainning_ -= opsize;
 							pFragmentsWpos_ += opsize;
 							break;
@@ -95,7 +95,7 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 
 						/// copy the existing bytes in the packet into pFragments_
 						in_.read_char_array(pFragmentsWpos_, opsize);
-						pCurrPacket_->buff->rd_ptr(opsize);
+						pCurrPacket_->osbuff_->rd_ptr(opsize);
 						pFragmentsRemainning_ -= opsize;
 						pFragmentsWpos_ += opsize;
 					}
@@ -124,7 +124,7 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 						{
 							in_.read_char_array((char*) &currMsgID_, opsize);
 							pFragmentsRemainning_ = currMsgFieldLen_ - opsize;
-							pCurrPacket_->buff->rd_ptr(opsize);
+							pCurrPacket_->osbuff_->rd_ptr(opsize);
 							pFragmentsWpos_ += opsize;
 						}
 						break;
@@ -132,7 +132,7 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 
 					/// read msg id from this packet to currMsgID_ and reset the msgID_
 					in_ >> currMsgID_;
-					pCurrPacket_->buff->rd_ptr(NETWORK_MESSAGE_ID_SIZE);
+					pCurrPacket_->osbuff_->rd_ptr(NETWORK_MESSAGE_ID_SIZE);
 					pCurrPacket_->msgID_ = currMsgID_;
 
 					//ACE_DEBUG(( LM_DEBUG,
@@ -140,7 +140,7 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 					//	"pCurrPacket_->length(%d), pFragmentPacket_(%d),"
 					//	"rd_pos(%d), wr_pos(%d)\n",
 					//	currMsgID_, pCurrPacket_->length(), pFragmentPacket_,
-					//	pCurrPacket_->buff->rd_ptr(), pCurrPacket_->buff->wr_ptr() ));
+					//	pCurrPacket_->osbuff_->rd_ptr(), pCurrPacket_->osbuff_->wr_ptr() ));
 				}
 
 				// find the msg based on currMsgID_
@@ -159,12 +159,12 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 					Packet* pPacket1 = pFragmentPacket_->length() ? pFragmentPacket_ : pCurrPacket_;
 					TRACE_MESSAGE_PACKET(true, pPacket1, pCurrMsg_, pPacket1->length(), pChannel_->c_str());
 
-					char* rpos = pPacket1->buff->rd_ptr();
-					pPacket1->buff->rd_ptr(pPacket1->buff->base());
+					char* rpos = pPacket1->osbuff_->rd_ptr();
+					pPacket1->osbuff_->rd_ptr(pPacket1->osbuff_->base());
 
 					TRACE_MESSAGE_PACKET(true, pPacket1, pCurrMsg_, pPacket1->length(), pChannel_->c_str());
 
-					pPacket1->buff->rd_ptr(rpos);
+					pPacket1->osbuff_->rd_ptr(rpos);
 
 					ACE_ERROR(( LM_ERROR,
 						"%M::%T::PacketReader::processMessages::"
@@ -204,7 +204,7 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 							{
 								in_.read_char_array((char*) &currMsgLen_, opsize);
 								pFragmentsRemainning_ = currMsgFieldLen_ - opsize;
-								pCurrPacket_->buff->rd_ptr(opsize);
+								pCurrPacket_->osbuff_->rd_ptr(opsize);
 								pFragmentsWpos_ += opsize;
 							}
 							break;
@@ -214,7 +214,7 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 
 						/// read msg length from the packet
 						in_ >> *(MessageLength*) &currMsgLen_;
-						pCurrPacket_->buff->rd_ptr(NETWORK_MESSAGE_LENGTH_SIZE);
+						pCurrPacket_->osbuff_->rd_ptr(NETWORK_MESSAGE_LENGTH_SIZE);
 
 						//ACE_DEBUG(( LM_DEBUG, "%M::%T::variable msglen(%d)\n", currMsgLen_ ));
 
@@ -238,7 +238,7 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 								{
 									in_.read_char_array((char*) &currMsgLen_, opsize);
 									pFragmentsRemainning_ = currMsgFieldLen_ - opsize;
-									pCurrPacket_->buff->rd_ptr(opsize);
+									pCurrPacket_->osbuff_->rd_ptr(opsize);
 									pFragmentsWpos_ += opsize;
 								}
 								break;
@@ -248,7 +248,7 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 							//"%M::%T::msglen1 complete, start to read msg len1\n" ));
 							/// read msg length1 from the packet
 							in_ >> currMsgLen_;
-							pCurrPacket_->buff->rd_ptr(NETWORK_MESSAGE_LENGTH1_SIZE);
+							pCurrPacket_->osbuff_->rd_ptr(NETWORK_MESSAGE_LENGTH1_SIZE);
 							//ACE_DEBUG(( LM_DEBUG, "%M::%T::variable msglen1(%d)\n", currMsgLen_ ));
 
 							/// update this msg's stats and call its callback method
@@ -289,11 +289,11 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 					Packet* pPacket1 = pFragmentPacket_->length() ? pFragmentPacket_ : pCurrPacket_;
 					TRACE_MESSAGE_PACKET(true, pPacket1, pCurrMsg_, pPacket1->length(), pChannel_->c_str());
 
-					char* rpos = pPacket1->buff->rd_ptr();
-					pPacket1->buff->rd_ptr(pPacket1->buff->base());
+					char* rpos = pPacket1->osbuff_->rd_ptr();
+					pPacket1->osbuff_->rd_ptr(pPacket1->osbuff_->base());
 					TRACE_MESSAGE_PACKET(true, pPacket1, pCurrMsg_, pPacket1->length(), pChannel_->c_str());
 
-					pPacket1->buff->rd_ptr(rpos);
+					pPacket1->osbuff_->rd_ptr(rpos);
 
 					//ACE_DEBUG(( LM_WARNING,
 					//	"%M::%T::PacketReader::processMessages::"
@@ -320,16 +320,16 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 						if( opsize )
 						{
 							//ACE_DEBUG(( LM_DEBUG, "%M::%T::@if( opsize > 0)\n" ));
-							if( currMsgFieldLen_ > pFragmentPacket_->buff->size() )
+							if( currMsgFieldLen_ > pFragmentPacket_->osbuff_->size() )
 							{
 								//ACE_DEBUG(( LM_DEBUG,
-								//"%M::%T::@if( currMsgFieldLen_ > pFragmentPacket_->buff->size() )\n" ));
+								//"%M::%T::@if( currMsgFieldLen_ > pFragmentPacket_->osbuff_->size() )\n" ));
 
 								Packet* p = Packet_Pool->Ctor<ACE_UINT32>(currMsgFieldLen_);
 
 								if( pFragmentPacket_->length() )
 								{
-									p->os.write_char_array(pFragmentPacket_->buff->rd_ptr(), pFragmentPacket_->length());
+									p->os.write_char_array(pFragmentPacket_->osbuff_->rd_ptr(), pFragmentPacket_->length());
 								}
 
 								pFragmentPacket_->reset();
@@ -338,13 +338,13 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 							}
 
 							/// copy the existing bytes in the packet into pFragments_
-							in_.read_char_array(pFragmentPacket_->buff->wr_ptr(), opsize);
+							in_.read_char_array(pFragmentPacket_->osbuff_->wr_ptr(), opsize);
 
 							/// update the write position
-							pFragmentPacket_->buff->wr_ptr(opsize);
+							pFragmentPacket_->osbuff_->wr_ptr(opsize);
 
 							pFragmentsRemainning_ = currMsgFieldLen_ - opsize;
-							pCurrPacket_->buff->rd_ptr(opsize);
+							pCurrPacket_->osbuff_->rd_ptr(opsize);
 							pFragmentsWpos_ += opsize;
 						}
 						break;
@@ -354,9 +354,9 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 
 						/// because there maybe more than one msg in this packet
 						/// we need setup the wr and rd position to pick it out and then trace it
-						curr_packet_end_pos_ = pCurrPacket_->buff->wr_ptr();
-						curr_msg_end_pos_in_curr_packet = pCurrPacket_->buff->rd_ptr() + currMsgLen_;
-						pCurrPacket_->buff->wr_ptr(curr_msg_end_pos_in_curr_packet);
+						curr_packet_end_pos_ = pCurrPacket_->osbuff_->wr_ptr();
+						curr_msg_end_pos_in_curr_packet = pCurrPacket_->osbuff_->rd_ptr() + currMsgLen_;
+						pCurrPacket_->osbuff_->wr_ptr(curr_msg_end_pos_in_curr_packet);
 
 						TRACE_MESSAGE_PACKET(true, pCurrPacket_, pCurrMsg_, currMsgLen_, pChannel_->c_str());
 
@@ -369,30 +369,30 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 						if( currMsgLen_ > 0 )
 						{
 							///if handler does not process all the data in this packet
-							if( curr_msg_end_pos_in_curr_packet != pCurrPacket_->buff->rd_ptr() )
+							if( curr_msg_end_pos_in_curr_packet != pCurrPacket_->osbuff_->rd_ptr() )
 							{
 								ACE_DEBUG(( LM_ERROR,
 									"PacketReader::processMessages(%s): rpos(%d) invalid, expect(%d). msgID(%d), msglen(%d).\n",
 									pCurrMsg_->name_.c_str(),
-									pCurrPacket_->buff->rd_ptr(), curr_msg_end_pos_in_curr_packet,
+									pCurrPacket_->osbuff_->rd_ptr(), curr_msg_end_pos_in_curr_packet,
 									currMsgID_, currMsgLen_ ));
 
 								///if handler does not process all the data in this packet
 								/// but we have to the rd pos into the expected position in order
 								/// to avoid impact the next msg
-								pCurrPacket_->buff->rd_ptr(curr_msg_end_pos_in_curr_packet);
+								pCurrPacket_->osbuff_->rd_ptr(curr_msg_end_pos_in_curr_packet);
 							}
 						}
 
 						/// set the wr and rd positions back to the orifinal
-						pCurrPacket_->buff->wr_ptr(curr_packet_end_pos_);
+						pCurrPacket_->osbuff_->wr_ptr(curr_packet_end_pos_);
 						block_->rd_ptr(currMsgLen_);
 					}
 				} else
 				{
 					TRACE_MESSAGE_PACKET(true, pFragmentPacket_, pCurrMsg_, currMsgLen_, pChannel_->c_str());
 					pCurrMsg_->handle(pChannel_, pFragmentPacket_);
-					pFragmentPacket_->buff->reset();
+					pFragmentPacket_->osbuff_->reset();
 				}
 
 				/// this message is processed completely at this point and so reset msgid and msglen to 0
@@ -403,7 +403,7 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 		}
 
 		/// recycle this packet when read is done
-		pCurrPacket_->buff->reset();
+		pCurrPacket_->osbuff_->reset();
 		Packet_Pool->Dtor(pCurrPacket_);
 	}
 
