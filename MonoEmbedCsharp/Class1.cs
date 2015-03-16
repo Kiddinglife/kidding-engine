@@ -91,10 +91,10 @@ namespace KBEngine
 		}
 		public void test()
 		{
-			tc5.TestFun(12f);
-			tc5.strfunc("hello");
-			MonoEmbed.static_function(2f);
-			MonoEmbed.gimme(2);
+			//tc5.TestFun(12f);
+			//tc5.strfunc("hello");
+			//MonoEmbed.static_function(2f);
+			//MonoEmbed.gimme(2);
 		}
 
 		public void untank()

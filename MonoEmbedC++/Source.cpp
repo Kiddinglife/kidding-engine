@@ -138,10 +138,10 @@ class MObject
 };
 
 
-class TestCS : public Test, public MObject
+class TestCS : public MObject
 {
 	public:
-	TestCS(MonoImage* monoImage, MonoDomain* monoDomain) : Test(), MObject(monoImage, monoDomain)
+	TestCS(MonoImage* monoImage, MonoDomain* monoDomain) : MObject(monoImage, monoDomain)
 	{
 		m_monoClass = mono_class_from_name(monoImage, "KBEngine", "TestClass");
 
@@ -154,7 +154,7 @@ class TestCS : public Test, public MObject
 		mono_runtime_invoke(method, m_monoObject, NULL, NULL);
 		method_ = mono_class_get_method_from_name(m_monoClass, "test", 0);
 	}
-	virtual void TestFun()
+	void TestFun()
 	{
 		result_ = mono_runtime_invoke(method_, mono_gchandle_get_target(m_gc_handle_), NULL, NULL);
 		//return *(int*) mono_object_unbox(result_);
@@ -206,7 +206,10 @@ int main(int argc, char* argv[ ])
 	for( int i = 0; i < 10; i++ )
 	{
 		{
-			{ 	SCOPED_PROFILE(_localProfile); 	testCS->TestFun(); };
+			{
+				SCOPED_PROFILE(_localProfile);
+				testCS->TestFun();
+			};
 			ACE_DEBUG(( LM_DEBUG,
 				"%s::lastIntTime(%f s), lastTime(%f s), sumTime(%f s),"
 				"sumIntTime(%f s),runningTime(%f s) \n",

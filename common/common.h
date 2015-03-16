@@ -1,20 +1,7 @@
 ﻿#ifndef COMMON_HPP_
 #define COMMON_HPP_
 
-#include "ace\pre.h"
-#include <string>  
-#include <vector>
-#include <map>
-#include <list>
-#include <set>
-#include <deque>
-#include <limits>
-#include <algorithm>
-#include <utility>
-#include <functional>
-#include <cctype> //used to tell a char capital or little
-#include <iterator>
-
+#include "ace/pre.h"
 #include "ace/OS.h" //includes all the system headers
 #include "ace/Basic_Types.h"
 #include "ace/UUID.h"
@@ -30,6 +17,9 @@
 #pragma warning(disable:4244)
 #pragma warning(disable:4002)
 #pragma warning(disable:4102)
+#pragma warning (disable:4910)
+#pragma warning (disable:4251)
+#pragma warning (disable:4661)
 #include <winsock2.h>		// 必须在windows.h之前包含， 否则网络模块编译会出错
 #include <mswsock.h> 
 #include <windows.h> 
@@ -45,6 +35,19 @@
 
 #include "kbe_version.h"
 #include "config.h"
+
+#include <string>  
+#include <vector>
+#include <map>
+#include <list>
+#include <set>
+#include <deque>
+#include <limits>
+#include <algorithm>
+#include <utility>
+#include <functional>
+#include <cctype> //used to tell a char capital or little
+#include <iterator>
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 ////////////////////////////////////////// 当前系统字节序 byte order of current os ///////////////////////////////////////
