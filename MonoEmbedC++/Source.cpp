@@ -132,9 +132,6 @@ class MObject
 	uint32_t         m_gc_handle_;
 	MonoMethod* method_;
 	MonoObject* result_;
-
-	typedef void(__stdcall *FUNC) ( );
-	FUNC func_;
 };
 
 
@@ -144,10 +141,6 @@ class TestCS : public MObject
 	TestCS(MonoImage* monoImage, MonoDomain* monoDomain) : MObject(monoImage, monoDomain)
 	{
 		m_monoClass = mono_class_from_name(monoImage, "KBEngine", "TestClass");
-
-		method_ = mono_class_get_method_from_name(m_monoClass, "untank", 0);
-		func_ = (FUNC) mono_method_get_unmanaged_thunk(method_);
-
 		m_monoObject = mono_object_new(m_monoDomain, m_monoClass);
 		m_gc_handle_ = mono_gchandle_new(m_monoObject, false);
 		MonoMethod* method = mono_class_get_method_from_name(m_monoClass, ".ctor", 0);
@@ -166,7 +159,23 @@ class TestCS : public MObject
 	}
 };
 
+typedef void ( MonoObject::*FUNC )( );
+FUNC my_callback;
 
+void RegisterCallback(FUNC cb)
+{
+	my_callback = cb;
+}
+
+void InvokeManagedCode(MonoObject* obj)
+{
+	if( my_callback == NULL )
+	{
+		printf("Managed code has not initialized this library yet");
+		abort();
+	}
+	( obj->*my_callback )( );
+}
 int main(int argc, char* argv[ ])
 {
 	MonoDomain *domain;

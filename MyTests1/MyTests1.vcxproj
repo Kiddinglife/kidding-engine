@@ -53,7 +53,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Mono\include\mono-2.0;..;..\openssl\inc32;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../python/PC;../python/Include;../;../../common;../../g3dlite;../../log4cxx/src/main/include;../../;..;..\openssl\inc32\;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers;C:\Program Files %28x86%29\Mono\include\mono-2.0;..\openssl\inc32</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -76,7 +76,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalUsingDirectories>
       </AdditionalUsingDirectories>
-      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Mono\include;..;..\openssl\inc32;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../python/PC;../python/Include;../;../../common;../../g3dlite;../../log4cxx/src/main/include;../../;..;..\openssl\inc32\;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers;C:\Program Files %28x86%29\Mono\include\mono-2.0;..\openssl\inc32;C:\Program Files %28x86%29\Mono\include\mono-2.0;..;..\openssl\inc32;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -100,6 +100,9 @@
     </ProjectReference>
     <ProjectReference Include="..\net\net.vcxproj">
       <Project>{f13648cc-a1b0-40e6-9265-890cb5e1dab0}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\py_script\py_script.vcxproj">
+      <Project>{0fef9af2-20c4-42a5-9c2b-1f41c53fbf05}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

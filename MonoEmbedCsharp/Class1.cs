@@ -76,6 +76,11 @@ namespace KBEngine
 		KBEngine.Base tc3;
 		KBEngine.TestClass3 tc4;
 		KBEngine.Base tc5;
+
+		//delegate int MyCallback1();
+		//[DllImport("MyRuntime")]
+		//public extern static void RegisterCallback(MyCallback1 callback1);
+
 		public TestClass()
 		{
 			bb = 2131;
@@ -83,6 +88,7 @@ namespace KBEngine
 			tc3 = new KBEngine.Base(40);
 			tc4 = new KBEngine.TestClass3();
 			tc5 = new KBEngine.MyBase();
+			//RegisterCallback(test);
 		}
 		public int bb
 		{

@@ -42,11 +42,11 @@
     <TargetExt>.lib</TargetExt>
     <OutDir>$(SolutionDir)\libs\$(Configuration)\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>..; ..\openssl\inc32\; D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>../python/PC;../python/Include;../;../../common;../../g3dlite;../../log4cxx/src/main/include;../../;..;..\openssl\inc32\;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <TargetExt>.lib</TargetExt>
-    <IncludePath>..; ..\openssl\inc32\; D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>../python/PC;../python/Include;../;../../common;../../g3dlite;../../log4cxx/src/main/include;../../;..;..\openssl\inc32\;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -106,6 +106,9 @@
     <ProjectReference Include="..\python\PCbuild\_socket.vcxproj">
       <Project>{86937f53-c189-40ef-8ce8-8759d8e7d480}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="spammodule.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
