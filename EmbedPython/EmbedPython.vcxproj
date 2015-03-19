@@ -11,12 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{0FEF9AF2-20C4-42A5-9C2B-1F41C53FBF05}</ProjectGuid>
-    <RootNamespace>py_script</RootNamespace>
+    <ProjectGuid>{75D6F834-14A4-4AB7-924E-564535A5FE1E}</ProjectGuid>
+    <RootNamespace>EmbedPython</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -38,27 +38,19 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetExt>.lib</TargetExt>
-    <OutDir>$(SolutionDir)\libs\$(Configuration)\</OutDir>
-    <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>$(IncludePath)</IncludePath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetExt>.lib</TargetExt>
-    <IncludePath>
-    </IncludePath>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../python/PC;../python/Include;../;../../common;../../g3dlite;../../log4cxx/src/main/include;../../;..;..\openssl\inc32\;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../python/PC;../python/Include;../;../../common;../g3dlite;../log4cxx/src/main/include;../../;..;..\openssl\inc32\;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\libs;..\libs\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>python34_d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -68,17 +60,17 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../python/PC;../python/Include;../;../../common;../../g3dlite;../../log4cxx/src/main/include;../../;..;..\openssl\inc32\;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../python/PC;../python/Include;../;../../common;../g3dlite;../log4cxx/src/main/include;../../;..;..\openssl\inc32\;D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\libs;..\libs\Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="py_macros.h" />
+    <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\common\common.vcxproj">
@@ -96,9 +88,6 @@
     <ProjectReference Include="..\python\PCbuild\pythoncore.vcxproj">
       <Project>{cf7ac3d1-e2df-41d2-bea6-1e2556cdea26}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\python\PCbuild\unicodedata.vcxproj">
-      <Project>{ecc7ceac-a5e5-458e-bb9e-2413cc847881}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\python\PCbuild\_ctypes.vcxproj">
       <Project>{0e9791db-593a-465f-98bc-681011311618}</Project>
     </ProjectReference>
@@ -111,9 +100,6 @@
     <ProjectReference Include="..\python\PCbuild\_socket.vcxproj">
       <Project>{86937f53-c189-40ef-8ce8-8759d8e7d480}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="py_macros.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

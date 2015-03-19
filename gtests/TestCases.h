@@ -1320,11 +1320,11 @@ TEST(pROFILETESTS, aLLTESTS)
 				"%s::lastIntTime(%f ms), lastTime(%f ms), sumTime(%f ms),"
 				"sumIntTime(%f ms),runningTime(%f ms) \n",
 				_localProfile.name(),
-				_localProfile.lastIntTimeInSeconds()*1000,
-				_localProfile.lastTimeInSeconds()*1000,
-				_localProfile.sumTimeInSeconds()*1000,
-				_localProfile.sumIntTimeInSeconds()*1000,
-				(double) runningTime() / stampsPerSecondD()*1000 ));
+				_localProfile.lastIntTimeInSeconds() * 1000,
+				_localProfile.lastTimeInSeconds() * 1000,
+				_localProfile.sumTimeInSeconds() * 1000,
+				_localProfile.sumIntTimeInSeconds() * 1000,
+				(double) runningTime() / stampsPerSecondD() * 1000 ));
 		}
 	}
 }

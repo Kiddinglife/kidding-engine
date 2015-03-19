@@ -28,23 +28,23 @@
 #ifndef __TMX_MAPTILE_H__
 #define __TMX_MAPTILE_H__
 
-#include "commons/common.h"
+#include "common/common.h"
 
-namespace Tmx
+namespace Tmx 
 {
 	//-------------------------------------------------------------------------
 	// Flags that may be in the first two bits of the gid.
 	//-------------------------------------------------------------------------
 	const unsigned FlippedHorizontallyFlag = 0x80000000;
-	const unsigned FlippedVerticallyFlag = 0x40000000;
-	const unsigned FlippedDiagonallyFlag = 0x20000000;
+	const unsigned FlippedVerticallyFlag   = 0x40000000;
+	const unsigned FlippedDiagonallyFlag   = 0x20000000;
 
 	//-------------------------------------------------------------------------
 	// Struct to store information about a specific tile in the map layer.
 	//-------------------------------------------------------------------------
-	class MapTile
+	class MapTile 
 	{
-		public:
+	public:
 		// Default constructor.
 		MapTile()
 			: tilesetId(0)
@@ -52,17 +52,16 @@ namespace Tmx
 			, flippedHorizontally(false)
 			, flippedVertically(false)
 			, flippedDiagonally(false)
-		{
-		}
+		{}
 
 		// Will take a gid and read the attributes from the first
 		// two bits of it.
 		MapTile(unsigned _gid, int _tilesetFirstGid, unsigned _tilesetId)
 			: tilesetId(_tilesetId)
-			, id(_gid & ~( FlippedHorizontallyFlag | FlippedVerticallyFlag | FlippedDiagonallyFlag ))
-			, flippedHorizontally(( _gid & FlippedHorizontallyFlag ) != 0)
-			, flippedVertically(( _gid & FlippedVerticallyFlag ) != 0)
-			, flippedDiagonally(( _gid & FlippedDiagonallyFlag ) != 0)
+			, id(_gid & ~(FlippedHorizontallyFlag | FlippedVerticallyFlag | FlippedDiagonallyFlag))
+			, flippedHorizontally((_gid & FlippedHorizontallyFlag) != 0)
+			, flippedVertically((_gid & FlippedVerticallyFlag) != 0)
+			, flippedDiagonally((_gid & FlippedDiagonallyFlag) != 0)
 		{
 			id -= _tilesetFirstGid;
 		}
