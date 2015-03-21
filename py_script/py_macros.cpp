@@ -1,6 +1,4 @@
-
 /*
-
 // You can also define a new exception that is unique to your module.
 // For this, you usually declare a static object variable at the beginning of your file:
 static PyObject *SpamError;
@@ -391,6 +389,9 @@ static PyMemberDef Noddy_members[ ] =
 	{ NULL }  // Sentinel 
 };
 
+//This method is equivalent to the Python method:
+//def name(self):
+//return "%s %s" % (self.first, self.last)
 static PyObject* Noddy_name(Noddy* self)
 {
 	static PyObject *format = NULL;
@@ -425,6 +426,8 @@ static PyObject* Noddy_name(Noddy* self)
 	return result;
 }
 
+// Note that we used the METH_NOARGS flag to
+// indicate that the method is passed no arguments.
 static PyMethodDef Noddy_methods[ ] = {
 	{ "name", (PyCFunction) Noddy_name, METH_NOARGS,
 	"Return the name, combining the first and last name"
@@ -438,7 +441,9 @@ static PyTypeObject NoddyType = {
 	"noddy.Noddy",             //tp_name
 	sizeof(Noddy),             //tp_basicsize
 	0,                         //tp_itemsize
+
 	(destructor) Noddy_dealloc, //tp_dealloc
+
 	0,                         //tp_print
 	0,                         //tp_getattr
 	0,                         //tp_setattr
@@ -453,7 +458,13 @@ static PyTypeObject NoddyType = {
 	0,                         //tp_getattro
 	0,                         //tp_setattro
 	0,                         //tp_as_buffer
+
+	//Finally, we¡¯ll make our type usable as a base class. 
+	//We¡¯ve written our methods carefully so far so that they dont make any assumptions 
+	//about the type of the object being created or used, so all we need to do is to add the 
+	//Py_TPFLAGS_BASETYPE to our class flag definition:
 	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, //tp_flags
+
 	"Noddy objects",           // tp_doc 
 	0,		               // tp_traverse 
 	0,		               // tp_clear 
