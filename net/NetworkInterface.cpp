@@ -97,6 +97,7 @@ NETWORK_NAMESPACE_BEGIN_DECL
 				///Setup socket options
 				setnonblocking(true, pExtListenerReceiver_->acceptor_);
 				setnodelay(true, pExtListenerReceiver_->acceptor_);
+				setreuseaddr(true, pExtListenerReceiver_->acceptor_);
 
 				if( extrbuffer > 0 )
 				{
@@ -105,7 +106,7 @@ NETWORK_NAMESPACE_BEGIN_DECL
 
 				if( extwbuffer > 0 )
 				{
-					setbuffersize(SO_SNDBUF, extrbuffer, pExtListenerReceiver_->acceptor_);
+					setbuffersize(SO_SNDBUF, extwbuffer, pExtListenerReceiver_->acceptor_);
 				}
 			}
 		}
@@ -157,14 +158,14 @@ NETWORK_NAMESPACE_BEGIN_DECL
 				setnodelay(true, pIntListenerReceiver_->acceptor_);
 				setreuseaddr(true, pIntListenerReceiver_->acceptor_);
 
-				if( extrbuffer > 0 )
+				if( intrbuffer > 0 )
 				{
-					setbuffersize(SO_RCVBUF, extrbuffer, pIntListenerReceiver_->acceptor_);
+					setbuffersize(SO_RCVBUF, intrbuffer, pIntListenerReceiver_->acceptor_);
 				}
 
-				if( extwbuffer > 0 )
+				if( intwbuffer > 0 )
 				{
-					setbuffersize(SO_SNDBUF, extrbuffer, pIntListenerReceiver_->acceptor_);
+					setbuffersize(SO_SNDBUF, intwbuffer, pIntListenerReceiver_->acceptor_);
 				}
 			}
 		}

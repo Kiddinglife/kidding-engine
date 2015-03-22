@@ -19,7 +19,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	ACE_TEST_ASSERT(TESTMSG::pmsg1 != NULL);
 	Bundle* p = Bundle_Pool->Ctor();
 	p->start_new_curr_message(TESTMSG::pmsg1);
-	*p << (ACE_UINT64) 1 << (ACE_INT16) 1;
+	*p << (ACE_UINT64) 123456789 << (ACE_INT16) 1;
 	p->end_new_curr_message();
 
 	////////////////////////////////////////////////////////////////////////////////////////
@@ -52,8 +52,8 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	Bundle::Packets::iterator iter = p->packets_.begin();
 	for( ; iter != p->packets_.end(); iter++ )
 	{
-		ACE_HEX_DUMP(( LM_DEBUG, ( *iter )->buff->rd_ptr(), ( *iter )->length() ));
-		send_cnt = log.send(( *iter )->buff->rd_ptr(), ( *iter )->length());
+		ACE_HEX_DUMP(( LM_DEBUG, ( *iter )->osbuff_->rd_ptr(), ( *iter )->length() ));
+		send_cnt = log.send(( *iter )->osbuff_->rd_ptr(), ( *iter )->length());
 		if( send_cnt == -1 && ACE_OS::last_error() != EWOULDBLOCK )
 			ACE_ERROR(( LM_ERROR,
 			ACE_TEXT("(%P|%t) %p\n"),
@@ -69,16 +69,16 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	while( i > 0 )
 	{
 		i--;
-		size_t len = log.recv(pReceiveWindow->buff->wr_ptr(), pReceiveWindow->buff->size());
-		if( len == pReceiveWindow->buff->size() )
+		size_t len = log.recv(pReceiveWindow->osbuff_->wr_ptr(), pReceiveWindow->osbuff_->size());
+		if( len == pReceiveWindow->osbuff_->size() )
 		{
-			pReceiveWindow->buff->wr_ptr(len);
-			ACE_HEX_DUMP(( LM_DEBUG, pReceiveWindow->buff->rd_ptr(), pReceiveWindow->buff->length() ));
-			pReceiveWindow->buff->reset();
+			pReceiveWindow->osbuff_->wr_ptr(len);
+			ACE_HEX_DUMP(( LM_DEBUG, pReceiveWindow->osbuff_->rd_ptr(), pReceiveWindow->osbuff_->length() ));
+			pReceiveWindow->osbuff_->reset();
 		} else if( len > 0 )
 		{
-			pReceiveWindow->buff->wr_ptr(len);
-			ACE_HEX_DUMP(( LM_DEBUG, pReceiveWindow->buff->rd_ptr(), pReceiveWindow->buff->length() ));
+			pReceiveWindow->osbuff_->wr_ptr(len);
+			ACE_HEX_DUMP(( LM_DEBUG, pReceiveWindow->osbuff_->rd_ptr(), pReceiveWindow->osbuff_->length() ));
 		}
 	}
 	Packet_Pool->Dtor(pReceiveWindow);

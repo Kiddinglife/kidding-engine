@@ -51,9 +51,9 @@ void Bundle::init_instream(void)
 {
 	if( packets_.size() > 0 )
 	{
-		const_cast<ACE_Message_Block*>( in.start() )->base(packets_[0]->buff->base(), packets_[0]->buff->size());
-		const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(packets_[0]->buff->wr_ptr());
-		const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(packets_[0]->buff->rd_ptr());
+		const_cast<ACE_Message_Block*>( in.start() )->base(packets_[0]->osbuff_->base(), packets_[0]->osbuff_->size());
+		const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(packets_[0]->osbuff_->wr_ptr());
+		const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(packets_[0]->osbuff_->rd_ptr());
 	}
 }
 
@@ -181,7 +181,7 @@ size_t Bundle::calculate_avaiable_space_of_curr_packet(size_t addsize, bool inse
 	//ACE_DEBUG(( LM_DEBUG, "calculate_avaiable_space_of_curr_packet:: used space=%d \n", space ));
 
 	//获取当前packet的写位置
-	fwpos = pCurrPacket_->buff->wr_ptr();
+	fwpos = pCurrPacket_->osbuff_->wr_ptr();
 	//ACE_DEBUG(( LM_DEBUG, "calculate_avaiable_space_of_curr_packet:: fwpos=%d \n", fwpos ));
 
 	//ACE_DEBUG(( LM_DEBUG, "///检测当前包剩余空间+addsize的数据后是否溢出 \n" ));
@@ -192,14 +192,14 @@ size_t Bundle::calculate_avaiable_space_of_curr_packet(size_t addsize, bool inse
 		//ACE_DEBUG(( LM_DEBUG, "calculate_avaiable_space_of_curr_packet:: fwpos=%d\n", fwpos ));
 	}
 
-	//ACE_DEBUG(( LM_DEBUG, "calculate_avaiable_space_of_curr_packet:: capability = %d, size=%d,pCurrPacket_->buff->end()=%d, pCurrPacket_->buff->base()=%d\n", pCurrPacket_->buff->capacity(),
-	//	pCurrPacket_->buff->size(), pCurrPacket_->buff->end(), pCurrPacket_->buff->base() ));
+	//ACE_DEBUG(( LM_DEBUG, "calculate_avaiable_space_of_curr_packet:: capability = %d, size=%d,pCurrPacket_->osbuff_->end()=%d, pCurrPacket_->osbuff_->base()=%d\n", pCurrPacket_->osbuff_->capacity(),
+	//	pCurrPacket_->osbuff_->size(), pCurrPacket_->osbuff_->end(), pCurrPacket_->osbuff_->base() ));
 
 	///当前包已满，将其保存起来，若设置了inseparable，那么 该包剩余空间会被忽略
 	//ACE_DEBUG(( LM_DEBUG, "///当前包已满，将其保存起来，若设置了inseparable，那么 该包剩余空间会被忽略\n" ));
-	if( fwpos >= pCurrPacket_->buff->base() + currPacketMaxSize )
+	if( fwpos >= pCurrPacket_->osbuff_->base() + currPacketMaxSize )
 	{
-		//ACE_DEBUG(( LM_DEBUG, "fwpos >= pCurrPacket_->buff->end() - 1 - offset,\n当前packet已满，将其保存起来，以便以后发送\n" ));
+		//ACE_DEBUG(( LM_DEBUG, "fwpos >= pCurrPacket_->osbuff_->end() - 1 - offset,\n当前packet已满，将其保存起来，以便以后发送\n" ));
 		//TRACE_BUNDLE_DATA(false, pCurrPacket_, pCurrMsg_, totalsize, "None");
 		//当前packet已满，将其保存起来，以便以后发送
 		++currMsgPacketCount_;
@@ -376,12 +376,12 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 		//ACE_DEBUG(( LM_DEBUG,
 		//	"Bundle::calculate_then_fill_variable_len_field()::@7.2::"
 		//	"currPacketMaxSize = %d\n"
-		//	"pPacket->buff->length() = %d\n",
+		//	"pPacket->osbuff_->length() = %d\n",
 		//	currPacketMaxSize,
-		//	pPacket->buff->length() ));
+		//	pPacket->osbuff_->length() ));
 
 		int num = NETWORK_MESSAGE_LENGTH1_SIZE -
-			( currPacketMaxSize - pPacket->buff->length() );
+			( currPacketMaxSize - pPacket->osbuff_->length() );
 
 		/// check the rest space in this packet can hold the msglen1
 		if( num > 0 )
@@ -403,40 +403,40 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 			//	"Bundle::calculate_then_fill_variable_len_field()::@7.2.3::"
 			//	"before resize, size = %d\n"
 			//	"rd pos = %d, wr_pos = %d\n",
-			//	pPacket->buff->size(), pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
+			//	pPacket->osbuff_->size(), pPacket->osbuff_->rd_ptr(), pPacket->osbuff_->wr_ptr() ));
 
-			pPacket->buff->size(pPacket->buff->size() + num);
+			pPacket->osbuff_->size(pPacket->osbuff_->size() + num);
 
 			//ACE_DEBUG(( LM_DEBUG,
 			//	"Bundle::calculate_then_fill_variable_len_field()::@7.2.4::"
 			//	"After resize, size = %d, length = %d, \n"
 			//	"rd pos = %d, wr_pos = %d\n",
-			//	pPacket->buff->size(), pPacket->buff->length(),
-			//	pPacket->buff->rd_ptr(), pPacket->buff->wr_ptr() ));
+			//	pPacket->osbuff_->size(), pPacket->osbuff_->length(),
+			//	pPacket->osbuff_->rd_ptr(), pPacket->osbuff_->wr_ptr() ));
 
-			//ACE_HEX_DUMP(( LM_DEBUG, pPacket->buff->base(), pPacket->buff->size(),
+			//ACE_HEX_DUMP(( LM_DEBUG, pPacket->osbuff_->base(), pPacket->osbuff_->size(),
 			//	"Before memmove::Result: \n" ));
 
 			/// 将currMsgLengthPos_以后的内存向后移动num个bytes，为ex msg疼出来位置
-			currMsgLengthPos_ = pPacket->buff->rd_ptr() + NETWORK_MESSAGE_ID_SIZE + NETWORK_MESSAGE_LENGTH_SIZE;
+			currMsgLengthPos_ = pPacket->osbuff_->rd_ptr() + NETWORK_MESSAGE_ID_SIZE + NETWORK_MESSAGE_LENGTH_SIZE;
 		}
 
-		ACE_OS::memmove(currMsgLengthPos_ + NETWORK_MESSAGE_LENGTH1_SIZE, currMsgLengthPos_, pPacket->buff->length() + ENCRYPTTION_WASTAGE_SIZE);
+		ACE_OS::memmove(currMsgLengthPos_ + NETWORK_MESSAGE_LENGTH1_SIZE, currMsgLengthPos_, pPacket->osbuff_->length() + ENCRYPTTION_WASTAGE_SIZE);
 
 		/// advance wr pos
-		pPacket->buff->wr_ptr(NETWORK_MESSAGE_LENGTH1_SIZE);
+		pPacket->osbuff_->wr_ptr(NETWORK_MESSAGE_LENGTH1_SIZE);
 
 		///// anti-advance rd pos to the base()
-		//pPacket->buff->rd_ptr(NETWORK_MESSAGE_LENGTH1_SIZE);
+		//pPacket->osbuff_->rd_ptr(NETWORK_MESSAGE_LENGTH1_SIZE);
 		//ACE_HEX_DUMP(( LM_DEBUG,
-		//	pPacket->buff->base(), pPacket->buff->size(),
+		//	pPacket->osbuff_->base(), pPacket->osbuff_->size(),
 		//	"after  memmove::Result: \n" ));
 
 		/// 写入ex msg len
 		*( (MessageLength1*) currMsgLengthPos_ ) = ex_msg_length;
 
 		//ACE_HEX_DUMP(( LM_DEBUG,
-		//	pPacket->buff->base(), pPacket->buff->size(),
+		//	pPacket->osbuff_->base(), pPacket->osbuff_->size(),
 		//	"after  write to ex len::Result: \n" ));
 
 	} else
@@ -519,8 +519,8 @@ void Bundle::end_new_curr_message(void)
 	//		for( int i = 0; i < currMsgPacketCount_; i++ )
 	//		{
 	//			ACE_HEX_DUMP(( LM_DEBUG,
-	//				( pCurrPacket_ + i )->buff->rd_ptr(),
-	//				( pCurrPacket_ + i )->buff->length(),
+	//				( pCurrPacket_ + i )->osbuff_->rd_ptr(),
+	//				( pCurrPacket_ + i )->osbuff_->length(),
 	//				"%M::end_new_curr_message(void):: dump result: \n" ));
 	//		}
 	//}
@@ -546,10 +546,10 @@ void Bundle::start_new_curr_message(Message* msg)
 	if( !pCurrPacket_ ) this->create_new_curr_packet();
 
 	//ACE_HEX_DUMP(( LM_DEBUG,
-	//	pCurrPacket_->buff->base(), pCurrPacket_->buff->length(),
+	//	pCurrPacket_->osbuff_->base(), pCurrPacket_->osbuff_->length(),
 	//	"Bundle::start_new_curr_message()::@A\n" ));
 
-	//ACE_ASSERT(pCurrPacket_->buff->length() - );
+	//ACE_ASSERT(pCurrPacket_->osbuff_->length() - );
 	/// 将消息id写入到当前包中
 	( *this ) << msg->msgID_;
 
@@ -700,8 +700,8 @@ void Bundle::tcp_send(const ACE_SOCK_Stream* ep)
 			* timeout/error/EOF, *@a bytes_transferred will contain the number of
 			* bytes transferred.
 			*/
-			sent_cnt = ep->send_n(pPacket->buff->base() + pPacket->sentSize,
-				pPacket->buff->length() - pPacket->sentSize,
+			sent_cnt = ep->send_n(pPacket->osbuff_->base() + pPacket->sentSize,
+				pPacket->osbuff_->length() - pPacket->sentSize,
 				&wait, &sent_cnt_error);
 
 			if( sent_cnt > 0 )
@@ -716,7 +716,7 @@ void Bundle::tcp_send(const ACE_SOCK_Stream* ep)
 					ACE_DEBUG(( LM_WARNING, "timeout before send all data...\n" ));
 				} else if( kbe_lasterror() == EWOULDBLOCK || kbe_lasterror() == WSAEWOULDBLOCK )
 				{
-					ACE_DEBUG(( LM_WARNING, "send buff full..\n" ));
+					ACE_DEBUG(( LM_WARNING, "send osbuff_ full..\n" ));
 				} else
 				{
 					ACE_DEBUG(( LM_WARNING, "unkonow error happened when sending..\n" ));
@@ -771,8 +771,8 @@ void  Bundle::udp_send(const ACE_SOCK_Dgram* ep, const ACE_INET_Addr* remoteaddr
 			* returned with @c errno == ETIME.  If it succeeds the number of
 			* bytes sent is returned.
 			*/
-			sent_cnt = ep->send(pPacket->buff->base() + pPacket->sentSize,
-				pPacket->buff->length() - pPacket->sentSize, *remoteaddr,
+			sent_cnt = ep->send(pPacket->osbuff_->base() + pPacket->sentSize,
+				pPacket->osbuff_->length() - pPacket->sentSize, *remoteaddr,
 				0, &wait);
 
 			if( sent_cnt > 0 )
@@ -785,7 +785,7 @@ void  Bundle::udp_send(const ACE_SOCK_Dgram* ep, const ACE_INET_Addr* remoteaddr
 					ACE_DEBUG(( LM_WARNING, "timeout before send all data...\n" ));
 				} else if( kbe_lasterror() == EWOULDBLOCK || kbe_lasterror() == WSAEWOULDBLOCK )
 				{
-					ACE_DEBUG(( LM_WARNING, "send buff full..\n" ));
+					ACE_DEBUG(( LM_WARNING, "send osbuff_ full..\n" ));
 				} else
 				{
 					ACE_DEBUG(( LM_WARNING, "unkonow error happened when sending..\n" ));
@@ -819,7 +819,7 @@ void Bundle::dumpMsgs()
 
 	ACE_PoolPtr_Getter(pool, Packet, ACE_Null_Mutex);
 	Packet* temppacket = pool->Ctor();
-	//temppacket->buff->size(1024);
+	//temppacket->osbuff_->size(1024);
 
 	char* base = in.start()->base();
 	size_t size = in.start()->size();
@@ -839,13 +839,13 @@ void Bundle::dumpMsgs()
 		Packet* pPacket = ( *iter );
 		if( pPacket->length() == 0 ) continue;
 
-		ACE_HEX_DUMP(( LM_DEBUG, pPacket->buff->base(), pPacket->buff->length() ));
+		ACE_HEX_DUMP(( LM_DEBUG, pPacket->osbuff_->base(), pPacket->osbuff_->length() ));
 
-		char* rpos = pPacket->buff->rd_ptr();
-		char* wpos = pPacket->buff->wr_ptr();
+		char* rpos = pPacket->osbuff_->rd_ptr();
+		char* wpos = pPacket->osbuff_->wr_ptr();
 
-		const_cast<ACE_Message_Block*>( in.start() )->base(pPacket->buff->base(),
-			pPacket->buff->size());
+		const_cast<ACE_Message_Block*>( in.start() )->base(pPacket->osbuff_->base(),
+			pPacket->osbuff_->size());
 		const_cast<ACE_Message_Block*>( in.start() )->wr_ptr(wpos);
 
 		//ACE_DEBUG(( LM_DEBUG, "pPacket->length() = %d\n", pPacket->length() ));
@@ -870,7 +870,7 @@ void Bundle::dumpMsgs()
 				headlen += NETWORK_MESSAGE_ID_SIZE;
 
 				in >> msgid;
-				pPacket->buff->rd_ptr(in.rd_ptr());
+				pPacket->osbuff_->rd_ptr(in.rd_ptr());
 				temppacket->os << msgid;
 				ACE_DEBUG(( LM_DEBUG, "msgid = %d\n", msgid ));
 				state = len;
@@ -895,7 +895,7 @@ void Bundle::dumpMsgs()
 					//ACE_DEBUG(( LM_DEBUG, " @4::NETWORK_VARIABLE_MESSAGE\n" ));
 					headlen += sizeof(MessageLength);
 					in >> msglen;
-					pPacket->buff->rd_ptr(in.rd_ptr());
+					pPacket->osbuff_->rd_ptr(in.rd_ptr());
 					temppacket->os << msglen;
 					if( msglen == NETWORK_MESSAGE_MAX_SIZE )
 						state = len1;
@@ -903,7 +903,7 @@ void Bundle::dumpMsgs()
 						state = body;
 
 					MessageLength len = 0;
-					memcpy(&len, temppacket->buff->base() + NETWORK_MESSAGE_ID_SIZE,
+					memcpy(&len, temppacket->osbuff_->base() + NETWORK_MESSAGE_ID_SIZE,
 						sizeof(MessageLength));
 					ACE_DEBUG(( LM_DEBUG, "msglen = %d\n", len ));
 
@@ -926,12 +926,12 @@ void Bundle::dumpMsgs()
 				headlen += sizeof(MessageLength1);
 
 				in >> msglen1;
-				pPacket->buff->rd_ptr(in.rd_ptr());
+				pPacket->osbuff_->rd_ptr(in.rd_ptr());
 				temppacket->os << msglen1;
 				state = body;
 
 				MessageLength1 len1 = 0;
-				memcpy(&len1, temppacket->buff->base() + +NETWORK_MESSAGE_ID_SIZE + sizeof(MessageLength), sizeof(MessageLength1));
+				memcpy(&len1, temppacket->osbuff_->base() + +NETWORK_MESSAGE_ID_SIZE + sizeof(MessageLength), sizeof(MessageLength1));
 				ACE_DEBUG(( LM_DEBUG, "msglen1 = %d\n", len1 ));
 
 				continue;
@@ -946,11 +946,11 @@ void Bundle::dumpMsgs()
 
 				if( pPacket->length() >= totallen )
 				{
-					temppacket->os.write_char_array(pPacket->buff->rd_ptr(), totallen);
-					pPacket->buff->rd_ptr(totallen);
+					temppacket->os.write_char_array(pPacket->osbuff_->rd_ptr(), totallen);
+					pPacket->osbuff_->rd_ptr(totallen);
 				} else
 				{
-					temppacket->os.write_char_array(pPacket->buff->rd_ptr(), pPacket->length());
+					temppacket->os.write_char_array(pPacket->osbuff_->rd_ptr(), pPacket->length());
 					pPacket->on_read_packet_done();
 				}
 
@@ -972,8 +972,8 @@ void Bundle::dumpMsgs()
 			}
 		};
 
-		pPacket->buff->rd_ptr(rpos);
-		pPacket->buff->wr_ptr(wpos);
+		pPacket->osbuff_->rd_ptr(rpos);
+		pPacket->osbuff_->wr_ptr(wpos);
 	}
 
 	const_cast<ACE_Message_Block*>( in.start() )->base(base, size);

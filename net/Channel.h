@@ -8,40 +8,48 @@
 
 #include "ace\pre.h"
 #include "ace\Event_Handler.h"
+#include "ace\Intrusive_Auto_Ptr.h"
 #include "Bundle.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
+/**
+ * we first chaeck reason if it is error id it is, we directly goto1.
+ * otherwise we check if it is fully sent or particially sent
+ * when packet is partialy sent, we set it as ewouldblock error
+ * and goto1
+ */
 #define SEND_METHOD();\
+packet_all_sent = false;\
 if( canFilterPacket_ )\
 {\
 }\
 if( protocolType_ == PROTOCOL_TCP )\
 {\
-	if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;\
-	sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(\
-		( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());\
+	sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->osbuff_->rd_ptr(), ( *iter1 )->length());\
 	if( sent_cnt == -1 )\
-	{\
+		{\
 		reason = checkSocketErrors();\
-	} else\
+		} else\
 	{\
-		( *iter1 )->buff->rd_ptr(sent_cnt);\
-		on_packet_sent(sent_cnt, ( *iter1 )->length() == 0);\
+		( *iter1 )->osbuff_->rd_ptr(sent_cnt);\
+		packet_all_sent = ( *iter1 )->length() == 0;\
+		on_packet_sent(sent_cnt, packet_all_sent);\
 	}\
 } else\
 {\
 }\
-if( reason != REASON_SUCCESS )\
+if( reason != REASON_SUCCESS ) goto goto1;\
+if( packet_all_sent )\
+Packet_Pool->Dtor(( *iter1 ));\
+else\
 {\
+	reason = REASON_RESOURCE_UNAVAILABLE;\
 	goto goto1;\
-} else\
-{\
-	Packet_Pool->Dtor(( *iter1 ));\
 }
 
-struct Channel
+struct  Channel 
 {
 	/// 超时检查的目的标志，例如这是一个非活动通道的检查
 	/// This is the waht to be checked when timeout

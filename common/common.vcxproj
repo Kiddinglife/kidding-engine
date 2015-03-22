@@ -26,13 +26,13 @@
     <ClInclude Include="kbe_version.h" />
     <ClInclude Include="md5.hpp" />
     <ClInclude Include="memorystream_converter.hpp" />
-    <ClInclude Include="memory_stream.h" />
     <ClInclude Include="rsa.hpp" />
     <ClInclude Include="sha1.hpp" />
     <ClInclude Include="stringconv.hpp" />
     <ClInclude Include="strulti.h" />
     <ClInclude Include="timestamp.hpp" />
     <ClInclude Include="user_settings.h" />
+    <ClInclude Include="Watcher.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common.cpp" />
@@ -45,6 +45,7 @@
     <ClCompile Include="rsa.cpp" />
     <ClCompile Include="sha1.cpp" />
     <ClCompile Include="timestamp.cpp" />
+    <ClCompile Include="Watcher.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\openssl\vcbuild\libeay32\libeay32.vcxproj">
@@ -102,6 +103,10 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>..; ..\openssl\inc32\; D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -123,6 +128,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>..; ..\openssl\inc32\; D:\Programming\VS2013Projects\ACE-6.2.7\ACE_wrappers</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

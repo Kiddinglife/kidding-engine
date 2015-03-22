@@ -15,6 +15,11 @@ pErrorReporter_(new ErrorStatMgr(this))
 	//Timers64* pTimers_;
 }
 
+Nub::~Nub()
+{
+	SAFE_RELEASE(pErrorReporter_);
+}
+
 int Nub::startLoop(ACE_Reactor::REACTOR_EVENT_HOOK eh)
 {
 	if( rec->reactor_event_loop_done() )
@@ -41,17 +46,17 @@ int Nub::startLoop(ACE_Reactor::REACTOR_EVENT_HOOK eh)
 		//calculate max wait time for next epoll
 		rec->timer_queue()->calculate_timeout(&maxWaitTime, &timeout_);
 
-#if ENABLE_WATCHERS
-		g_idleProfile.start();
+#if defined ENABLE_WATCHERS
+		//g_idleProfile.start();
 #else
 		startTime = timestamp();
 #endif
 
 		int const result = rec->implementation()->handle_events(timeout_);
 
-#if ENABLE_WATCHERS
-		g_idleProfile.stop();
-		spareTime_.stamp(spareTime_.stamp() + g_idleProfile.lastTime_);
+#if defined ENABLE_WATCHERS
+		//g_idleProfile.stop();
+		//spareTime_.stamp(spareTime_.stamp() + g_idleProfile.lastTime_);
 #else
 		//spareTime_.stamp() += timestamp() - startTime;
 		spareTime_.stamp(spareTime_.stamp() + timestamp() - startTime);
@@ -93,17 +98,17 @@ int Nub::startLoop()
 		//calculate max wait time for next epoll
 		rec->timer_queue()->calculate_timeout(&maxWaitTime, &timeout_);
 
-#if ENABLE_WATCHERS
-		g_idleProfile.start();
+#if defined ENABLE_WATCHERS
+		//g_idleProfile.start();
 #else
 		startTime = timestamp();
 #endif
 
 		int const result = rec->implementation()->handle_events(timeout_);
 
-#if ENABLE_WATCHERS
-		g_idleProfile.stop();
-		spareTime_.stamp(spareTime_.stamp() + g_idleProfile.lastTime_);
+#if defined ENABLE_WATCHERS
+		//g_idleProfile.stop();
+		//spareTime_.stamp(spareTime_.stamp() + g_idleProfile.lastTime_);
 #else
 		//spareTime_.stamp() += timestamp() - startTime;
 		spareTime_.stamp(spareTime_.stamp() + timestamp() - startTime);
@@ -150,17 +155,17 @@ int Nub::startLoop(NetworkInterface* ni)
 		//calculate max wait time for next epoll
 		rec->timer_queue()->calculate_timeout(&maxWaitTime, &timeout_);
 
-#if ENABLE_WATCHERS
-		g_idleProfile.start();
+#if defined ENABLE_WATCHERS
+		//g_idleProfile.start();
 #else
 		startTime = timestamp();
 #endif
 
 		int const result = rec->implementation()->handle_events(timeout_);
 
-#if ENABLE_WATCHERS
-		g_idleProfile.stop();
-		spareTime_.stamp(spareTime_.stamp() + g_idleProfile.lastTime_);
+#if defined ENABLE_WATCHERS
+		//g_idleProfile.stop();
+		//spareTime_.stamp(spareTime_.stamp() + g_idleProfile.lastTime_);
 #else
 		//spareTime_.stamp() += timestamp() - startTime;
 		spareTime_.stamp(spareTime_.stamp() + ( timestamp() - startTime ));

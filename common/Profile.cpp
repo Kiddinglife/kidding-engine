@@ -69,7 +69,7 @@ Profile::~Profile()
 }
 void Profile::start(void)
 {
-	TRACE("Profile::start()");
+	//TRACE("Profile::start()");
 
 	if( !initWatcher_ && stopCounts_ > 10 )
 	{
@@ -95,11 +95,11 @@ void Profile::start(void)
 	stack.push_back(this);
 	lastInternalTime_ = now;
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 void Profile::stop(ACE_UINT32 qty)
 {
-	TRACE("Profile::stop()");
+	//TRACE("Profile::stop()");
 
 	TimeStamp now = timestamp();
 
@@ -127,7 +127,7 @@ void Profile::stop(ACE_UINT32 qty)
 	if( !stack.empty() )
 		stack.back()->lastInternalTime_ = now;
 
-	TRACE_RETURN_VOID();
+	//TRACE_RETURN_VOID();
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

@@ -258,7 +258,6 @@ void Channel::startInactivityDetection(float period, float checkPeriod)
 	{
 		inactivityExceptionPeriod_ = (ACE_UINT64) ( period * stampsPerSecond() );
 		lastRecvTime_ = timestamp();
-		//ACE_Time_Value interval(checkPeriod, 0);
 		ACE_Time_Value interval(period, 0);
 		timerID_ = this->pEndPoint_->reactor()->schedule_timer(pEndPoint_,
 			(void*) TIMEOUT_INACTIVITY_CHECK, ACE_Time_Value::zero, interval);
@@ -435,34 +434,28 @@ void Channel::send_buffered_bundle()
 	static size_t                              packets_cnt = 0;
 	static size_t                              sent_cnt = 0;
 	static bool                               should_wait_next_tick = true;
+	static bool                               packet_all_sent = false;
 	static Reason                           reason = REASON_SUCCESS;
 
 	/// check to see if the current channel is avaiable to use
 	if( isDestroyed_ )
 	{
 		ACE_DEBUG(( LM_ERROR, "Channel::send({%s}): channel has destroyed.\n", this->c_str() ));
-		clearBundles();
-		//pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
 		return;
 	}
 
 	if( isCondemn_ )
 	{
 		ACE_DEBUG(( LM_ERROR,
-			"Channel::send: is error, reason={%s}, from {%s}.\n", reasonToString(REASON_CHANNEL_CONDEMN),
+			"Channel::send: is error, reason={%s}, from {%s}.\n",
+			reasonToString(REASON_CHANNEL_CONDEMN),
 			c_str() ));
 		this->on_error();
-		clearBundles();
-		/*	pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);*/
 		return;
 	}
 
 	/// if no bundle to send, we just stop here
-	if( !( packets_cnt = buffered_sending_bundle_.packets_.size() ) )
-	{
-		/*	pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);*/
-		return;
-	}
+	if( !( packets_cnt = buffered_sending_bundle_.packets_.size() ) ) return;
 
 	/// reset all states variables values
 	iter1 = buffered_sending_bundle_.packets_.begin();
@@ -477,7 +470,7 @@ void Channel::send_buffered_bundle()
 	}
 
 	ACE_TEST_ASSERT(( *iter1 ) != NULL);
-	if( ( *iter1 )->buff->length() < buffered_sending_bundle_.currPacketMaxSize )
+	if( ( *iter1 )->osbuff_->length() < buffered_sending_bundle_.currPacketMaxSize )
 	{
 		if( should_wait_next_tick )
 		{
@@ -495,15 +488,15 @@ void Channel::send_buffered_bundle()
 		SEND_METHOD();
 	}
 
-	goto1:
 	if( reason == REASON_SUCCESS )
 	{
+		goto2:
 		if( buffered_sending_bundle_.pCurrPacket_ )
 			buffered_sending_bundle_.pCurrPacket_ = NULL;
 		buffered_sending_bundle_.packets_.clear();
-		//pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
 	} else
 	{
+		goto1:
 		/// there are packets that are not sent, we first clear the sent ones from this bundle
 		buffered_sending_bundle_.packets_.erase(buffered_sending_bundle_.packets_.begin(), iter1);
 
@@ -514,10 +507,11 @@ void Channel::send_buffered_bundle()
 				"space(kbengine.xml->channelCommon->writeBufferSize->{%s})...\n",
 				reasonToString(checkSocketErrors()),
 				( channelScope_ == INTERNAL ? "internal" : "external" ) ));
-			//pEndPoint_->reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
 		} else
 		{
-			//this->dispatcher().errorReporter().reportException(reason, pEndpoint_->addr());
+			ACE_INET_Addr addr;
+			protocolType_ == PROTOCOL_TCP ? ( (ACE_SOCK_Stream*) pEndPoint_ )->get_remote_addr(addr) : ( (ACE_SOCK_Dgram*) pEndPoint_ )->get_local_addr(addr);
+			pNetworkInterface_->nub_->pErrorReporter_->reportException(reason, &addr);
 			this->on_error();
 		}
 	}//////////////////////////////////// process this packet ends
@@ -613,14 +607,14 @@ bool Channel::process_send()
 			if( protocolType_ == PROTOCOL_TCP )
 			{
 				if( isCondemn_ ) reason = REASON_CHANNEL_CONDEMN;
-				size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->buff->rd_ptr(), ( *iter1 )->length());
+				size_t sent_cnt = ( (TCP_SOCK_Handler*) pEndPoint_ )->sock_.send(( *iter1 )->osbuff_->rd_ptr(), ( *iter1 )->length());
 
 				if( sent_cnt == -1 )
 				{
 					reason = checkSocketErrors();
 				} else
 				{
-					( *iter1 )->buff->rd_ptr(sent_cnt);
+					( *iter1 )->osbuff_->rd_ptr(sent_cnt);
 					bool sent_completely = ( *iter1 )->length() == 0;
 					on_packet_sent(sent_cnt, sent_completely);
 				}
@@ -914,11 +908,11 @@ void Channel::tcp_send_single_bundle(TCP_SOCK_Handler* pEndpoint, Bundle* pBundl
 		while( true )
 		{
 			++retries;
-			int slen = pEndpoint->sock_.send(pPacket->buff->rd_ptr(),
+			int slen = pEndpoint->sock_.send(pPacket->osbuff_->rd_ptr(),
 				pPacket->length());
 
 			if( slen > 0 )
-				pPacket->buff->rd_ptr(slen);
+				pPacket->osbuff_->rd_ptr(slen);
 
 			if( pPacket->length() > 0 )
 			{
@@ -973,11 +967,11 @@ void Channel::udp_send_single_bundle(UDP_SOCK_Handler* pEndpoint, Bundle* pBundl
 		while( true )
 		{
 			++retries;
-			int slen = pEndpoint->sock_.send(pPacket->buff->rd_ptr(),
+			int slen = pEndpoint->sock_.send(pPacket->osbuff_->rd_ptr(),
 				pPacket->length(), addr);
 
 			if( slen > 0 )
-				pPacket->buff->rd_ptr(slen);
+				pPacket->osbuff_->rd_ptr(slen);
 
 			if( pPacket->length() > 0 )
 			{

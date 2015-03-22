@@ -1,20 +1,7 @@
 ﻿#ifndef COMMON_HPP_
 #define COMMON_HPP_
 
-#include "ace\pre.h"
-#include <string>  
-#include <vector>
-#include <map>
-#include <list>
-#include <set>
-#include <deque>
-#include <limits>
-#include <algorithm>
-#include <utility>
-#include <functional>
-#include <cctype> //used to tell a char capital or little
-#include <iterator>
-
+#include "ace/pre.h"
 #include "ace/OS.h" //includes all the system headers
 #include "ace/Basic_Types.h"
 #include "ace/UUID.h"
@@ -26,6 +13,13 @@
 #pragma warning(disable:4049)
 #pragma warning(disable:4217)
 #pragma warning(disable:4006)
+#pragma warning(disable:4005)
+#pragma warning(disable:4244)
+#pragma warning(disable:4002)
+#pragma warning(disable:4102)
+#pragma warning (disable:4910)
+#pragma warning (disable:4251)
+#pragma warning (disable:4661)
 #include <winsock2.h>		// 必须在windows.h之前包含， 否则网络模块编译会出错
 #include <mswsock.h> 
 #include <windows.h> 
@@ -41,6 +35,19 @@
 
 #include "kbe_version.h"
 #include "config.h"
+
+#include <string>  
+#include <vector>
+#include <map>
+#include <list>
+#include <set>
+#include <deque>
+#include <limits>
+#include <algorithm>
+#include <utility>
+#include <functional>
+#include <cctype> //used to tell a char capital or little
+#include <iterator>
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 ////////////////////////////////////////// 当前系统字节序 byte order of current os ///////////////////////////////////////
@@ -115,6 +122,8 @@ inline bool kbe_is_little_endian()
 #define KBE_PLATFORM_TEXT "Win32"
 #define KBE_MIN(a,b) min(a,b)
 #define KBE_MAX(a,b) max(a,b)
+#pragma warning (disable : 4910)
+#pragma warning (disable : 4251)
 #elif defined( __INTEL_COMPILER )
 #define KBE_PLATFORM PLATFORM_INTEL
 #elif defined( __APPLE_CC__ )
@@ -326,7 +335,7 @@ typedef ACE_UINT32								CELL_ID;// CELL的id
 #define const_charptr							const char*
 #define PyObject_ptr							PyObject*
 #define UnorderedMap                            std::tr1::unordered_map
-#define KBEShared_ptr						    std::tr1::shared_ptr
+#define Shared_ptr						    std::tr1::shared_ptr
 #define ENTITY_TYPE_MAX                         ACE_UINT16_MAX
 #define IFNAMSIZ                                16
 #define CELL_DEF_MIN_AREA_SIZE		            500.0f /// 一个cell的默认的边界或者最小大小
@@ -685,6 +694,48 @@ extern KBE_SRV_COMPONENT_ORDER                  g_componentGlobalOrder;
 extern KBE_SRV_COMPONENT_ORDER                  g_componentGroupOrder;
 extern GAME_TIME                                               g_kbetime;  /// kbe时间 
 
+struct Intrusive_Auto_Ptr
+{
+	inline void incRef(void) const
+	{
+		++refCount_;
+	}
+
+	inline void decRef(void) const
+	{
+
+		int currRef = --refCount_;
+		ACE_ASSERT(currRef >= 0 && "RefCountable:currRef maybe a error!");
+		if( 0 >= currRef )
+			onRefOver();											// 引用结束了
+	}
+
+	virtual void onRefOver(void) const
+	{
+		delete const_cast<Intrusive_Auto_Ptr*>( this );
+	}
+
+	void setRefCount(int n)
+	{
+		refCount_ = n;
+	}
+
+	int getRefCount(void) const
+	{
+		return refCount_;
+	}
+
+	Intrusive_Auto_Ptr(void) : refCount_(0)
+	{
+	}
+
+	virtual ~Intrusive_Auto_Ptr(void)
+	{
+		ACE_ASSERT(0 == refCount_ && "RefCountable:currRef maybe a error!");
+	}
+
+	volatile mutable long refCount_;
+};
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include "ace/post.h"
 #endif

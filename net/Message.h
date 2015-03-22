@@ -1,5 +1,5 @@
 ﻿/**
- * 
+ *
  */
 
 #ifndef Message_H_

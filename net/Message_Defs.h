@@ -120,7 +120,7 @@ struct  NAME##Args1 : public MessageArgs                                        
 	}                                                                                                                                \
 	virtual MessageLength1 args_bytes_count() { return sizeof(ARG_TYPE1); }                    \
 	virtual void fetch_args_from(Packet* p)                                                                      \
-	{ ARG_NAME1 = *(ARG_TYPE1*) p->buff->rd_ptr(); }                                                  \
+	{ ARG_NAME1 = *(ARG_TYPE1*) p->osbuff_->rd_ptr(); }                                                  \
 	virtual void add_args_to(Packet* p) { p->os << ARG_NAME1; }                                   \
 };
 #endif
@@ -171,9 +171,9 @@ struct  NAME##Args2 : public MessageArgs					                                   
 	    }                                                                                                                                \
 	virtual void fetch_args_from(Packet* p)                                                                          \
 		{                                                                                                                                \
-      ARG_NAME1 = *(ARG_TYPE1*) p->buff->rd_ptr();                                                        \
-	  p->buff->rd_ptr(sizeof(ARG_NAME1));                                                                         \
-	  ARG_NAME2 = *(ARG_TYPE2*) p->buff->rd_ptr();                                                        \
+      ARG_NAME1 = *(ARG_TYPE1*) p->osbuff_->rd_ptr();                                                        \
+	  p->osbuff_->rd_ptr(sizeof(ARG_NAME1));                                                                         \
+	  ARG_NAME2 = *(ARG_TYPE2*) p->osbuff_->rd_ptr();                                                        \
 	    }                                                                                                                                \
 	virtual void add_args_to(Packet* p)                                                                                \
 	    {                                                                                                                                \
@@ -238,11 +238,11 @@ struct  NAME##Args3 : public MessageArgs					                                   
 	    }                                                                                                                                \
 	virtual void fetch_args_from(Packet* p)                                                                          \
 		{                                                                                                                                \
-      ARG_NAME1 = *(ARG_TYPE1*) p->buff->rd_ptr();                                                        \
-	  p->buff->rd_ptr(sizeof(ARG_NAME1));                                                                        \
-	  ARG_NAME2 = *(ARG_TYPE2*) p->buff->rd_ptr();                                                       \
-	  p->buff->rd_ptr(sizeof(ARG_NAME2));                                                                        \
-	  ARG_NAME3 = *(ARG_TYPE3*) p->buff->rd_ptr();                                                       \
+      ARG_NAME1 = *(ARG_TYPE1*) p->osbuff_->rd_ptr();                                                        \
+	  p->osbuff_->rd_ptr(sizeof(ARG_NAME1));                                                                        \
+	  ARG_NAME2 = *(ARG_TYPE2*) p->osbuff_->rd_ptr();                                                       \
+	  p->osbuff_->rd_ptr(sizeof(ARG_NAME2));                                                                        \
+	  ARG_NAME3 = *(ARG_TYPE3*) p->osbuff_->rd_ptr();                                                       \
 	    }                                                                                                                               \
 	virtual void add_args_to(Packet* p)                                                                               \
 	    {                                                                                                                               \
@@ -317,13 +317,13 @@ struct  NAME##Args4 : public MessageArgs					                                   
     }                                                                                                                                    \
 	virtual void fetch_args_from(Packet* p)                                                                          \
 	{                                                                                                                                    \
-      ARG_NAME1 = *(ARG_TYPE1*) p->buff->rd_ptr();                                                        \
-	  p->buff->rd_ptr(sizeof(ARG_NAME1));                                                                         \
-	  ARG_NAME2 = *(ARG_TYPE2*) p->buff->rd_ptr();                                                        \
-	  p->buff->rd_ptr(sizeof(ARG_NAME2));                                                                         \
-	  ARG_NAME3 = *(ARG_TYPE3*) p->buff->rd_ptr();                                                        \
-	  p->buff->rd_ptr(sizeof(ARG_NAME3));                                                                         \
-	  ARG_NAME4 = *(ARG_TYPE4*) p->buff->rd_ptr();                                                        \
+      ARG_NAME1 = *(ARG_TYPE1*) p->osbuff_->rd_ptr();                                                        \
+	  p->osbuff_->rd_ptr(sizeof(ARG_NAME1));                                                                         \
+	  ARG_NAME2 = *(ARG_TYPE2*) p->osbuff_->rd_ptr();                                                        \
+	  p->osbuff_->rd_ptr(sizeof(ARG_NAME2));                                                                         \
+	  ARG_NAME3 = *(ARG_TYPE3*) p->osbuff_->rd_ptr();                                                        \
+	  p->osbuff_->rd_ptr(sizeof(ARG_NAME3));                                                                         \
+	  ARG_NAME4 = *(ARG_TYPE4*) p->osbuff_->rd_ptr();                                                        \
     }                                                                                                                                    \
 	virtual void add_args_to(Packet* p)                                                                                \
     {                                                                                                                                    \

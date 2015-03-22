@@ -56,9 +56,6 @@
     <ClInclude Include="timestamp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="memory_stream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="deadline.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -75,6 +72,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Profile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Watcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -107,6 +107,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Profile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Watcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

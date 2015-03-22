@@ -17,11 +17,11 @@
 		virtual void handle(Channel* pChannel,Packet* p) \
 		{\
 		ARG_TYPE1 ARG_NAME1;\
-		ARG_NAME1 = *(ARG_TYPE1*) p->buff->rd_ptr(); \
+		ARG_NAME1 = *(ARG_TYPE1*) p->osbuff_->rd_ptr(); \
        ACE_DEBUG((LM_DEBUG, "%M::#NAME##MachineMessagehandler1::INT1(%d)", ARG_NAME1)); \
 	   		ARG_TYPE2 ARG_NAME2;\
-			p->buff->rd_ptr(sizeof(ARG_NAME1));\
-		ARG_NAME2 = *(ARG_TYPE2*) p->buff->rd_ptr(); \
+			p->osbuff_->rd_ptr(sizeof(ARG_NAME1));\
+		ARG_NAME2 = *(ARG_TYPE2*) p->osbuff_->rd_ptr(); \
        ACE_DEBUG((LM_DEBUG, "%M::#NAME##MachineMessagehandler1::INT1(%d)", ARG_NAME2)); \
         }\
 	};

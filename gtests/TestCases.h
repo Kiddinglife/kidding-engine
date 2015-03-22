@@ -21,7 +21,6 @@
 #include "ace/Auto_Ptr.h"
 #include "ace/ACE.h"
 #include "common/ace_object_pool.h"
-
 //TEST(ObjectPoolTest, Test)
 //{
 //	class Obj :public PoolObject
@@ -1307,24 +1306,27 @@
 //
 //}
 #include "common\Profile.h"
-static Profile _localProfile;
 void hello()
 {
-	SCOPED_PROFILE(_localProfile);
-	Sleep(100);
 }
 TEST(pROFILETESTS, aLLTESTS)
 {
-	hello();
-	ACE_DEBUG(( LM_DEBUG,
-		"%s::lastIntTime(%f s), lastTime(%f s), sumTime(%f s),"
-		"sumIntTime(%f s),runningTime(%f s) \n",
-		_localProfile.name(),
-		_localProfile.lastIntTimeInSeconds(),
-		_localProfile.lastTimeInSeconds(),
-		_localProfile.sumTimeInSeconds(),
-		_localProfile.sumIntTimeInSeconds(),
-		(double) runningTime() / stampsPerSecondD() ));
+	for( int i = 0; i < 10; i++ )
+	{
+		Profile _localProfile;
+		{
+			{ 	SCOPED_PROFILE(_localProfile); 	hello(); };
+			ACE_DEBUG(( LM_DEBUG,
+				"%s::lastIntTime(%f ms), lastTime(%f ms), sumTime(%f ms),"
+				"sumIntTime(%f ms),runningTime(%f ms) \n",
+				_localProfile.name(),
+				_localProfile.lastIntTimeInSeconds() * 1000,
+				_localProfile.lastTimeInSeconds() * 1000,
+				_localProfile.sumTimeInSeconds() * 1000,
+				_localProfile.sumIntTimeInSeconds() * 1000,
+				(double) runningTime() / stampsPerSecondD() * 1000 ));
+		}
+	}
 }
 //#include "net\ErrorStatsMgr.h"
 //#include "net\Nub.h"
@@ -1343,4 +1345,67 @@ TEST(pROFILETESTS, aLLTESTS)
 //	/// report all errors true report all erros false report id it exceeds max report period
 //	mgr.reportPendingExceptions(true);
 //	nub.startLoop();
+//}
+
+//#include "common\Watcher.h"
+//int hello()
+//{
+//	return 12;
+//}
+//struct tt
+//{
+//	int a;
+//	int hello()
+//	{
+//		return 12;
+//	}
+//};
+//TEST(WatcherTest, watchertests)
+//{
+//	int a = 12;
+//	tt t;
+//	t.a = 1;
+//
+//	std::string path1 = "watcher1";
+//	CRATE_WATCH_OBJECT(path1, a);
+//	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path1).get() )->getValue()
+//		<< std::endl;
+//
+//	std::string path2 = "p0/p2/watcher2";
+//	CRATE_WATCH_OBJECT(path2, t.a);
+//	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path2).get() )->getValue()
+//		<< std::endl;
+//
+//	std::string path3 = "path1/path2/p3/watcher3";
+//	CRATE_WATCH_OBJECT(path3, &hello);
+//	std::cout << ( ( FunctionWatcher<int>* )GET_WATCHER_OBJECT(path3).get() )->getValue()
+//		<< std::endl;
+//
+//	std::string path4 = "path1/path2/p5/p4/watcher4";
+//	CRATE_WATCH_OBJECT(path4, &t, &tt::hello);
+//	std::cout << ( ( MethodWatcher<int, tt>* )GET_WATCHER_OBJECT(path4).get() )->
+//		getValue() << std::endl;
+//
+//	a = 2;
+//	t.a = 2;
+//
+//	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path1).get() )->getValue()
+//		<< std::endl;
+//	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path2).get() )->getValue()
+//		<< std::endl;
+//}
+
+//#include "net\Packet.h"
+//TEST(PacketTest, tests)
+//{
+//	Packet p;
+//
+//	p.os << (int) 12;
+//	p.inbuff_->wr_ptr(p.osbuff_->wr_ptr());
+//
+//	int a;
+//	p.in >> a;
+//	p.osbuff_->rd_ptr(p.inbuff_->rd_ptr());
+//
+//	std::cout << "a()" << a;
 //}
