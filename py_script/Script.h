@@ -4,33 +4,23 @@
 #include "ace/pre.h"
 #include "common/common.h"
 #include "Scriptable.h"
-
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 namespace PythonScripts
 {
-/** 脚本系统路径 */
-#ifdef _LP64
-#define SCRIPT_PATH												\
-					L"../../res/scripts;"						\
-					L"../../res/scripts/common;"				\
-					L"../../res/scripts/common/lib-dynload;"	\
-					L"../../res/scripts/common/DLLs;"			\
-					L"../../res/scripts/common/Lib"
-#else
-#define SCRIPT_PATH												\
-					L"../../res/scripts;"						\
-					L"../../res/scripts/common;"				\
-					L"../../res/scripts/common/lib-dynload;"	\
-					L"../../res/scripts/common/DLLs;"			\
-					L"../../res/scripts/common/Lib"
-#endif
-
-	class Script
+	struct ScriptStdOutErr;
+	struct Script
 	{
-		public:
+		PyObject* 					module_;
+		PyObject*					    extraModule_;		// 扩展脚本模块
+		ScriptStdOutErr*			pyStdouterr_;
+
 		Script();
 		virtual ~Script();
+
+		/** 安装和卸载脚本模块*/
+		virtual bool install(const wchar_t* pythonHomeDir, std::wstring pyPaths, 
+        const char* moduleName, KBE_SRV_COMPONENT_TYPE componentType);
 	};
 }
 

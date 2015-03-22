@@ -10,6 +10,74 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 namespace PythonScripts
 {
+	/** 脚本系统路径 */
+#ifdef _LP64
+#define SCRIPT_PATH												    \
+					L"../../res/scripts;"						                \
+					L"../../res/scripts/common;"				        \
+					L"../../res/scripts/common/lib-dynload;"	\
+					L"../../res/scripts/common/DLLs;"			    \
+					L"../../res/scripts/common/Lib"
+#else
+#define SCRIPT_PATH												   \
+					L"../../res/scripts;"						               \
+					L"../../res/scripts/common;"				       \
+					L"../../res/scripts/common/lib-dynload;"   \
+					L"../../res/scripts/common/DLLs;"			   \
+					L"../../res/scripts/common/Lib"
+#endif
+
+	inline PyObject * PyTuple_FromStringVector(const std::vector< std::string > & v)
+	{
+		int sz = v.size();
+		PyObject * t = PyTuple_New(sz);
+		for( int i = 0; i < sz; ++i )
+		{
+			PyTuple_SetItem(t, i, PyUnicode_FromString(v[i].c_str()));
+		}
+
+		return t;
+	}
+
+	template<class T> inline 
+	PyObject * PyTuple_FromIntVector(const std::vector< T > & v)
+	{
+		int sz = v.size();
+		PyObject * t = PyTuple_New(sz);
+		for( int i = 0; i < sz; ++i )
+		{
+			PyTuple_SetItem(t, i, PyLong_FromLong(v[i]));
+		}
+
+		return t;
+	}
+
+	template<> inline 
+	PyObject * PyTuple_FromIntVector<ACE_INT64>(const std::vector< ACE_INT64 > & v)
+	{
+		int sz = v.size();
+		PyObject * t = PyTuple_New(sz);
+		for( int i = 0; i < sz; ++i )
+		{
+			PyTuple_SetItem(t, i, PyLong_FromLongLong(v[i]));
+		}
+
+		return t;
+	}
+
+	template<> inline 
+	PyObject * PyTuple_FromIntVector<ACE_UINT64>(const std::vector< ACE_UINT64 > & v)
+	{
+		int sz = v.size();
+		PyObject * t = PyTuple_New(sz);
+		for( int i = 0; i < sz; ++i )
+		{
+			PyTuple_SetItem(t, i, PyLong_FromUnsignedLongLong(v[i]));
+		}
+
+		return t;
+	}
+
 // PY_METHOD_ARG DEFINES
 #define PY_METHOD_ARG_char								    char
 #define PY_METHOD_ARG_char_ARG						    char
@@ -663,7 +731,6 @@ static PyObject* __py_##FUNCNAME(PyObject* self,PyObject* args,PyObject* kwds)\
 		PyErr_PrintEx(0);																			                                    \
 	}																									                                        \
 }			
-
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include <ace/post.h>
 #endif
