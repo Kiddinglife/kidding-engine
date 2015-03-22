@@ -2,6 +2,7 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 namespace PythonScripts
 {
+	extern bool g_debugEntity;
 	ScriptObject::SCRIPTOBJECT_TYPES ScriptObject::scriptObjectTypes;
 
 	//SCRIPT_METHOD_DECLARE_BEGIN(ScriptObject)
@@ -77,7 +78,6 @@ namespace PythonScripts
 			PyObject_INIT(static_cast<PyObject*>( this ), pyType);
 		}
 	}
-
 	ScriptObject::~ScriptObject()
 	{
 		ACE_ASSERT(this->ob_refcnt == 0 && "OB_REFCNT != 0 when destruct ");
@@ -91,6 +91,27 @@ namespace PythonScripts
 		return NULL;
 	}
 
+	PyObject* ScriptObject::tp_repr()
+	{
+		if( g_debugEntity )
+			return PyUnicode_FromFormat("%s object at %p, refc=%u.",
+			this->scriptName(),
+			this,
+			( ACE_UINT32 )static_cast<PyObject*>( this )->ob_refcnt);
+
+		return PyUnicode_FromFormat("%s object at %p.", this->scriptName(), this);
+	}
+	PyObject* ScriptObject::tp_str()
+	{
+		if( g_debugEntity )
+			return PyUnicode_FromFormat("%s object at %p, refc=%u.",
+			this->scriptName(),
+			this,
+			( ACE_UINT32 )static_cast<PyObject*>( this )->ob_refcnt);
+
+		return PyUnicode_FromFormat("%s object at %p.", this->scriptName(), this);
+	}
+
 	int ScriptObject::__py_readonly_descr(PyObject* self, PyObject* value, void* closure)
 	{
 		PyErr_Format(PyExc_TypeError,
@@ -100,7 +121,6 @@ namespace PythonScripts
 		PyErr_PrintEx(0);
 		return 0;
 	}
-
 	int ScriptObject::__py_writeonly_descr(PyObject* self, PyObject* value, void* closure)
 	{
 		PyErr_Format(PyExc_TypeError,
@@ -125,7 +145,6 @@ namespace PythonScripts
 			return nlen;
 		return ScriptObject::calcTotalMethodCount() + nlen;
 	}
-
 	int ScriptObject::calcTotalMemberCount(void)
 	{
 		int nlen = 0;
@@ -141,7 +160,6 @@ namespace PythonScripts
 			return nlen;
 		return ScriptObject::calcTotalMemberCount() + nlen;
 	}
-
 	int ScriptObject::calcTotalGetSetCount(void)
 	{
 		int nlen = 0;
@@ -205,7 +223,6 @@ namespace PythonScripts
 
 		ScriptObject::setupScriptMethodAndAttribute(lppmf, lppmd, lppgs);
 	}
-
 	void ScriptObject::installScript(PyObject* mod, const char* name)
 	{
 		int nMethodCount = ScriptObject::calcTotalMethodCount();
