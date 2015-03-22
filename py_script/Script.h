@@ -15,12 +15,12 @@ namespace PythonScripts
 		PyObject*					    extraModule_;		// 扩展脚本模块
 		ScriptStdOutErr*			pyStdouterr_;
 
-		Script();
-		virtual ~Script();
+		Script() : module_(NULL), extraModule_(NULL), pyStdouterr_(NULL) { }
+		virtual ~Script() { }
 
 		/** 安装和卸载脚本模块*/
-		virtual bool install(const wchar_t* pythonHomeDir, std::wstring pyPaths, 
-        const char* moduleName, KBE_SRV_COMPONENT_TYPE componentType);
+		virtual bool install(const wchar_t* pythonHomeDir, std::wstring pyPaths, const char*
+			moduleName, KBE_SRV_COMPONENT_TYPE componentType);
 	};
 }
 

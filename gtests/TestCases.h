@@ -1305,29 +1305,29 @@
 //	pool->Dtor(p);
 //
 //}
-#include "common\Profile.h"
-void hello()
-{
-}
-TEST(pROFILETESTS, aLLTESTS)
-{
-	for( int i = 0; i < 10; i++ )
-	{
-		Profile _localProfile;
-		{
-			{ 	SCOPED_PROFILE(_localProfile); 	hello(); };
-			ACE_DEBUG(( LM_DEBUG,
-				"%s::lastIntTime(%f ms), lastTime(%f ms), sumTime(%f ms),"
-				"sumIntTime(%f ms),runningTime(%f ms) \n",
-				_localProfile.name(),
-				_localProfile.lastIntTimeInSeconds() * 1000,
-				_localProfile.lastTimeInSeconds() * 1000,
-				_localProfile.sumTimeInSeconds() * 1000,
-				_localProfile.sumIntTimeInSeconds() * 1000,
-				(double) runningTime() / stampsPerSecondD() * 1000 ));
-		}
-	}
-}
+//#include "common\Profile.h"
+//void hello()
+//{
+//}
+//TEST(pROFILETESTS, aLLTESTS)
+//{
+//	for( int i = 0; i < 10; i++ )
+//	{
+//		Profile _localProfile;
+//		{
+//			{ 	SCOPED_PROFILE(_localProfile); 	hello(); };
+//			ACE_DEBUG(( LM_DEBUG,
+//				"%s::lastIntTime(%f ms), lastTime(%f ms), sumTime(%f ms),"
+//				"sumIntTime(%f ms),runningTime(%f ms) \n",
+//				_localProfile.name(),
+//				_localProfile.lastIntTimeInSeconds() * 1000,
+//				_localProfile.lastTimeInSeconds() * 1000,
+//				_localProfile.sumTimeInSeconds() * 1000,
+//				_localProfile.sumIntTimeInSeconds() * 1000,
+//				(double) runningTime() / stampsPerSecondD() * 1000 ));
+//		}
+//	}
+//}
 //#include "net\ErrorStatsMgr.h"
 //#include "net\Nub.h"
 //TEST(ErrorStatsMgr, tESTTS)
@@ -1409,3 +1409,9 @@ TEST(pROFILETESTS, aLLTESTS)
 //
 //	std::cout << "a()" << a;
 //}
+#include "common/common.h"
+TEST(Commonhpp, TestGnUUID64)
+{
+	ACE_Utils::UUID* uptr = kbe_gen_uuid64();
+	cout << uptr->to_string()->c_str() << endl;
+}
