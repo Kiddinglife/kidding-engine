@@ -7,9 +7,10 @@
 #include "structmember.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
+
 namespace PythonScripts
 {
-//////////////////////////////////////// PY_METHOD_ARG DEFINES ////////////////////////////////////
+// PY_METHOD_ARG DEFINES
 #define PY_METHOD_ARG_char								    char
 #define PY_METHOD_ARG_char_ARG						    char
 #define PY_METHOD_ARG_char__PYARGTYPE			    "b"
@@ -391,7 +392,7 @@ static void uninstallScript(void)														                             \
 #define SCRIPT_OBJECT_HREADER(CLASS, SUPERCLASS)\
 SCRIPT_HREADER_BASE(CLASS, SUPERCLASS);\
 /* python创建的对象则对象从python中释放*/ \
-static void _tp_dealloc(PyObject* self){CLASS::_scriptType.tp_free(self);}			
+static void _tp_dealloc(PyObject* self){CLASS::_scriptType.tp_free((self);}			
 
 // 基础脚本对象头（这个模块通常是提供给python脚本中进行继承的一个基础类 ）
 #define BASE_SCRIPT_HREADER(CLASS, SUPERCLASS)\
@@ -661,8 +662,7 @@ static PyObject* __py_##FUNCNAME(PyObject* self,PyObject* args,PyObject* kwds)\
 		else																							                                        \
 		PyErr_PrintEx(0);																			                                    \
 	}																									                                        \
-}					
-
+}			
 
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include <ace/post.h>
