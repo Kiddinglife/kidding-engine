@@ -4,6 +4,7 @@
 #include "ace/pre.h"
 #include "common/common.h"
 #include "Python.h"
+#include "structmember.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 namespace PythonScripts
@@ -355,7 +356,7 @@ static void installScript(PyObject* mod, const char* name = #CLASS)						     \
 																																 \
 	CLASS::onInstallScript(mod);														                             \
 	if (PyType_Ready(&_scriptType) < 0) {												                     \
-		ERROR_MSG("PyType_Ready(" #CLASS ") is error!");								             \
+		ACE_DEBUG((LM_ERROR, "PyType_Ready(" #CLASS ") is error!"));                        \
 		PyErr_Print();																	                                     \
 		return;																			                                     \
 	}																					                                         \
@@ -382,26 +383,20 @@ static void uninstallScript(void)														                             \
 	SAFE_RELEASE_ARRAY(_##CLASS##_lpScriptmembers);										     \
 	SAFE_RELEASE_ARRAY(_##CLASS##_lpgetseters);											         \
 	CLASS::onUninstallScript();															                             \
-																							                                     \
 	if(_##CLASS##_py_installed)															                         \
 	Py_DECREF(&_scriptType);														                                 \
 }																						                                         
 
-/* 这个宏正式的初始化一个脚本模块， 将一些必要的信息填充到python的type对象中 */
-#define SCRIPT_INIT(CLASS, CALL, SEQ, MAP, ITER, ITERNEXT)   TEMPLATE_SCRIPT_INIT(;,CLASS, CLASS, CALL, SEQ, MAP, ITER, ITERNEXT)				
-
 // 脚本对象头 （通常是python默认分配对象方式产生的对象 ）
 #define SCRIPT_OBJECT_HREADER(CLASS, SUPERCLASS)\
 SCRIPT_HREADER_BASE(CLASS, SUPERCLASS);\
-/** python创建的对象则对象从python中释放
-*/                                                                                                      \
+/* python创建的对象则对象从python中释放*/ \
 static void _tp_dealloc(PyObject* self){CLASS::_scriptType.tp_free(self);}			
 
-// 基础脚本对象头 （这个模块通常是提供给python脚本中进行继承的一个基础类 ）
+// 基础脚本对象头（这个模块通常是提供给python脚本中进行继承的一个基础类 ）
 #define BASE_SCRIPT_HREADER(CLASS, SUPERCLASS)\
 SCRIPT_HREADER_BASE(CLASS, SUPERCLASS);\
-/** python创建的对象则对象从python中释放
-*/  \
+/* python创建的对象则对象从python中释放 */  \
 static void _tp_dealloc(PyObject* self)\
 {\
 static_cast<CLASS*>( self )->~CLASS();	\
@@ -410,9 +405,8 @@ CLASS::_scriptType.tp_free(self);	\
 
 // 实例脚本对象头 （这个脚本对象是由c++中进行new产生的 ）
 #define INSTANCE_SCRIPT_HREADER(CLASS, SUPERCLASS)	\
-SCRIPT_HREADER_BASE(CLASS, SUPERCLASS);	\
-/** c++new创建的对象则进行delete操作
-*/	 \
+SCRIPT_HREADER_BASE(CLASS, SUPERCLASS);	                    \
+/* c++new创建的对象则进行delete操作 */	                            \
 static void _tp_dealloc(PyObject* self) {delete static_cast<CLASS*>( self );}
 
 // BASE_SCRIPT_HREADER基础类脚本初始化, 该类由脚本继承
@@ -471,6 +465,203 @@ PyTypeObject CLASS::_scriptType =														                    \
 	0,														/* tp_del */	                                                \
 };																						                                        
 
+#define TEMPLATE_SCRIPT_INIT(TEMPLATE_HEADER, TEMPLATE_CLASS,				   \
+	                                             CLASS, CALL, SEQ, MAP, ITER, ITERNEXT)				   \
+TEMPLATE_HEADER                                                                                                 \
+PyMethodDef* TEMPLATE_CLASS::_##CLASS##_lpScriptmethods = NULL;			       \
+TEMPLATE_HEADER                                                                                                 \
+PyMemberDef* TEMPLATE_CLASS::_##CLASS##_lpScriptmembers = NULL;			   \
+TEMPLATE_HEADER                                                                                                 \
+PyGetSetDef* TEMPLATE_CLASS::_##CLASS##_lpgetseters = NULL;				           \
+																							                                   \
+TEMPLATE_HEADER PyTypeObject TEMPLATE_CLASS::_scriptType =						   \
+{																						                                       \
+	PyVarObject_HEAD_INIT(&PyType_Type, 0)												           \
+	#CLASS,										    /* tp_name      */	\
+	sizeof(TEMPLATE_CLASS),					/* tp_basicsize */	\
+	0,														/* tp_itemsize  */	\
+	(destructor)TEMPLATE_CLASS::_tp_dealloc,/* tp_dealloc */	\
+	0,														/* tp_print            */	\
+	0,														/* tp_getattr         */	\
+	0,														/* tp_setattr         */	\
+	0,														/* tp_compare     */	\
+	TEMPLATE_CLASS::_tp_repr,				/* tp_repr            */	\
+	0,														/* tp_as_number   */	\
+	SEQ,													/* tp_as_sequence */	\
+	MAP,											    /* tp_as_mapping  */	\
+	0,														/* tp_hash */	\
+	CALL,												/* tp_call  */	\
+	TEMPLATE_CLASS::_tp_str,					/* tp_str   */	\
+	(getattrofunc)CLASS::_tp_getattro,		/* tp_getattro */	\
+	(setattrofunc)CLASS::_tp_setattro,		/* tp_setattro  */	\
+	0,														/* tp_as_buffer */	\
+	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,	/* tp_flags  */	\
+	"KBEngine::" #CLASS " objects.",		/* tp_doc */	\
+	0,														/* tp_traverse */	\
+	0,														/* tp_clear */	\
+	0,														/* tp_richcompare */	\
+	0,														/* tp_weaklistoffset*/	\
+	ITER,													/* tp_iter         */	\
+	ITERNEXT,											/* tp_iternext        */	\
+	0,														/* tp_methods         */	\
+	0,														/* tp_members         */	\
+	0,														/* tp_getset          */	\
+	TEMPLATE_CLASS::getBaseScriptType(),	/* tp_base            */	\
+	0,														/* tp_dict            */	\
+	0,														/* tp_descr_get       */	\
+	0,														/* tp_descr_set       */	\
+	TEMPLATE_CLASS::calcDictOffset(),   /* tp_dictoffset      */	\
+	(initproc)TEMPLATE_CLASS::_tp_init,	/* tp_init            */	\
+	0,														/* tp_alloc           */	\
+	TEMPLATE_CLASS::_tp_new,				/* tp_new             */	\
+	PyObject_GC_Del,							    /* tp_free            */	\
+};				
+
+/* 这个宏正式的初始化一个脚本模块， 将一些必要的信息填充到python的type对象中 */
+#define SCRIPT_INIT(CLASS, CALL, SEQ, MAP, ITER, ITERNEXT)   TEMPLATE_SCRIPT_INIT(;,CLASS, CLASS, CALL, SEQ, MAP, ITER, ITERNEXT)	
+
+#define DECLARE_PY_MOTHOD_ARG0(FUNCNAME)											       \
+PyObject* FUNCNAME(void);																				   \
+static PyObject*                                                                                                       \
+__py_##FUNCNAME(PyObject* self, PyObject* args, PyObject* kwds)                       \
+{return static_cast<ThisClass*>(self)->FUNCNAME();}
+
+#define DECLARE_PY_MOTHOD_ARG1(FUNCNAME, ARG_TYPE1)							   \
+PyObject* FUNCNAME(PY_METHOD_ARG_##ARG_TYPE1);									   \
+static PyObject*                                                                                                       \
+__py_##FUNCNAME(PyObject* self, PyObject* args, PyObject* kwds)                       \
+{																															   \
+	PY_METHOD_ARG_##ARG_TYPE1 arg1;																   \
+																															   \
+	const uint8 argsSize = 1;																					   \
+	uint16 currargsSize = PyTuple_Size(args);															   \
+	ThisClass* pobj = static_cast<ThisClass*>(self);													   \
+																															   \
+	if(currargsSize == argsSize)																				   \
+	{																												           \
+	   if(!PyArg_ParseTuple(args, PY_METHOD_ARG_##ARG_TYPE1##_PYARGTYPE,	   \
+									&arg1))																				   \
+	   {																													   \
+	   PyErr_Format(PyExc_TypeError,                                                                         \
+       "%s: args(%s) is error!\n", __FUNCTION__, #ARG_TYPE1);								       \
+	   PyErr_PrintEx(0);																								   \
+	   PY_NONE_SAFE_RETURN;																				   \
+	   }																													   \
+	}																													       \
+	else																													   \
+	{																														   \
+		PyErr_Format(PyExc_AssertionError,                                                                  \
+        "%s: args require %d args(%s), gived %d! is script[%s].\n",							       \
+		__FUNCTION__, argsSize, #ARG_TYPE1, currargsSize, pobj->scriptName());       \
+		PyErr_PrintEx(0);																							   \
+		PY_NONE_SAFE_RETURN;																				   \
+	}																														   \
+	return pobj->FUNCNAME(arg1);																		   \
+}																															   
+
+#define DECLARE_PY_MOTHOD_ARG2(FUNCNAME, ARG_TYPE1, ARG_TYPE2)		   \
+PyObject* FUNCNAME(PY_METHOD_ARG_##ARG_TYPE1,										   \
+                                    PY_METHOD_ARG_##ARG_TYPE2);									   \
+static PyObject* __py_##FUNCNAME(PyObject* self,PyObject* args,PyObject* kwds)\
+{																															   \
+	PY_METHOD_ARG_##ARG_TYPE1##_ARG arg1;													   \
+	PY_METHOD_ARG_##ARG_TYPE2##_ARG arg2;													   \
+																															   \
+	const uint8 argsSize = 2;																					   \
+	uint16 currargsSize = PyTuple_Size(args);															   \
+	ThisClass* pobj = static_cast<ThisClass*>(self);													   \
+																															   \
+	if(currargsSize == argsSize)																				   \
+	{																														   \
+		if(!PyArg_ParseTuple(args,                                                                                \
+                                        PY_METHOD_ARG_##ARG_TYPE1##_PYARGTYPE "|"		   \
+									    PY_METHOD_ARG_##ARG_TYPE2##_PYARGTYPE,			   \
+									    &arg1, &arg2))																   \
+		{																										               \
+			PyErr_Format(PyExc_TypeError,                                                                     \
+                                 "%s: args(%s, %s) is error!\n",                                                  \
+								__FUNCTION__, #ARG_TYPE1, #ARG_TYPE2);				               \
+			PyErr_PrintEx(0);																						   \
+			PY_NONE_SAFE_RETURN;																			   \
+		}																													   \
+	}																														   \
+	else																													   \
+	{																														   \
+		PyErr_Format(PyExc_AssertionError,                                                                  \
+                             "%s: args require %d args(%s, %s), gived %d! is script[%s].\n",	   \
+			                 __FUNCTION__, argsSize, #ARG_TYPE1, #ARG_TYPE2,                  \
+                             currargsSize, pobj->scriptName());									           \
+																															   \
+		PyErr_PrintEx(0);																							   \
+		PY_NONE_SAFE_RETURN;																				   \
+	}																														   \
+																															   \
+	return pobj->FUNCNAME(arg1, arg2);																   \
+}																													
+
+/** 定义宏用于安全的调用一个对象的方法 */
+#define InvokeScriptObjectMethodAgrs0(OBJ, METHOT_NAME)							  \
+{																										                      \
+	if(PyObject_HasAttrString(OBJ, METHOT_NAME))											      \
+	{																									                      \
+		PyObject* pyResult = PyObject_CallMethod((OBJ), (METHOT_NAME), 			  \
+															               const_cast<char*>(""));				  \
+		if(pyResult != NULL)																			              \
+		Py_DECREF(pyResult);																		              \
+		else																							                      \
+		PyErr_PrintEx(0);																			                  \
+	}																									                      \
+}																										
+
+#define InvokeScriptObjectMethodAgrs1(OBJ, METHOT_NAME, FORMAT, ARG1)	 \
+{																										                     \
+	if(PyObject_HasAttrString(OBJ, METHOT_NAME))												 \
+	{																									                     \
+		PyObject* pyResult = PyObject_CallMethod((OBJ), 										 \
+												                          (METHOT_NAME), 						 \
+												                          (FORMAT),									 \
+												                          (ARG1));										 \
+		if(pyResult != NULL)																			             \
+		Py_DECREF(pyResult);																		             \
+		else																							                     \
+		PyErr_PrintEx(0);																			                 \
+	}																									                     \
+}																										                     \
+
+
+#define InvokeScriptObjectMethodAgrs2(OBJ, METHOT_NAME, FORMAT, ARG1, ARG2)	\
+{																										                                \
+	if(PyObject_HasAttrString(OBJ, METHOT_NAME))														    \
+	{																									                                \
+		PyObject* pyResult = PyObject_CallMethod((OBJ), 												    \
+												                           (METHOT_NAME), 								    \
+												                           (FORMAT),												\
+												                           (ARG1),													\
+												                           (ARG2));													\
+		if(pyResult != NULL)																			                        \
+		Py_DECREF(pyResult);																		                        \
+		else																							                                \
+		PyErr_PrintEx(0);																			                            \
+	}																									                                \
+}																										
+
+
+#define InvokeScriptObjectMethodAgrs3(OBJ, METHOT_NAME, FORMAT, ARG1, ARG2, ARG3)	\
+{																										                                        \
+	if(PyObject_HasAttrString(OBJ, METHOT_NAME))														            \
+	{																									                                        \
+		PyObject* pyResult = PyObject_CallMethod((OBJ), 												            \
+												                          (METHOT_NAME), 											\
+												                          (FORMAT),												        \
+												                          (ARG1),													        \
+												                          (ARG2),													        \
+												                          (ARG3));													        \
+		if(pyResult != NULL)																			                                \
+		Py_DECREF(pyResult);																		                                \
+		else																							                                        \
+		PyErr_PrintEx(0);																			                                    \
+	}																									                                        \
+}					
 
 
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

@@ -43,11 +43,15 @@
     <OutDir>$(SolutionDir)\libs\$(Configuration)\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>$(IncludePath)</IncludePath>
+    <IntDir>$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <TargetExt>.lib</TargetExt>
     <IncludePath>
     </IncludePath>
+    <OutDir>$(SolutionDir)\libs\$(Configuration)/</OutDir>
+    <IntDir>$(Configuration)/</IntDir>
+    <TargetName>$(ProjectName)_r</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
