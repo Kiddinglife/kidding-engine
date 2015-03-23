@@ -19,8 +19,8 @@ namespace PythonScripts
 		virtual ~Script() { }
 
 		/** 安装和卸载脚本模块*/
-		virtual bool install(const wchar_t* pythonHomeDir, std::wstring pyPaths, const char*
-			moduleName, KBE_SRV_COMPONENT_TYPE componentType);
+		virtual bool install(const wchar_t* pythonHomeDir, std::wstring pyPaths,
+			const char* moduleName, KBE_SRV_COMPONENT_TYPE componentType);
 	};
 }
 
