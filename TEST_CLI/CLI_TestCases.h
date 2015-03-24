@@ -65,7 +65,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 
 	Bundle_Pool->Dtor(p);
 	Packet* pReceiveWindow = Packet_Pool->Ctor();
-	int i = 3;
+	int i = 1;
 	while( i > 0 )
 	{
 		i--;
