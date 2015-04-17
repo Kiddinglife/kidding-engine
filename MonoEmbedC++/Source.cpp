@@ -201,6 +201,7 @@ int main(int argc, char* argv[ ])
 					class_< Base::TestClass1 >("TestClass1")
 					.def(constructor())
 				],
+
 				class_< TestClass3 >("TestClass3")
 				.def(constructor< int >())
 				.def("TestFun3", &TestClass3::TestFun3)

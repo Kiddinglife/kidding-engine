@@ -1,4 +1,4 @@
-#ifndef Script_H_
+ï»¿#ifndef Script_H_
 #define Script_H_
 
 #include "ace/pre.h"
@@ -12,15 +12,15 @@ namespace PythonScripts
 	struct Script
 	{
 		PyObject* 					module_;
-		PyObject*					    extraModule_;		// À©Õ¹½Å±¾Ä£¿é
+		PyObject*					    extraModule_;		// æ‰©å±•è„šæœ¬æ¨¡å—
 		ScriptStdOutErr*			pyStdouterr_;
 
 		Script() : module_(NULL), extraModule_(NULL), pyStdouterr_(NULL) { }
 		virtual ~Script() { }
 
-		/** °²×°ºÍĞ¶ÔØ½Å±¾Ä£¿é*/
+		/** å®‰è£…å’Œå¸è½½è„šæœ¬æ¨¡å— */
 		virtual bool install(const wchar_t* pythonHomeDir, std::wstring pyPaths,
-			const char* moduleName, KBE_SRV_COMPONENT_TYPE componentType);
+		const char* moduleName, KBE_SRV_COMPONENT_TYPE componentType);
 	};
 }
 

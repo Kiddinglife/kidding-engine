@@ -1412,6 +1412,9 @@
 #include "common/common.h"
 TEST(Commonhpp, TestGnUUID64)
 {
-	ACE_Utils::UUID* uptr = kbe_gen_uuid64();
-	cout << uptr->to_string()->c_str() << endl;
+	//ACE_Utils::UUID* uptr = kbe_gen_uuid64();
+	//cout << uptr->to_string()->c_str() << endl;
+	int x = 1;
+	int y = 1;
+	cout << "x+y = 1+1 = " << x + y << endl;
 }

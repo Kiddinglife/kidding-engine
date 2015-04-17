@@ -1,16 +1,16 @@
-#ifndef PY_MACROS_H_
+ï»¿#ifndef PY_MACROS_H_
 #define PY_MACROS_H_
 
 #include "ace/pre.h"
 #include "common/common.h"
 #include "Python.h"
+#include "object.h"
 #include "structmember.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
-
 namespace PythonScripts
 {
-	/** ½Å±¾ÏµÍ³Â·¾¶ */
+// è„šæœ¬ç³»ç»Ÿè·¯å¾„ 
 #ifdef _LP64
 #define SCRIPT_PATH												    \
 					L"../../res/scripts;"						                \
@@ -39,8 +39,7 @@ namespace PythonScripts
 		return t;
 	}
 
-	template<class T> inline 
-	PyObject * PyTuple_FromIntVector(const std::vector< T > & v)
+	template<class T> inline PyObject * PyTuple_FromIntVector(const std::vector< T > & v)
 	{
 		int sz = v.size();
 		PyObject * t = PyTuple_New(sz);
@@ -52,8 +51,7 @@ namespace PythonScripts
 		return t;
 	}
 
-	template<> inline 
-	PyObject * PyTuple_FromIntVector<ACE_INT64>(const std::vector< ACE_INT64 > & v)
+	template<> inline PyObject * PyTuple_FromIntVector<ACE_INT64>(const std::vector< ACE_INT64 > & v)
 	{
 		int sz = v.size();
 		PyObject * t = PyTuple_New(sz);
@@ -65,8 +63,7 @@ namespace PythonScripts
 		return t;
 	}
 
-	template<> inline 
-	PyObject * PyTuple_FromIntVector<ACE_UINT64>(const std::vector< ACE_UINT64 > & v)
+	template<> inline PyObject * PyTuple_FromIntVector<ACE_UINT64>(const std::vector< ACE_UINT64 > & v)
 	{
 		int sz = v.size();
 		PyObject * t = PyTuple_New(sz);
@@ -157,19 +154,20 @@ namespace PythonScripts
 #define PY_METHOD_ARG_ENTITY_ID_PYARGTYPE "i"
 
 
-///////////////////////////////// SCRIPT METHOD EXPOSURE DEFINES ////////////////////////////////
-// pythonµÄÄ¬ÈÏ¿Õ·µ»ØÖµ
-#define PY_NONE_SAFE_RETURN          { Py_INCREF(Py_None); return Py_None; }			
-#define PY_SAFE_DECRFE(PYOBJPTR)    Py_XDECREF(PYOBJPTR);
-#define PY_SAFE_INCRFE(PYOBJPTR)    Py_XINCREF(PYOBJPTR);
+//////////////////////////////////////////////////////////// SCRIPT METHOD EXPOSURE DEFINES //////////////////////////////////////////////////////////////////////////////////
 
-// pythonµÄ¶ÔÏóÊÍ·Å	
-#define PY_OBJ_RELEASE(pyObj)		    if(pyObj){Py_DECREF(pyObj); pyObj = NULL;}				
+/** pythonçš„é»˜è®¤ç©ºè¿”å›å€¼ */
+#define PY_NONE_SAFE_RETURN          { Py_INCREF( Py_None ); return Py_None; }			
+#define PY_SAFE_DECRFE(PYOBJPTR)    Py_XDECREF( PYOBJPTR );
+#define PY_SAFE_INCRFE(PYOBJPTR)    Py_XINCREF( PYOBJPTR );
 
-// Êä³öµ±Ç°½Å±¾²úÉúµÄ´íÎóĞÅÏ¢	
-#define SCRIPT_ERROR_CHECK()		   {if(PyErr_Occurred()){PyErr_PrintEx(0);}}
+/** pythonçš„å¯¹è±¡é‡Šæ”¾ */	
+#define PY_OBJ_RELEASE(pyObj)		    if( pyObj ) { Py_DECREF(pyObj); pyObj = NULL; }				
 
-/* ¶¨Òå±©Â¶¸ø½Å±¾µÄ·½·¨ºê */
+/** è¾“å‡ºå½“å‰è„šæœ¬äº§ç”Ÿçš„é”™è¯¯ä¿¡æ¯	*/
+#define SCRIPT_ERROR_CHECK()		   { if( PyErr_Occurred() ) { PyErr_PrintEx(0); }}
+
+/** å®šä¹‰æš´éœ²ç»™è„šæœ¬çš„æ–¹æ³•å® */
 #define SCRIPT_METHOD_DECLARE_BEGIN(CLASS)                                                                                                bool CLASS::_##CLASS##_py_installed = false; PyMethodDef CLASS::_##CLASS##_scriptMethods[ ] = {
 #define TEMPLATE_SCRIPT_METHOD_DECLARE_BEGIN(TEMPLATE_HEADER, TEMPLATE_CLASS, CLASSNAME)       TEMPLATE_HEADER bool TEMPLATE_CLASS::_##CLASSNAME##_py_installed = false; \
                                                                                                                                                                              TEMPLATE_HEADER PyMethodDef TEMPLATE_CLASS::_##CLASSNAME##_scriptMethods[] = {
@@ -177,85 +175,54 @@ namespace PythonScripts
 #define SCRIPT_DIRECT_METHOD_DECLARE(METHOD_NAME, METHOD_FUNC, FLAGS, DOC)                               {METHOD_NAME, (PyCFunction)&METHOD_FUNC, FLAGS, DOC},
 #define SCRIPT_METHOD_DECLARE_END()                                                                                                            {NULL}};
 
-/* ÏòÄ£¿é×·¼Ó·½·¨ */
+/** å‘æ¨¡å—è¿½åŠ æ–¹æ³• */
 #define APPEND_SCRIPT_MODULE_METHOD(MODULE, NAME, FUNC, FLAGS, SELF)	                                            static PyMethodDef __pymethod_##NAME = {#NAME, (PyCFunction) FUNC, FLAGS, NULL}; \
-	                                                                                                                                                                        if(PyModule_AddObject(MODULE, #NAME, PyCFunction_New(&__pymethod_##NAME, SELF)) \
+	                                                                                                                                                                        if(PyModule_AddObject(MODULE, #NAME, PyCFunction_New(&__pymethod_##NAME, SELF)) != 0)\
 	                                                                                                                                                                        { SCRIPT_ERROR_CHECK(); ACE_DEBUG((LM_ERROR, "append " #NAME " to pyscript is error!\n")); }
-/** ¶¨Òå±©Â¶¸ø½Å±¾µÄÊôĞÔºê */
+/** å®šä¹‰æš´éœ²ç»™è„šæœ¬çš„å±æ€§å® */
 #define SCRIPT_MEMBER_DECLARE_BEGIN(CLASS)                                                                                               PyMemberDef CLASS::_##CLASS##_scriptMembers[ ] =	{
 #define TEMPLATE_SCRIPT_MEMBER_DECLARE_BEGIN(TEMPLATE_HEADER, TEMPLATE_CLASS, CLASSNAME)	    TEMPLATE_HEADER PyMemberDef TEMPLATE_CLASS::_##CLASSNAME##_scriptMembers[ ] =	{
 
 #define SCRIPT_MEMBER_DECLARE(MEMBER_NAME, MEMBER_REF, MEMBER_TYPE, FLAGS, DOC)				        { const_cast<char*>(MEMBER_NAME), MEMBER_TYPE, offsetof(ThisClass, MEMBER_REF), FLAGS, DOC },
 #define SCRIPT_MEMBER_DECLARE_END()															                                                { NULL }};
 	
-/** ¶¨Òå±©Â¶¸ø½Å±¾µÄgetsetÊôĞÔºê */
+/** å®šä¹‰æš´éœ²ç»™è„šæœ¬çš„getsetå±æ€§å® */
 #define SCRIPT_GETSET_DECLARE_BEGIN(CLASS)													                                               PyGetSetDef CLASS::_##CLASS##_scriptGetSeters[] = {
 #define TEMPLATE_SCRIPT_GETSET_DECLARE_BEGIN(TEMPLATE_HEADER, TEMPLATE_CLASS, CLASSNAME)	       TEMPLATE_HEADER PyGetSetDef TEMPLATE_CLASS::_##CLASSNAME##_scriptGetSeters[] =	{
 #define SCRIPT_GETSET_DECLARE(NAME, GET, SET, DOC, CLOSURE)									                                   {const_cast<char*>(NAME), (getter)__pyget_##GET, (setter)__pyset_##SET, DOC, CLOSURE},
 #define SCRIPT_GET_DECLARE(NAME, GET, DOC, CLOSURE)											                                       {const_cast<char*>(NAME), (getter)__pyget_##GET, (setter)__py_readonly_descr, DOC, const_cast<char*>(NAME)},
 #define SCRIPT_SET_DECLARE(NAME, SET, DOC, CLOSURE)											                                       {const_cast<char*>(NAME), (getter)__pyset_##SET, (setter)__py_writeonly_descr, DOC, const_cast<char*>(NAME)},
 #define SCRIPT_GETSET_DECLARE_END()															                                                   {NULL}};
-}
 
-/* ÉùÃ÷Ò»¸ö½Å±¾get·½·¨ */
+/** å£°æ˜ä¸€ä¸ªè„šæœ¬getæ–¹æ³• */
 #define DECLARE_PY_GET_MOTHOD(MNAME)	                                                                                                   PyObject* MNAME(); \
                                                                                                                                                                            static PyObject* __pyget_##MNAME(PyObject *self, void *closure) \
                                                                                                                                                                            { return static_cast<ThisClass*>(self)->MNAME(); }	
 
-/* ÉùÃ÷Ò»¸ö½Å±¾set·½·¨ */
+/** å£°æ˜ä¸€ä¸ªè„šæœ¬setæ–¹æ³• */
 #define DECLARE_PY_SET_MOTHOD(MNAME)												                                                       int MNAME(PyObject *value);	\
                                                                                                                                                                            static int __pyset_##MNAME(PyObject *self, PyObject *value, void *closure) \
                                                                                                                                                                            {return static_cast<ThisClass*>(self)->MNAME(value);}	
 
-/* ÉùÃ÷Ò»¸ö½Å±¾getset·½·¨ */
-#define DECLARE_PY_GETSET_MOTHOD(GETNAME, SETNAME)									                                       DECLARE_PY_GET_MOTHOD(GETNAME) DECLARE_PY_SET_MOTHOD(SETNAME)												
+/** å£°æ˜ä¸€ä¸ªè„šæœ¬getsetæ–¹æ³• */
+#define DECLARE_PY_GETSET_MOTHOD(GETNAME, SETNAME)									                                       DECLARE_PY_GET_MOTHOD(GETNAME) \
+                                                                                                                                                                           DECLARE_PY_SET_MOTHOD(SETNAME)
 
 
-#define SCRIPT_HREADER_BASE(CLASS, SUPERCLASS)                                                   \
-/**µ±Ç°½Å±¾Ä£¿éµÄÀà±ğ 
-*/                                                                                                                                  \
-static PyTypeObject _scriptType;                                                                                    \
-typedef CLASS ThisClass;			                                                                                    \
-                                                                                                                                    \
-static PyObject* _tp_repr(PyObject* self) {return static_cast<CLASS*>(self)->tp_repr();}	\
-static PyObject* _tp_str(PyObject* self)   {return static_cast<CLASS*>( self )->tp_str();}   \
-                                                                                                                                    \
-/** ½Å±¾Ä£¿é¶ÔÏó´ÓpythonÖĞ´´½¨
-*/																					                                                \
-static PyObject* _tp_new(PyTypeObject* type, PyObject* args, PyObject* kwds)			    \
-{return CLASS::tp_new(type, args, kwds);}                                                                      \
-                                                                                                                                    \
-/** python ÇëÇó»ñÈ¡±¾Ä£¿éµÄÊôĞÔ»òÕß·½·¨
-*/																                                                                    \
-static PyObject* _tp_getattro(PyObject* self, PyObject* name)							            \
-{																						                                            \
-return static_cast<CLASS*>( self )->onScriptGetAttribute(name);						            \
-}                                                                                                                                   \
-                                                                                                                                    \
-/** python ÇëÇó³õÊ¼»¯±¾Ä£¿é¶ÔÏó
-*/																					                                                \
-static int _tp_init(PyObject* self, PyObject *args, PyObject* kwds)						            \
-{																						                                            \
-return static_cast<CLASS*>( self )->onScriptInit(self, args, kwds);					                \
-}																						                                            \
-                                                                                                                                    \
-/** python ÇëÇóÉèÖÃ±¾Ä£¿éµÄÊôĞÔ»òÕß·½·¨
-*/																                                                                    \
-static int _tp_setattro(PyObject* self, PyObject* name, PyObject* value)				            \
-{																						                                            \
-return ( value != NULL ) ?                                                                                             \
-static_cast<CLASS*>( self )->onScriptSetAttribute(name, value) :                                  \
-static_cast<CLASS*>( self )->onScriptDelAttribute(name);						                       \
-}                                                                                                                                  \
-                                                                                                                                   \
-public:																						                                   \
-/** ×îÖÕ½«Òª±»°²×°µ½½Å±¾Ä£¿éÖĞµÄ·½·¨ºÍ³ÉÔ±´æ·ÅÁĞ±í
+#define SCRIPT_HREADER_BASE(CLASS, SUPERCLASS)                                                 \
+	                                                                                                                               \
+/** å½“å‰è„šæœ¬æ¨¡å—çš„ç±»åˆ« 
+*/                                                                                                                                 \
+static PyTypeObject _scriptType;                                                                                   \
+typedef CLASS ThisClass;			                                                                                   \
+	                                                                                                                               \
+/** æœ€ç»ˆå°†è¦è¢«å®‰è£…åˆ°è„šæœ¬æ¨¡å—ä¸­çš„æ–¹æ³•å’Œæˆå‘˜å­˜æ”¾åˆ—è¡¨ 
 */										                                                                                           \
 static PyMethodDef* _##CLASS##_lpScriptmethods;											           \
 static PyMemberDef* _##CLASS##_lpScriptmembers;											       \
 static PyGetSetDef* _##CLASS##_lpgetseters;												               \
 	                                                                                                                               \
-/** ±¾Ä£¿éËùÒª±©Â©¸ø½Å±¾µÄ·½·¨ºÍ³ÉÔ±£¬ ×îÖÕ»á±»µ¼Èëµ½ÉÏÃæµÄ2¸öÖ¸ÕëÁĞ±íÖĞ
+/** æœ¬æ¨¡å—æ‰€è¦æš´æ¼ç»™è„šæœ¬çš„æ–¹æ³•å’Œæˆå‘˜ï¼Œ æœ€ç»ˆä¼šè¢«å¯¼å…¥åˆ°ä¸Šé¢çš„2ä¸ªæŒ‡é’ˆåˆ—è¡¨ 
 */			                                                                                                                       \
 static PyMethodDef _##CLASS##_scriptMethods[];											           \
 static PyMemberDef _##CLASS##_scriptMembers[];											           \
@@ -263,34 +230,66 @@ static PyGetSetDef _##CLASS##_scriptGetSeters[];										                   \
                                                                                                                                    \
 static bool _##CLASS##_py_installed;													                           \
                                                                                                                                    \
-/** getsetµÄÖ»¶ÁÊôĞÔ
-*/																						                                           \
-static int __py_readonly_descr(PyObject* self, PyObject* value, void* closure)			       \
+static PyObject* _tp_repr(PyObject* self) {return static_cast<CLASS*>(self)->tp_repr();} \
+static PyObject* _tp_str(PyObject* self)   {return static_cast<CLASS*>( self )->tp_str();}  \
+                                                                                                                                   \
+/** è„šæœ¬æ¨¡å—å¯¹è±¡ä»pythonä¸­åˆ›å»º
+*/																				                                                   \
+static PyObject* _tp_new(PyTypeObject* type, PyObject* args, PyObject* kwds)			   \
+{return CLASS::tp_new(type, args, kwds);}                                                                     \
+                                                                                                                                   \
+/** python è¯·æ±‚è·å–æœ¬æ¨¡å—çš„å±æ€§æˆ–è€…æ–¹æ³• 
+*/																                                                                   \
+static PyObject* _tp_getattro(PyObject* self, PyObject* name)							           \
 {																						                                           \
-PyErr_Format(PyExc_TypeError,                                                                                    \
-"Sorry, this attribute %s.%s is read-only", ( self != NULL ? self->ob_type->tp_name     \
-: #CLASS ), ( closure != NULL ? (char*) closure : "unknown" ));							          \
-PyErr_PrintEx(0);																	                                      \
-return 0;																			                                          \
-}																						                                          \
-																							                                      \
-/** getsetµÄÖ»Ğ´ÊôĞÔ
-*/																						                                          \
-static int __py_writeonly_descr(PyObject* self, PyObject* value, void* closure)			      \
+return static_cast<CLASS*>( self )->onScriptGetAttribute(name);						           \
+}                                                                                                                                  \
+                                                                                                                                   \
+/** python è¯·æ±‚åˆå§‹åŒ–æœ¬æ¨¡å—å¯¹è±¡
+*/																			   \
+static int _tp_init(PyObject* self, PyObject *args, PyObject* kwds)						           \
+{																						                                           \
+return static_cast<CLASS*>( self )->onScriptInit(self, args, kwds);					               \
+}																						                                           \
+                                                                                                                                   \
+/** python è¯·æ±‚è®¾ç½®æœ¬æ¨¡å—çš„å±æ€§æˆ–è€…æ–¹æ³•
+*/																   \
+static int _tp_setattro(PyObject* self, PyObject* name, PyObject* value)				           \
+{																						                                           \
+return ( value != NULL ) ?                                                                                            \
+static_cast<CLASS*>( self )->onScriptSetAttribute(name, value) :                                 \
+static_cast<CLASS*>( self )->onScriptDelAttribute(name);						                      \
+}                                                                                                                                 \
+                                                                                                                                  \
+/** getsetçš„åªè¯»å±æ€§ 
+*/																						          \
+static int __py_readonly_descr(PyObject* self, PyObject* value, void* closure)			      \
 {																						                                          \
 PyErr_Format(PyExc_TypeError,                                                                                   \
-"Sorry, this attribute %s.%s is write-only", ( self != NULL ? self->ob_type->tp_name    \
-: #CLASS ), ( closure != NULL ? (char*) ( closure ) : "unknown" ));						          \
-PyErr_PrintEx(0);																	                                      \
-return 0;																			                                          \
-}																						                                          \
-																							                                      \
-/** Õâ¸ö½Ó¿Ú¿ÉÒÔ»ñµÃµ±Ç°Ä£¿éµÄ½Å±¾Àà±ğ 
-*/																	                                                             \
+"Sorry, this attribute %s.%s is read-only", ( self != NULL ? self->ob_type->tp_name    \
+: #CLASS ), ( closure != NULL ? (char*) closure : "unknown" ));							         \
+PyErr_PrintEx(0);																	                                     \
+return 0;																			                                         \
+}																						                                         \
+																							                                     \
+/** getsetçš„åªå†™å±æ€§
+*/																						         \
+static int __py_writeonly_descr(PyObject* self, PyObject* value, void* closure)			     \
+{																						                                         \
+PyErr_Format(PyExc_TypeError,                                                                                  \
+"Sorry, this attribute %s.%s is write-only", ( self != NULL ? self->ob_type->tp_name   \
+: #CLASS ), ( closure != NULL ? (char*) ( closure ) : "unknown" ));						         \
+PyErr_PrintEx(0);																	                                     \
+return 0;																			                                         \
+}																						                                         \
+																							                                     \
+/** è¿™ä¸ªæ¥å£å¯ä»¥è·å¾—å½“å‰æ¨¡å—çš„è„šæœ¬ç±»åˆ« 
+*/																	 \
 static PyTypeObject* getScriptType(void)												                     \
 {																						                                         \
 return &_scriptType;																                                     \
-}																						                                         \
+}	                                                                                                                             \
+	                                                                                                                             \
 static PyTypeObject* getBaseScriptType(void)											                 \
 {																						                                         \
 if( strcmp("ScriptObject", #SUPERCLASS) == 0 )										                     \
@@ -304,8 +303,8 @@ if(strcmp("ScriptObject", #SUPERCLASS) == 0)	return 0;											 \
 return 0;																			                                         \
 }																						                                         \
 																							                                     \
-/** ¼ÆËãËùÓĞ¼Ì³ĞÄ£¿éµÄ±©Â¶·½·¨¸öÊı 
-*/																                                                                 \
+/** è®¡ç®—æ‰€æœ‰ç»§æ‰¿æ¨¡å—çš„æš´éœ²æ–¹æ³•ä¸ªæ•° 
+*/																         \
 static int calcTotalMethodCount(void)													                     \
 {																						                                         \
 int nlen = 0;																		                                         \
@@ -321,8 +320,8 @@ return nlen;																	                                             \
 return SUPERCLASS::calcTotalMethodCount() + nlen;									             \
 }																						                                         \
 																							                                     \
-/** ¼ÆËãËùÓĞ¼Ì³ĞÄ£¿éµÄ±©Â¶³ÉÔ±¸öÊı 
-*/																		                                                         \
+/** è®¡ç®—æ‰€æœ‰ç»§æ‰¿æ¨¡å—çš„æš´éœ²æˆå‘˜ä¸ªæ•° 
+*/																		 \
 static int calcTotalMemberCount(void)													                     \
 {																						                                         \
 int nlen = 0;																		                                         \
@@ -339,8 +338,8 @@ return nlen;																	                                             \
 return SUPERCLASS::calcTotalMemberCount() + nlen;									             \
 }																						                                         \
 																							                                     \
-/** ¼ÆËãËùÓĞ¼Ì³ĞÄ£¿éµÄ±©Â¶getset¸öÊı
- */																	                                                             \
+/** è®¡ç®—æ‰€æœ‰ç»§æ‰¿æ¨¡å—çš„æš´éœ²getsetä¸ªæ•° 
+*/																	 \
 static int calcTotalGetSetCount(void)													                         \
 {																						                                         \
 	int nlen = 0;																		                                     \
@@ -357,7 +356,7 @@ static int calcTotalGetSetCount(void)													                         \
 	return SUPERCLASS::calcTotalGetSetCount() + nlen;									             \
 }																						                                         \
 																							                                     \
-/** ½«ËùÓĞ¸¸ÀàÒÔ¼°µ±Ç°Ä£¿éµÄ±©Â¶³ÉÔ±ºÍ·½·¨°²×°µ½×îÖÕÒªµ¼Èë½Å±¾µÄÁĞ±íÖĞ 
+/** å°†æ‰€æœ‰çˆ¶ç±»ä»¥åŠå½“å‰æ¨¡å—çš„æš´éœ²æˆå‘˜å’Œæ–¹æ³•å®‰è£…åˆ°æœ€ç»ˆè¦å¯¼å…¥è„šæœ¬çš„åˆ—è¡¨ä¸­ 
 */				                                                                                                                 \
 static void setupScriptMethodAndAttribute(PyMethodDef* lppmf,                             \
 PyMemberDef* lppmd,	PyGetSetDef* lppgs)	                                                             \
@@ -403,7 +402,7 @@ PyMemberDef* lppmd,	PyGetSetDef* lppgs)	                                        
 		SUPERCLASS::setupScriptMethodAndAttribute(lppmf, lppmd, lppgs);					 \
 }																						                                         \
 																							                                     \
-/** °²×°µ±Ç°½Å±¾Ä£¿é @param mod: ËùÒªµ¼ÈëµÄÖ÷Ä£¿é
+/** å®‰è£…å½“å‰è„šæœ¬æ¨¡å— @param mod: æ‰€è¦å¯¼å…¥çš„ä¸»æ¨¡ 
 */												                                                                                 \
 static void installScript(PyObject* mod, const char* name = #CLASS)						     \
 {																						                                         \
@@ -444,7 +443,7 @@ static void installScript(PyObject* mod, const char* name = #CLASS)						     \
 	ScriptObject::scriptObjectTypes[name] = &_scriptType;								             \
 }																						                                         \
 																							                                     \
-/** Ğ¶ÔØµ±Ç°½Å±¾Ä£¿é 
+/** å¸è½½å½“å‰è„šæœ¬æ¨¡å— 
 */																						                                         \
 static void uninstallScript(void)														                             \
 {																						                                         \
@@ -456,34 +455,33 @@ static void uninstallScript(void)														                             \
 	Py_DECREF(&_scriptType);														                                 \
 }																						                                         
 
-// ½Å±¾¶ÔÏóÍ· £¨Í¨³£ÊÇpythonÄ¬ÈÏ·ÖÅä¶ÔÏó·½Ê½²úÉúµÄ¶ÔÏó £©
-#define SCRIPT_OBJECT_HREADER(CLASS, SUPERCLASS)\
+// è„šæœ¬å¯¹è±¡å¤´ ï¼ˆé€šå¸¸æ˜¯pythoné»˜è®¤åˆ†é…å¯¹è±¡æ–¹å¼äº§ç”Ÿçš„å¯¹è±¡ ï¼‰
+#define SCRIPT_OBJECT_HREADER(CLASS, SUPERCLASS) \
 SCRIPT_HREADER_BASE(CLASS, SUPERCLASS);\
-/* python´´½¨µÄ¶ÔÏóÔò¶ÔÏó´ÓpythonÖĞÊÍ·Å*/ \
+/** pythonåˆ›å»ºçš„å¯¹è±¡åˆ™å¯¹è±¡ä»pythonä¸­é‡Šæ”¾
+*/ \
 static void _tp_dealloc(PyObject* self){CLASS::_scriptType.tp_free((self);}			
 
-// »ù´¡½Å±¾¶ÔÏóÍ·£¨Õâ¸öÄ£¿éÍ¨³£ÊÇÌá¹©¸øpython½Å±¾ÖĞ½øĞĞ¼Ì³ĞµÄÒ»¸ö»ù´¡Àà £©
-#define BASE_SCRIPT_HREADER(CLASS, SUPERCLASS)\
-SCRIPT_HREADER_BASE(CLASS, SUPERCLASS);\
-/* python´´½¨µÄ¶ÔÏóÔò¶ÔÏó´ÓpythonÖĞÊÍ·Å */  \
-static void _tp_dealloc(PyObject* self)\
-{\
-static_cast<CLASS*>( self )->~CLASS();	\
-CLASS::_scriptType.tp_free(self);	\
-}		
+// åŸºç¡€è„šæœ¬å¯¹è±¡å¤´ï¼ˆè¿™ä¸ªæ¨¡å—é€šå¸¸æ˜¯æä¾›ç»™pythonè„šæœ¬ä¸­è¿›è¡Œç»§æ‰¿çš„ä¸€ä¸ªåŸºç¡€ç±» ï¼‰
+#define BASE_SCRIPT_HREADER(CLASS, SUPERCLASS) \
+SCRIPT_HREADER_BASE(CLASS, SUPERCLASS); \
+/** pythonåˆ›å»ºçš„å¯¹è±¡åˆ™å¯¹è±¡ä»pythonä¸­é‡Šæ”¾ 
+*/  \
+static void _tp_dealloc(PyObject* self) \
+{ static_cast<CLASS*>( self )->~CLASS(); CLASS::_scriptType.tp_free(self); }		
 
-// ÊµÀı½Å±¾¶ÔÏóÍ· £¨Õâ¸ö½Å±¾¶ÔÏóÊÇÓÉc++ÖĞ½øĞĞnew²úÉúµÄ £©
+// å®ä¾‹è„šæœ¬å¯¹è±¡å¤´ ï¼ˆè¿™ä¸ªè„šæœ¬å¯¹è±¡æ˜¯ç”±c++ä¸­è¿›è¡Œnewäº§ç”Ÿçš„ ï¼‰
 #define INSTANCE_SCRIPT_HREADER(CLASS, SUPERCLASS)	\
-SCRIPT_HREADER_BASE(CLASS, SUPERCLASS);	                    \
-/* c++new´´½¨µÄ¶ÔÏóÔò½øĞĞdelete²Ù×÷ */	                            \
-static void _tp_dealloc(PyObject* self) {delete static_cast<CLASS*>( self );}
+SCRIPT_HREADER_BASE(CLASS, SUPERCLASS);	\
+/** c++newåˆ›å»ºçš„å¯¹è±¡åˆ™è¿›è¡Œdeleteæ“ä½œ
+*/	 \
+static void _tp_dealloc(PyObject* self) { delete static_cast<CLASS*>( self ); }
 
-// BASE_SCRIPT_HREADER»ù´¡Àà½Å±¾³õÊ¼»¯, ¸ÃÀàÓÉ½Å±¾¼Ì³Ğ
+/** BASE_SCRIPT_HREADERåŸºç¡€ç±»è„šæœ¬åˆå§‹åŒ–, è¯¥ç±»ç”±è„šæœ¬ç»§æ‰¿ */
 #define BASE_SCRIPT_INIT(CLASS, CALL, SEQ, MAP, ITER, ITERNEXT)							\
 PyMethodDef* CLASS::_##CLASS##_lpScriptmethods = NULL;									\
 PyMemberDef* CLASS::_##CLASS##_lpScriptmembers = NULL;									\
 PyGetSetDef* CLASS::_##CLASS##_lpgetseters = NULL;										        \
-																							                                    \
 PyTypeObject CLASS::_scriptType =														                    \
 {																						                                        \
 	PyVarObject_HEAD_INIT(NULL, 0)														                    \
@@ -546,47 +544,47 @@ PyGetSetDef* TEMPLATE_CLASS::_##CLASS##_lpgetseters = NULL;				           \
 TEMPLATE_HEADER PyTypeObject TEMPLATE_CLASS::_scriptType =						   \
 {																						                                       \
 	PyVarObject_HEAD_INIT(&PyType_Type, 0)												           \
-	#CLASS,										    /* tp_name      */	\
-	sizeof(TEMPLATE_CLASS),					/* tp_basicsize */	\
-	0,														/* tp_itemsize  */	\
-	(destructor)TEMPLATE_CLASS::_tp_dealloc,/* tp_dealloc */	\
-	0,														/* tp_print            */	\
-	0,														/* tp_getattr         */	\
-	0,														/* tp_setattr         */	\
-	0,														/* tp_compare     */	\
-	TEMPLATE_CLASS::_tp_repr,				/* tp_repr            */	\
-	0,														/* tp_as_number   */	\
-	SEQ,													/* tp_as_sequence */	\
-	MAP,											    /* tp_as_mapping  */	\
-	0,														/* tp_hash */	\
-	CALL,												/* tp_call  */	\
-	TEMPLATE_CLASS::_tp_str,					/* tp_str   */	\
-	(getattrofunc)CLASS::_tp_getattro,		/* tp_getattro */	\
-	(setattrofunc)CLASS::_tp_setattro,		/* tp_setattro  */	\
-	0,														/* tp_as_buffer */	\
-	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,	/* tp_flags  */	\
-	"KBEngine::" #CLASS " objects.",		/* tp_doc */	\
-	0,														/* tp_traverse */	\
-	0,														/* tp_clear */	\
-	0,														/* tp_richcompare */	\
-	0,														/* tp_weaklistoffset*/	\
-	ITER,													/* tp_iter         */	\
-	ITERNEXT,											/* tp_iternext        */	\
-	0,														/* tp_methods         */	\
-	0,														/* tp_members         */	\
-	0,														/* tp_getset          */	\
-	TEMPLATE_CLASS::getBaseScriptType(),	/* tp_base            */	\
-	0,														/* tp_dict            */	\
-	0,														/* tp_descr_get       */	\
-	0,														/* tp_descr_set       */	\
-	TEMPLATE_CLASS::calcDictOffset(),   /* tp_dictoffset      */	\
-	(initproc)TEMPLATE_CLASS::_tp_init,	/* tp_init            */	\
-	0,														/* tp_alloc           */	\
-	TEMPLATE_CLASS::_tp_new,				/* tp_new             */	\
-	PyObject_GC_Del,							    /* tp_free            */	\
+	#CLASS,										    /* tp_name */	                                           \
+	sizeof(TEMPLATE_CLASS),					/* tp_basicsize */	                                       \
+	0,														/* tp_itemsize  */	                                       \
+	(destructor)TEMPLATE_CLASS::_tp_dealloc,/* tp_dealloc */	                                   \
+	0,														/* tp_print */                           	                   \
+	0,														/* tp_getattr */	                                           \
+	0,														/* tp_setattr */	                                           \
+	0,														/* tp_compare */	                                       \
+	TEMPLATE_CLASS::_tp_repr,				/* tp_repr */	                                               \
+	0,														/* tp_as_number   */	                                   \
+	SEQ,													/* tp_as_sequence */	                                   \
+	MAP,											    /* tp_as_mapping  */	                                   \
+	0,														/* tp_hash */      	                                       \
+	CALL,												/* tp_call   */	                                               \
+	TEMPLATE_CLASS::_tp_str,					/* tp_str    */	                                               \
+	(getattrofunc)CLASS::_tp_getattro,		/* tp_getattro  */	                                       \
+	(setattrofunc)CLASS::_tp_setattro,		/* tp_setattro   */	                                       \
+	0,														/* tp_as_buffer */	                                       \
+	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,	/* tp_flags  */	                       \
+	"KBEngine::" #CLASS " objects.",		/* tp_doc */	                                               \
+	0,														/* tp_traverse */	                                       \
+	0,														/* tp_clear */	                                               \
+	0,														/* tp_richcompare */	                                   \
+	0,														/* tp_weaklistoffset*/	                               \
+	ITER,													/* tp_iter         */	                                       \
+	ITERNEXT,											/* tp_iternext        */	                                   \
+	0,														/* tp_methods         */	                               \
+	0,														/* tp_members         */	                               \
+	0,														/* tp_getset          */	                                   \
+	TEMPLATE_CLASS::getBaseScriptType(),	/* tp_base            */	                               \
+	0,														/* tp_dict            */	                                   \
+	0,														/* tp_descr_get       */	                               \
+	0,														/* tp_descr_set       */	                               \
+	TEMPLATE_CLASS::calcDictOffset(),   /* tp_dictoffset      */	                                   \
+	(initproc)TEMPLATE_CLASS::_tp_init,	/* tp_init            */	                                   \
+	0,														/* tp_alloc           */	                                   \
+	TEMPLATE_CLASS::_tp_new,				/* tp_new             */	                                   \
+	PyObject_GC_Del,							    /* tp_free            */	                                   \
 };				
 
-/* Õâ¸öºêÕıÊ½µÄ³õÊ¼»¯Ò»¸ö½Å±¾Ä£¿é£¬ ½«Ò»Ğ©±ØÒªµÄĞÅÏ¢Ìî³äµ½pythonµÄtype¶ÔÏóÖĞ */
+/* è¿™ä¸ªå®æ­£å¼çš„åˆå§‹åŒ–ä¸€ä¸ªè„šæœ¬æ¨¡å—ï¼Œ å°†ä¸€äº›å¿…è¦çš„ä¿¡æ¯å¡«å……åˆ°pythonçš„typeå¯¹è±¡ä¸­ */
 #define SCRIPT_INIT(CLASS, CALL, SEQ, MAP, ITER, ITERNEXT)   TEMPLATE_SCRIPT_INIT(;,CLASS, CLASS, CALL, SEQ, MAP, ITER, ITERNEXT)	
 
 #define DECLARE_PY_MOTHOD_ARG0(FUNCNAME)											       \
@@ -668,7 +666,8 @@ static PyObject* __py_##FUNCNAME(PyObject* self,PyObject* args,PyObject* kwds)\
 	return pobj->FUNCNAME(arg1, arg2);																   \
 }																													
 
-/** ¶¨ÒåºêÓÃÓÚ°²È«µÄµ÷ÓÃÒ»¸ö¶ÔÏóµÄ·½·¨ */
+/** å®šä¹‰å®ç”¨äºå®‰å…¨çš„è°ƒç”¨ä¸€ä¸ªå¯¹è±¡çš„æ–¹æ³• 
+*/ \
 #define InvokeScriptObjectMethodAgrs0(OBJ, METHOT_NAME)							  \
 {																										                      \
 	if(PyObject_HasAttrString(OBJ, METHOT_NAME))											      \
@@ -730,7 +729,9 @@ static PyObject* __py_##FUNCNAME(PyObject* self,PyObject* args,PyObject* kwds)\
 		else																							                                        \
 		PyErr_PrintEx(0);																			                                    \
 	}																									                                        \
-}			
+}
+
+};
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
-#include <ace/post.h>
+#include "ace/post.h"
 #endif
