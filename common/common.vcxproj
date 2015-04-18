@@ -35,6 +35,7 @@
     <ClInclude Include="timestamp.hpp" />
     <ClInclude Include="user_settings.h" />
     <ClInclude Include="Watcher.h" />
+    <ClInclude Include="xml.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common.cpp" />
