@@ -1,3 +1,43 @@
+/*
+xml 读写：
+例子:
+<root>
+<server>
+<ip>172.16.0.12</ip>
+<port>6000</port>
+</server>
+</root>
+--------------------------------------------------------------------------------
+XML* xml = new XML("KBEngine.xml");
+TiXmlNode* node = xml->getRootNode("server");
+
+XML_FOR_BEGIN(node)
+{
+printf("%s--%s\n", xml->getKey(node).c_str(), xml->getValStr(node->FirstChild()).c_str());
+}
+XML_FOR_END(node);
+
+delete xml;
+输出:
+---ip---172.16.0.12
+---port---6000
+
+
+例子2:
+XML* xml = new XML("KBEngine.xml");
+TiXmlNode* serverNode = xml->getRootNode("server");
+
+TiXmlNode* node;
+node = xml->enterNode(serverNode, "ip");
+printf("%s\n", xml->getValStr(node).c_str() );
+
+node = xml->enterNode(serverNode, "port");
+printf("%s\n", xml->getValStr(node).c_str() );
+
+输出:
+172.16.0.12
+6000
+*/
 #ifndef Address_H_
 #define Address_H_
 
