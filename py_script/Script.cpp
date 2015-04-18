@@ -20,6 +20,13 @@ namespace PythonScripts
 		//return PyLong_FromUnsignedLongLong(kbe_gen_uuid64());
 		return PyUnicode_FromString(kbe_gen_uuid64()->to_string()->c_str());
 	}
+
+	bool install(const wchar_t* pythonHomeDir, std::wstring pyPaths,
+		const char* moduleName, KBE_SRV_COMPONENT_TYPE componentType)
+	{
+		std::wstring pySysPaths = SCRIPT_PATH;
+
+	}
 }
 
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

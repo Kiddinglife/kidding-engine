@@ -77,6 +77,9 @@
     <ClInclude Include="Watcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ResourceObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="format.cpp">
@@ -110,6 +113,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Watcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

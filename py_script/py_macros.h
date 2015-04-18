@@ -709,7 +709,8 @@ static PyObject* __py_##FUNCNAME(PyObject* self,PyObject* args,PyObject* kwds)\
 		if(pyResult != NULL)																			                        \
 		Py_DECREF(pyResult);																		                        \
 		else																							                                \
-		PyErr_PrintEx(0);																			                            \
+		PyErr_PrintEx(0);							
+\
 	}																									                                \
 }																										
 
