@@ -19,48 +19,47 @@ namespace PythonScripts
 	PyGetSetDef ScriptObject::_ScriptObject_scriptGetSeters[ ] = { { NULL } };
 
 	//SCRIPT_INIT(ScriptObject, 0, 0, 0, 0, 0)
-	//#define SCRIPT_INIT(CLASS, CALL, SEQ, MAP, ITER, ITERNEXT)  TEMPLATE_SCRIPT_INIT(;,CLASS, CLASS, CALL, SEQ, MAP, ITER, ITERNEXT)	
 	PyMethodDef* ScriptObject::_ScriptObject_lpScriptmethods = NULL;
 	PyMemberDef* ScriptObject::_ScriptObject_lpScriptmembers = NULL;
 	PyGetSetDef* ScriptObject::_ScriptObject_lpgetseters = NULL;
 	PyTypeObject ScriptObject::_scriptType =
 	{
 		PyVarObject_HEAD_INIT(&PyType_Type, 0)
-		"ScriptObject",							        /* tp_name            */
-		sizeof(ScriptObject),					        /* tp_basicsize       */
-		0,														/* tp_itemsize       */
-		(destructor) ScriptObject::_tp_dealloc,/* tp_dealloc        */
-		0,														/* tp_print            */
-		0,														/* tp_getattr         */
-		0,														/* tp_setattr         */
-		0,														/* tp_compare     */
-		ScriptObject::_tp_repr,				        /* tp_repr            */
+		"ScriptObject",							        /* tp_name */
+		sizeof(ScriptObject),					        /* tp_basicsize */
+		0,														/* tp_itemsize */
+		(destructor) ScriptObject::_tp_dealloc,/* tp_dealloc */
+		0,														/* tp_print */
+		0,														/* tp_getattr */
+		0,														/* tp_setattr */
+		0,														/* tp_compare */
+		ScriptObject::_tp_repr,				        /* tp_repr */
 		0,														/* tp_as_number  */
 		0,													    /* tp_as_sequence */
-		0,											            /* tp_as_mapping  */
+		0,											            /* tp_as_mapping */
 		0,														/* tp_hash */
-		0,												        /* tp_call  */
-		ScriptObject::_tp_str,					        /* tp_str   */
+		0,												        /* tp_call */
+		ScriptObject::_tp_str,					        /* tp_str */
 		(getattrofunc) ScriptObject::_tp_getattro,	/* tp_getattro */
-		(setattrofunc) ScriptObject::_tp_setattro,	/* tp_setattro  */
-		0,														    /* tp_as_buffer */
-		Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,/* tp_flags  */
+		(setattrofunc) ScriptObject::_tp_setattro,	/* tp_setattro */
+		0,														        /* tp_as_buffer */
+		Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,/* tp_flags */
 		"KBEngine::" "ScriptObject" " objects.",	/* tp_doc */
 		0,														/* tp_traverse */
 		0,														/* tp_clear */
 		0,														/* tp_richcompare */
-		0,														/* tp_weaklistoffset*/
-		0,													    /* tp_iter             */
-		0,											            /* tp_iternext      */
-		0,														/* tp_methods    */
-		0,														/* tp_members   */
-		0,														/* tp_getset        */
-		ScriptObject::getBaseScriptType(),	    /* tp_base          */
-		0,														/* tp_dict           */
-		0,														/* tp_descr_get  */
-		0,														/* tp_descr_set  */
+		0,														/* tp_weaklistoffset */
+		0,													    /* tp_iter  */
+		0,											            /* tp_iternext   */
+		0,														/* tp_methods */
+		0,														/* tp_members */
+		0,														/* tp_getset */
+		ScriptObject::getBaseScriptType(),	    /* tp_base */
+		0,														/* tp_dict */
+		0,														/* tp_descr_get */
+		0,														/* tp_descr_set */
 		ScriptObject::calcDictOffset(),            /* tp_dictoffset */
-		(initproc) ScriptObject::_tp_init,	        /* tp_init */
+		(initproc) ScriptObject::_tp_init,	        /* tp_init  */
 		0,														/* tp_alloc */
 		ScriptObject::_tp_new,				        /* tp_new  */
 		PyObject_GC_Del,							    /* tp_free  */
