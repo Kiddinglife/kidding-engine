@@ -709,8 +709,7 @@ static PyObject* __py_##FUNCNAME(PyObject* self,PyObject* args,PyObject* kwds)\
 		if(pyResult != NULL)																			                        \
 		Py_DECREF(pyResult);																		                        \
 		else																							                                \
-		PyErr_PrintEx(0);							
-\
+		PyErr_PrintEx(0);							                                                                            \
 	}																									                                \
 }																										
 
@@ -731,7 +730,6 @@ static PyObject* __py_##FUNCNAME(PyObject* self,PyObject* args,PyObject* kwds)\
 		PyErr_PrintEx(0);																			                                    \
 	}																									                                        \
 }
-
 };
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
 #include "ace/post.h"

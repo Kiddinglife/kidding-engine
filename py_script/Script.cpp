@@ -25,7 +25,7 @@ namespace PythonScripts
 		const char* moduleName, KBE_SRV_COMPONENT_TYPE componentType)
 	{
 		std::wstring pySysPaths = SCRIPT_PATH;
-
+		return true;
 	}
 }
 
