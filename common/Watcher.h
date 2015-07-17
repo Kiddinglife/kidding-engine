@@ -77,6 +77,7 @@ struct Watcher
 
 	virtual void addToInitStream(Packet* s) { };
 	virtual void addToStream(Packet* s) { };
+
 	template <class T> void updateStream(Packet* s)
 	{
 		//s->init_instream();
@@ -237,16 +238,16 @@ struct ValueWatcher : public Watcher
 	virtual void addToInitStream(Packet* s)
 	{
 		//( *s ) << path_ << name_ << id_ << get_type_tpl<T>() << watchVal_;
-		//ACE_ASSERT(s->os << path_ && s->os << name_
-		//	&& s->os << id_ && s->os << get_type_tpl<T>()
-		//	&& s->os << watchVal_);
+		ACE_ASSERT(s->os << path_ && s->os << name_
+			&& s->os << id_ && s->os << get_type_tpl<T>()
+			&& s->os << watchVal_);
 	}
 
 	virtual void addToStream(Packet* s)
 	{
 		//( *s ) << id_;<< watchVal_;
-		//ACE_ASSERT(s->os << id_
-		//	&& s->os << watchVal_);
+		ACE_ASSERT(s->os << id_
+			&& s->os << watchVal_);
 	}
 
 	const T& getValue() { return watchVal_; }

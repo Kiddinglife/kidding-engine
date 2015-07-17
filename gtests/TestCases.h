@@ -1347,49 +1347,56 @@
 //	nub.startLoop();
 //}
 
-#include "common\Watcher.h"
-#include "net\Packet.h"
-
-int hello()
-{
-	return 12;
-}
-struct tt
-{
-	int a;
-	int hello()
-	{
-		return 12;
-	}
-};
-TEST(WatcherTest, watchertests)
-{
-	int a = 12;
-	tt t;
-	t.a = 1;
-
-	std::string path1 = "watcher1";
-	CRATE_WATCH_OBJECT(path1, a);
-	std::cout << GET_VALUE_WATCHER_PTR(path1, int)->getValue() << std::endl;
-
-	std::string path2 = "p0/p2/watcher2";
-	CRATE_WATCH_OBJECT(path2, t.a);
-	std::cout << GET_VALUE_WATCHER_PTR(path2, int)->getValue() << std::endl;
-
-	std::string path3 = "path1/path2/p3/watcher3";
-	CRATE_WATCH_OBJECT(path3, &hello);
-	std::cout << GET_FUNC_WATCHER_PTR(path3, int)->getValue() << std::endl;
-
-	std::string path4 = "path1/path2/p5/p4/watcher4";
-	CRATE_WATCH_OBJECT(path4, &t, &tt::hello);
-	std::cout << GET_MTD_WATCHER_PTR(path4, int, tt)->getValue() << std::endl;
-
-	a = 2;
-	t.a = 2;
-
-	std::cout << GET_VALUE_WATCHER_PTR(path1, int)->getValue() << std::endl;
-	std::cout << GET_VALUE_WATCHER_PTR(path1, int)->getValue() << std::endl;
-}
+//#include "common\Watcher.h"
+//#include "net\Packet.h"
+//
+//int hello()
+//{
+//	return 12;
+//}
+//struct tt
+//{
+//	int a;
+//	int hello()
+//	{
+//		return 12;
+//	}
+//};
+//TEST(WatcherTest, watchertests)
+//{
+//	Packet packet;
+//	int a = 12;
+//	tt t;
+//	t.a = 1;
+//
+//	std::string path1 = "watcher1";
+//	CRATE_WATCH_OBJECT(path1, a);
+//	GET_VALUE_WATCHER_PTR(path1, int)->addToInitStream(&packet);
+//	ACE_HEX_DUMP(( LM_DEBUG, packet.osbuff_->rd_ptr()+10, packet.length() ));
+//	std::cout << GET_VALUE_WATCHER_PTR(path1, int)->getValue() << std::endl;
+//
+//	packet.reset();
+//
+//	std::string path2 = "p0/p2/watcher2";
+//	CRATE_WATCH_OBJECT(path2, t.a);
+//	GET_VALUE_WATCHER_PTR(path2, int)->addToInitStream(&packet);
+//	ACE_HEX_DUMP(( LM_DEBUG, packet.osbuff_->base(), packet.length() ));
+//	std::cout << GET_VALUE_WATCHER_PTR(path2, int)->getValue() << std::endl;
+//
+//	std::string path3 = "path1/path2/p3/watcher3";
+//	CRATE_WATCH_OBJECT(path3, &hello);
+//	std::cout << GET_FUNC_WATCHER_PTR(path3, int)->getValue() << std::endl;
+//
+//	std::string path4 = "path1/path2/p5/p4/watcher4";
+//	CRATE_WATCH_OBJECT(path4, &t, &tt::hello);
+//	std::cout << GET_MTD_WATCHER_PTR(path4, int, tt)->getValue() << std::endl;
+//
+//	a = 2;
+//	t.a = 2;
+//
+//	std::cout << GET_VALUE_WATCHER_PTR(path1, int)->getValue() << std::endl;
+//	std::cout << GET_VALUE_WATCHER_PTR(path1, int)->getValue() << std::endl;
+//}
 
 //#include "net\Packet.h"
 //TEST(PacketTest, tests)

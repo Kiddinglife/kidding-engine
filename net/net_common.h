@@ -443,6 +443,13 @@ inline extern  ACE_CDR::Boolean operator<< ( ACE_OutputCDR &os, std::string& str
 	TRACE_RETURN(os.good_bit());
 }
 
+inline extern  ACE_CDR::Boolean operator<< ( ACE_OutputCDR &os, const std::string& str )
+{
+	TRACE("string <<");
+	str.length() ? os.write_char_array(str.c_str(), str.length()) : os.write_char(0);
+	TRACE_RETURN(os.good_bit());
+}
+
 inline extern  ACE_CDR::Boolean operator>> ( ACE_InputCDR &in, ACE_CDR::Char* str )
 {
 	TRACE("ACE_InputCDR >> Char*");
