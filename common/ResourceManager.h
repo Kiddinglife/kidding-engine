@@ -3,6 +3,7 @@
 
 #include "ace/pre.h"
 #include "ace/Event_Handler.h"
+#include "ace/Mutex.h"
 #include "common/common.h"
 #include "ResourceObject.h"
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
@@ -29,6 +30,7 @@ struct ResourceManager : public ACE_Event_Handler
 
 	bool isInit_;
 	KBEEnv kb_env_;
+	ACE_Thread_Mutex mutex_;
 	std::vector<std::string> respaths_;
 	UnorderedMap< std::string, ResourceObject > respool_;
 
@@ -36,6 +38,8 @@ struct ResourceManager : public ACE_Event_Handler
 	virtual ~ResourceManager();
 
 	virtual int handle_timeout(const ACE_Time_Value &current_time, const void * data = 0);
+
+	bool initialize_watchers();
 };
 
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

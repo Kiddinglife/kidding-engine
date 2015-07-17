@@ -1,5 +1,40 @@
 /**
  * written by Jackie Zhang on 08/03/2015
+ * Uase Case:
+ int hello(){return 12;}
+ struct tt
+ {
+ int a;
+ int hello(){return 12;}
+ };
+ TEST(WatcherTest, watchertests)
+ {
+ int a = 12;
+ tt t;
+ t.a = 1;
+
+ std::string path1 = "watcher1";
+ CRATE_WATCH_OBJECT(path1, a);
+ std::cout << GET_VALUE_WATCHER_PTR(path1, int)->getValue() << std::endl;
+
+ std::string path2 = "p0/p2/watcher2";
+ CRATE_WATCH_OBJECT(path2, t.a);
+ std::cout << GET_VALUE_WATCHER_PTR(path2, int)->getValue() << std::endl;
+
+ std::string path3 = "path1/path2/p3/watcher3";
+ CRATE_WATCH_OBJECT(path3, &hello);
+ std::cout << GET_FUNC_WATCHER_PTR(path3, int)->getValue() << std::endl;
+
+ std::string path4 = "path1/path2/p5/p4/watcher4";
+ CRATE_WATCH_OBJECT(path4, &t, &tt::hello);
+ std::cout << GET_MTD_WATCHER_PTR(path4, int, tt)->getValue() << std::endl;
+
+ a = 2;
+ t.a = 2;
+
+ std::cout << GET_VALUE_WATCHER_PTR(path1, int)->getValue() << std::endl;
+ std::cout << GET_VALUE_WATCHER_PTR(path1, int)->getValue() << std::endl;
+ }
  */
 #ifndef Watcher_H_
 #define Watcher_H_
@@ -30,6 +65,7 @@ typedef ACE_UINT8   WATCHER_VALUE_TYPE;
 #define WATCHER_VALUE_TYPE_BOOL					       13
 #define WATCHER_VALUE_TYPE_COMPONENT_TYPE   14
 
+
 struct Watcher
 {
 	std::string path_, name_, strval_;
@@ -58,7 +94,7 @@ struct Watcher
 };
 
 template <>
-inline WATCHER_VALUE_TYPE Watcher::get_type_tpl<ACE_UINT8>()const
+inline WATCHER_VALUE_TYPE Watcher::get_type_tpl<ACE_UINT8>() const
 {
 	return WATCHER_VALUE_TYPE_UINT8;
 }
@@ -162,7 +198,7 @@ inline WATCHER_VALUE_TYPE Watcher::get_type_tpl<KBE_SRV_COMPONENT_TYPE>()const
 template <>
 inline void Watcher::updateStream<std::string>(Packet* s)
 {
-	s->in >> strval_;
+	( s->in ) >> strval_;
 }
 
 template <>
@@ -200,12 +236,17 @@ struct ValueWatcher : public Watcher
 
 	virtual void addToInitStream(Packet* s)
 	{
-		( *s ) << path_.c_str() << name_ << id_ << get_type_tpl<T>() << watchVal_;
+		//( *s ) << path_ << name_ << id_ << get_type_tpl<T>() << watchVal_;
+		//ACE_ASSERT(s->os << path_ && s->os << name_
+		//	&& s->os << id_ && s->os << get_type_tpl<T>()
+		//	&& s->os << watchVal_);
 	}
 
 	virtual void addToStream(Packet* s)
 	{
-		( *s ) << id_ << watchVal_;
+		//( *s ) << id_;<< watchVal_;
+		//ACE_ASSERT(s->os << id_
+		//	&& s->os << watchVal_);
 	}
 
 	const T& getValue() { return watchVal_; }
@@ -230,12 +271,17 @@ struct FunctionWatcher : public Watcher
 
 	virtual void addToInitStream(Packet* s)
 	{
-		( *s ) << path_ << name_ << id_ << get_type_tpl<RETURN_TYPE>() << ( *func_ )( );
+		//( *s ) << path_ << name_ << id_ << get_type_tpl<RETURN_TYPE>() << ( *func_ )( );
+		ACE_ASSERT(s->os << path_ && s->os << name_
+			&& s->os << id_ && s->os << get_type_tpl<RETURN_TYPE>()
+			&& s->os << ( *func_ )( ));
 	};
 
 	virtual void addToStream(Packet* s)
 	{
-		( *s ) << id_ << ( *func_ )( );
+		//( *s ) << id_ << ( *func_ )( );
+		ACE_ASSERT(s->os << id_
+			&& s->os << ( *func_ )( ));
 	};
 
 	RETURN_TYPE getValue() { return ( *func_ )( ); }
@@ -265,12 +311,15 @@ struct MethodWatcher : public Watcher
 
 	void addToInitStream(Packet* s)
 	{
-		( *s ) << path_ << name_ << id_ << get_type_tpl<RETURN_TYPE>() << ( obj_->*func_ )( );
+		//( *s ) << path_ << name_ << id_ << get_type_tpl<RETURN_TYPE>() << ( obj_->*func_ )( );
+		ACE_ASSERT(s->os << path_ && s->os << name_
+			&& s->os << id_ && s->os << get_type_tpl<RETURN_TYPE>()
+			&& s->os << ( obj_->*func_ )( ));
 	};
 
 	void addToStream(Packet* s)
 	{
-		( *s ) << id_ << ( obj_->*func_ )( );
+		ACE_ASSERT(s->os << id_ && s->os << ( obj_->*func_ )( ));
 	};
 
 	RETURN_TYPE getValue() { return ( obj_->*func_ )( ); }
@@ -296,13 +345,17 @@ struct ConstMethodWatcher : public Watcher
 
 	void addToInitStream(Packet* s)
 	{
-		RETURN_TYPE v = ( obj_->*func_ )( );
-		( *s ) << path_ << name_ << id_ << get_type_tpl<RETURN_TYPE>() << v;
+		//RETURN_TYPE v = ( obj_->*func_ )( );
+		//( *s ) << path_ << name_ << id_ << get_type_tpl<RETURN_TYPE>() << v;
+		ACE_ASSERT(s->os << path_ && s->os << name_
+			&& s->os << id_ && s->os << get_type_tpl<RETURN_TYPE>()
+			&& s->os << ( obj_->*func_ )( ));
 	};
 
 	void addToStream(Packet* s)
 	{
-		( *s ) << id_ << ( obj_->*func_ )( );
+		//( *s ) << id_ << ( obj_->*func_ )( );
+		ACE_ASSERT(s->os << id_ && s->os << ( obj_->*func_ )( ));
 	};
 
 	RETURN_TYPE getValue() { return ( obj_->*func_ )( ); }
@@ -434,6 +487,9 @@ inline Watcher* addWatcher(std::string path, OBJ_TYPE* obj,
 #define CRATE_WATCH_OBJECT addWatcher
 #define DELETE_WATCHER_OBJECT(path)  WatcherPaths::root().delWatcher("root/" + path)
 #define GET_WATCHER_OBJECT(path)  WatcherPaths::root().getWatcher("root/"+path)
+#define GET_VALUE_WATCHER_PTR(Path, Value_Type)  (( ValueWatcher<Value_Type>* )WatcherPaths::root().getWatcher("root/"+Path).get())
+#define GET_FUNC_WATCHER_PTR(Path, Return_Value_Type)  (( FunctionWatcher<Return_Value_Type>* )WatcherPaths::root().getWatcher("root/"+Path).get())
+#define GET_MTD_WATCHER_PTR(Path, Return_Value_Type, Object_Type)  (( MethodWatcher<Return_Value_Type, Object_Type>* )WatcherPaths::root().getWatcher("root/"+Path).get())
 #else
 inline Watcher* __addWatcher(...) { return NULL; }
 #define WATCH_OBJECT __addWatcher
