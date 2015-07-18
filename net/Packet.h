@@ -51,7 +51,7 @@ struct Packet
 	/// THIS ctor us used in packetreader::processpackets to get a reasoanle size of 
 	/// packet to hold the too long payload of a msg
 	Packet(ACE_UINT32 SIZE) :
-		os(SIZE),
+		os(SIZE - ACE_CDR::MAX_ALIGNMENT),
 		osbuff_(const_cast<ACE_Message_Block*>( os.begin() ))
 		, in(osbuff_->base(), osbuff_->size())
 	{
@@ -59,17 +59,18 @@ struct Packet
 
 	void reset(void)
 	{
-		// It is tempting not to remove the memory, 
-		//but we need to do so to release any potential user buffers chained in the continuation field.
-		// we do not need reset os because we do not use any cont memeory
-		//os.reset();
-		osbuff_->reset();
-
-		/// will reset akk of them in the next time in the ctor from pool ctor()
+		/// will reset all of them in the next time in the ctor from pool ctor()
 		//encrypted_ = false;
 		//sentSize = 0;
 		//msgID_ = 0;
 		//pBundle_ = NULL;
+
+		// It is tempting not to remove the memory, but we need to do so to release any potential 
+		// user buffers chained in the continuation field.
+		// however we do not need reset os because we do not use any cont memeory
+		// so we only need to reset the osbuff_
+		// os.reset();
+		osbuff_->reset();
 	}
 
 	/* Make the read ptr = write ptr to show the read is done */
@@ -88,6 +89,7 @@ struct Packet
 		osbuff_->wr_ptr(osbuff_->wr_ptr() + recv_cnt);
 		return recv_cnt;
 	}
+
 	size_t recv(const ACE_SOCK_Dgram& dgram, ACE_INET_Addr& remote_addr)
 	{
 		size_t recv_cnt = dgram.recv(osbuff_->wr_ptr(), osbuff_->space(), remote_addr);
