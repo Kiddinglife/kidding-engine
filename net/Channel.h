@@ -234,7 +234,7 @@ struct  Channel
 	inline void on_bundles_sent_completely(void);
 
 	/**
-	* This method is called when the user lofs off or some network errors happens
+	* This method is called when the user logs off or some network errors happens
 	*/
 	inline void on_error(void);
 

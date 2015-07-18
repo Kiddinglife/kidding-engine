@@ -35,11 +35,15 @@ struct Packet
 		inbuff_(const_cast<ACE_Message_Block*>( in.start() ))
 	{
 		//ACE_DEBUG(( LM_DEBUG, "DEBUG:: come Packet()\n" ));
+		//ACE_DEBUG(( LM_DEBUG, "DEBUG:: os size = %d, waste size = %d, size = %d\n",
+		//osbuff_->end() - osbuff_->base(),
+		//osbuff_->rd_ptr() - osbuff_->base(),
+		//osbuff_->size() ));
 		msgID_ = msgID;
 		encrypted_ = false;
 		pBundle_ = NULL;
 		sentSize = 0;
-		//ACE_DEBUG(( LM_DEBUG, "DEBUG:: leave Packet() \n" ));
+		/*ACE_DEBUG(( LM_DEBUG, "DEBUG:: leave Packet() \n" ));*/
 	}
 
 	/// THIS ctor us used in packetreader::processpackets to get a reasoanle size of 
