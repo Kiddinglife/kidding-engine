@@ -35,10 +35,12 @@ struct Packet
 		inbuff_(const_cast<ACE_Message_Block*>( in.start() ))
 	{
 		//ACE_DEBUG(( LM_DEBUG, "DEBUG:: come Packet()\n" ));
-		//ACE_DEBUG(( LM_DEBUG, "DEBUG:: os size = %d, waste size = %d, size = %d\n",
-		//osbuff_->end() - osbuff_->base(),
-		//osbuff_->rd_ptr() - osbuff_->base(),
-		//osbuff_->size() ));
+
+		// see CDR_Stream.cpp ACE_OutputCDR constructor line 26
+		// start_(( size ? size : (size_t) ACE_CDR::DEFAULT_BUFSIZE ) + ACE_CDR::MAX_ALIGNMENT,
+		// we can see ace automatically + 8 bytes and so we have to PACKET_MAX_SIZE_TCP
+		// ACE_CDR::MAX_ALIGNMENT
+
 		msgID_ = msgID;
 		encrypted_ = false;
 		pBundle_ = NULL;
