@@ -1,4 +1,8 @@
-﻿#ifndef Packet_H_
+﻿/**
+ * Reviewed by Jackie Zhang on 19/07/2015
+ */
+
+#ifndef Packet_H_
 #define Packet_H_
 
 #include "ace\pre.h"
@@ -106,6 +110,9 @@ struct Packet
 	/// Empty means wr_ptr = rd_ptr
 	const bool empty() const { return length() > 0; }
 
+	/// Get the number of bytes available after the <wr_ptr_> 
+	/// in the top-level Message_Block.
+	/// size_t space(void) const;
 	const size_t recv(const ACE_SOCK_Stream& dgram)
 	{
 		size_t recv_cnt = dgram.recv_n(osbuff_->wr_ptr(), osbuff_->space());

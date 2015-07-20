@@ -19,8 +19,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	ACE_TEST_ASSERT(TESTMSG::pmsg1 != NULL);
 
 	g_channelExternalEncryptType = 0;
-
-	Nub              pDispatcher;
+	Nub               pDispatcher;
 
 	ACE_INT32     extlisteningPort_min = 20001;
 	ACE_INT32     extlisteningPort_max = 20005;

@@ -1,46 +1,51 @@
 ﻿/**
- *
+ * firstly reviewed by Jackie Zhang on 19/07/2015
+ * secondly reviewed by Jackie Zhang on 20/07/2015
  */
 
 #ifndef Message_H_
 #define Message_H_
 
 #include "ace\pre.h"
-#include "ace\Null_Mutex.h"
-#include "common\common.h"
-#include "net\net_common.h"
-#include "net\FixedMessages.h"
 #include "net\Packet.h"
+#include "net\FixedMessages.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
+// forward declaration
 class KBE_MD5;
 struct Messages;
 struct FixedMessages;
 
-//extern std::vector<Messages*>* gPtrMsgsPtrContainer;
+// extern std::vector<Messages*>* gPtrMsgsPtrContainer; is wrong because
+// the global variable of basic types can be declared and initialized with given value
+// for example, declare : extern int a; initialization : int a = 12 the same thing happens
+// for the pointer type like extern int* a; a = NULL;
+// however, this way of initialization will not work : a = new int; the value of a will always
+// be NULL;
 extern std::vector<Messages*> gPtrMsgsPtrContainer;
 extern FixedMessages* gPtrFixedMsgs;
+
 
 struct ExposedMessageInfo
 {
 	std::string name;
-	MessageID id;
-	// 对外消息不会超过1500 the outgoing msg will not exceed 15000
-	MessageLength msgLen;
+	MessageID id;                  // 消息id
+	MessageLength msgLen; 	// 对外消息不会超过1500 the outgoing msg will not exceed 1500
 	ACE_INT8 argsType;
 	std::vector<ACE_UINT8> argsTypes;
 };
 
 /**
  * struct MessageArgs
- * @brief
- * this struct is the abstraction of the msg args for a single msg
+ * @Brief
+ * This struct is the abstraction of the msg args for a single msg
  * 一个消息的参数抽象结构
  */
 struct MessageArgs
 {
+
 	enum MESSAGE_ARGS_TYPE
 	{
 		//可变参数长度 variable-arg
@@ -48,9 +53,10 @@ struct MessageArgs
 		//固定参数长度 fixed-arg	
 		MESSAGE_ARGS_TYPE_FIXED = 0
 	};
-	std::vector<std::string> strArgsTypes;
 
+	std::vector<std::string> strArgsTypes;
 	MessageArgs() :strArgsTypes() { };
+
 	virtual ~MessageArgs() { };
 	virtual void fetch_args_from(Packet* p) = 0;
 	virtual void add_args_to(Packet* p) = 0;
@@ -58,6 +64,17 @@ struct MessageArgs
 	virtual MESSAGE_ARGS_TYPE type(void) { return MESSAGE_ARGS_TYPE_FIXED; }
 };
 
+/**
+* struct Message
+*
+* @Brief
+*
+*
+*
+* @Notes
+* 定长消息指的是参数未固定长度的调用，例如 void hello(int)
+* 变长消息指的是参数不固定的条用，例如 void hello(char * str, void* binary_data)
+*/
 struct Message
 {
 	std::string        name_;
@@ -97,8 +114,8 @@ struct Message
 		pool->Dtor(pMsgArgs_);
 	}
 
-	ACE_UINT32 sendavgsize()const { return ( send_count_ <= 0 ) ? 0 : send_size_ / send_count_; }
-	ACE_UINT32 recvavgsize()const { return ( recv_count_ <= 0 ) ? 0 : recv_size_ / recv_count_; }
+	const ACE_UINT32 sendavgsize() const { return ( send_count_ <= 0 ) ? 0 : send_size_ / send_count_; }
+	const ACE_UINT32 recvavgsize() const { return ( recv_count_ <= 0 ) ? 0 : recv_size_ / recv_count_; }
 
 	/// 默认返回类别为组件消息 default returned type is NETWORK_MESSAGE_TYPE_COMPONENT
 	virtual const MESSAGE_CATEGORY category() const
@@ -106,9 +123,9 @@ struct Message
 		return MESSAGE_CATEGORY_COMPONENT;
 	}
 
-	virtual ACE_INT32 msglenMax() { return NETWORK_MESSAGE_MAX_SIZE; }
+	virtual const ACE_INT32 msglenMax() const { return NETWORK_MESSAGE_MAX_SIZE; }
 
-	const char* c_str()
+	const char* c_str() const
 	{
 		static char buf[MAX_BUF];
 		kbe_snprintf(buf, MAX_BUF,
@@ -141,25 +158,19 @@ struct Messages
 	typedef std::map<MessageID, Message*> MessageMap;
 	MessageMap msgs_;
 
-	Messages() :
-		msgID_(1),
-		exposedMessages_(),
-		msgs_()
+	Messages() : msgID_(1), exposedMessages_(), msgs_()
 	{
-		/// 获取 FixedMessages的单例
+		// 获取 FixedMessages的单例
 		gPtrFixedMsgs = ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance();
-		/// 从xml文档中读取固定消息配置
+		// 从xml文档中读取固定消息配置
 		gPtrFixedMsgs->loadConfig("server/messages_fixed.xml");
-		///将该msgs添加到g_pMessagesContainer中去
+		// 将该msgs添加到g_pMessagesContainer中去
 		gPtrMsgsPtrContainer.push_back(this);
-		//gPtrMsgsPtrContainer->push_back(this);
 
 	}
 
-	/**
-	 * release all message stored in msgs_
-	 * 析构函数将负责删除所有的message*指针
-	 */
+	/// release all message stored in msgs_
+	/// 析构函数将负责删除所有的message*指针
 	~Messages()
 	{
 		MessageMap::iterator iter = msgs_.begin();
@@ -189,6 +200,7 @@ struct Messages
 
 	static std::string getDigestStr();
 };
+
 //////////////////////////////////////////////////////////////////////////////////////
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
