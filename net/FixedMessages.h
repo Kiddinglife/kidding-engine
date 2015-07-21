@@ -46,7 +46,7 @@ struct FixedMessages
 	/// 固定的协议数据结构
 	struct MSGInfo { MessageID msgid; std::string msgname; };
 
-	typedef std::tr1::unordered_map<std::string, MSGInfo> MSGINFO_MAP;
+	typedef UnorderedMap<std::string, MSGInfo> MSGINFO_MAP;
 	MSGINFO_MAP infomap_;
 	bool loaded_;
 

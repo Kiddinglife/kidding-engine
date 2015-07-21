@@ -59,6 +59,9 @@
     <ProjectReference Include="..\openssl\vcbuild\ssleay32\ssleay32.vcxproj">
       <Project>{678e55f0-e0f7-4e52-82e4-9ad50f0753b8}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\tinyxml\tinyxml_lib.vcxproj">
+      <Project>{c406daec-0886-4771-8dea-9d7329b46cc1}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EFCDD3B4-0106-4169-9ECC-ECF119F51E66}</ProjectGuid>

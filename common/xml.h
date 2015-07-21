@@ -49,6 +49,7 @@ printf("%s\n", xml->getValStr(node).c_str() );
 #include "tinyxml\tinyxml.h"
 #include "common\common.h"
 #include "common\strulti.h"
+
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 // windows include	
