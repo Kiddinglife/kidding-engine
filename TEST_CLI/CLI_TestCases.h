@@ -27,7 +27,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 
 	g_channelExternalEncryptType = 0;
 	ACE_INET_Addr addr;
-	addr.set(20001, "192.168.2.47");
+	addr.set(20001, "192.168.0.107");
 	ACE_SOCK_Connector logConnector;
 	ACE_Time_Value timeout(30);
 	ACE_SOCK_Stream log;
@@ -65,7 +65,7 @@ TEST(PacketReaderTests, ctor_dtor_test)
 
 	Bundle_Pool->Dtor(p);
 	Packet* pReceiveWindow = Packet_Pool->Ctor();
-	int i = 3;
+	int i = 1;
 	while( i > 0 )
 	{
 		i--;

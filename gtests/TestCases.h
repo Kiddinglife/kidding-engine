@@ -1305,29 +1305,29 @@
 //	pool->Dtor(p);
 //
 //}
-#include "common\Profile.h"
-void hello()
-{
-}
-TEST(pROFILETESTS, aLLTESTS)
-{
-	for( int i = 0; i < 10; i++ )
-	{
-		Profile _localProfile;
-		{
-			{ 	SCOPED_PROFILE(_localProfile); 	hello(); };
-			ACE_DEBUG(( LM_DEBUG,
-				"%s::lastIntTime(%f ms), lastTime(%f ms), sumTime(%f ms),"
-				"sumIntTime(%f ms),runningTime(%f ms) \n",
-				_localProfile.name(),
-				_localProfile.lastIntTimeInSeconds() * 1000,
-				_localProfile.lastTimeInSeconds() * 1000,
-				_localProfile.sumTimeInSeconds() * 1000,
-				_localProfile.sumIntTimeInSeconds() * 1000,
-				(double) runningTime() / stampsPerSecondD() * 1000 ));
-		}
-	}
-}
+//#include "common\Profile.h"
+//void hello()
+//{
+//}
+//TEST(pROFILETESTS, aLLTESTS)
+//{
+//	for( int i = 0; i < 10; i++ )
+//	{
+//		Profile _localProfile;
+//		{
+//			{ 	SCOPED_PROFILE(_localProfile); 	hello(); };
+//			ACE_DEBUG(( LM_DEBUG,
+//				"%s::lastIntTime(%f ms), lastTime(%f ms), sumTime(%f ms),"
+//				"sumIntTime(%f ms),runningTime(%f ms) \n",
+//				_localProfile.name(),
+//				_localProfile.lastIntTimeInSeconds() * 1000,
+//				_localProfile.lastTimeInSeconds() * 1000,
+//				_localProfile.sumTimeInSeconds() * 1000,
+//				_localProfile.sumIntTimeInSeconds() * 1000,
+//				(double) runningTime() / stampsPerSecondD() * 1000 ));
+//		}
+//	}
+//}
 //#include "net\ErrorStatsMgr.h"
 //#include "net\Nub.h"
 //TEST(ErrorStatsMgr, tESTTS)
@@ -1348,6 +1348,8 @@ TEST(pROFILETESTS, aLLTESTS)
 //}
 
 //#include "common\Watcher.h"
+//#include "net\Packet.h"
+//
 //int hello()
 //{
 //	return 12;
@@ -1362,37 +1364,38 @@ TEST(pROFILETESTS, aLLTESTS)
 //};
 //TEST(WatcherTest, watchertests)
 //{
+//	Packet packet;
 //	int a = 12;
 //	tt t;
 //	t.a = 1;
 //
 //	std::string path1 = "watcher1";
 //	CRATE_WATCH_OBJECT(path1, a);
-//	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path1).get() )->getValue()
-//		<< std::endl;
+//	GET_VALUE_WATCHER_PTR(path1, int)->addToInitStream(&packet);
+//	ACE_HEX_DUMP(( LM_DEBUG, packet.osbuff_->rd_ptr()+10, packet.length() ));
+//	std::cout << GET_VALUE_WATCHER_PTR(path1, int)->getValue() << std::endl;
+//
+//	packet.reset();
 //
 //	std::string path2 = "p0/p2/watcher2";
 //	CRATE_WATCH_OBJECT(path2, t.a);
-//	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path2).get() )->getValue()
-//		<< std::endl;
+//	GET_VALUE_WATCHER_PTR(path2, int)->addToInitStream(&packet);
+//	ACE_HEX_DUMP(( LM_DEBUG, packet.osbuff_->base(), packet.length() ));
+//	std::cout << GET_VALUE_WATCHER_PTR(path2, int)->getValue() << std::endl;
 //
 //	std::string path3 = "path1/path2/p3/watcher3";
 //	CRATE_WATCH_OBJECT(path3, &hello);
-//	std::cout << ( ( FunctionWatcher<int>* )GET_WATCHER_OBJECT(path3).get() )->getValue()
-//		<< std::endl;
+//	std::cout << GET_FUNC_WATCHER_PTR(path3, int)->getValue() << std::endl;
 //
 //	std::string path4 = "path1/path2/p5/p4/watcher4";
 //	CRATE_WATCH_OBJECT(path4, &t, &tt::hello);
-//	std::cout << ( ( MethodWatcher<int, tt>* )GET_WATCHER_OBJECT(path4).get() )->
-//		getValue() << std::endl;
+//	std::cout << GET_MTD_WATCHER_PTR(path4, int, tt)->getValue() << std::endl;
 //
 //	a = 2;
 //	t.a = 2;
 //
-//	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path1).get() )->getValue()
-//		<< std::endl;
-//	std::cout << ( ( ValueWatcher<int>* )GET_WATCHER_OBJECT(path2).get() )->getValue()
-//		<< std::endl;
+//	std::cout << GET_VALUE_WATCHER_PTR(path1, int)->getValue() << std::endl;
+//	std::cout << GET_VALUE_WATCHER_PTR(path1, int)->getValue() << std::endl;
 //}
 
 //#include "net\Packet.h"
@@ -1409,3 +1412,24 @@ TEST(pROFILETESTS, aLLTESTS)
 //
 //	std::cout << "a()" << a;
 //}
+//#include "common/common.h"
+//TEST(Commonhpp, TestGnUUID64)
+//{
+//	ACE_Utils::UUID* uptr = kbe_gen_uuid64();
+//	cout << uptr->to_string()->c_str() << endl;
+//}
+#include "ace\CDR_Base.h"
+TEST(ACE_ptr_align_binary_test, tests)
+{
+	char a = 'a';
+	char* aa = &a;
+	char* bb = ACE_ptr_align_binary(aa, ACE_CDR::MAX_ALIGNMENT);
+	std::cout << "aa =  " << reinterpret_cast<uintptr_t> ( aa )
+		<< "bb = " << reinterpret_cast<uintptr_t> ( bb ) << ", 相差 " << bb - aa;
+}
+
+#include "net\Packet.h"
+TEST(packet_alignment_test, tests)
+{
+	Packet p;
+}

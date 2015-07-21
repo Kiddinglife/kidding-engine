@@ -201,6 +201,7 @@ int main(int argc, char* argv[ ])
 					class_< Base::TestClass1 >("TestClass1")
 					.def(constructor())
 				],
+
 				class_< TestClass3 >("TestClass3")
 				.def(constructor< int >())
 				.def("TestFun3", &TestClass3::TestFun3)
@@ -220,14 +221,14 @@ int main(int argc, char* argv[ ])
 				testCS->TestFun();
 			};
 			ACE_DEBUG(( LM_DEBUG,
-				"%s::lastIntTime(%f s), lastTime(%f s), sumTime(%f s),"
-				"sumIntTime(%f s),runningTime(%f s) \n",
+				"%s::lastIntTime(%f ms), lastTime(%f ms), sumTime(%f ms),"
+				"sumIntTime(%f ms),runningTime(%f ms) \n",
 				_localProfile.name(),
-				_localProfile.lastIntTimeInSeconds(),
-				_localProfile.lastTimeInSeconds(),
-				_localProfile.sumTimeInSeconds(),
-				_localProfile.sumIntTimeInSeconds(),
-				(double) runningTime() / stampsPerSecondD() ));
+				_localProfile.lastIntTimeInSeconds()*1000,
+				_localProfile.lastTimeInSeconds()*1000,
+				_localProfile.sumTimeInSeconds()*1000,
+				_localProfile.sumIntTimeInSeconds()*1000,
+				(double) runningTime() / stampsPerSecondD()*1000 ));
 		}
 	}
 	delete testCS;

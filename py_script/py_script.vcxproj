@@ -83,6 +83,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="py_macros.h" />
+    <ClInclude Include="Script.h" />
     <ClInclude Include="Scriptable.h" />
   </ItemGroup>
   <ItemGroup>
@@ -119,6 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="py_macros.cpp" />
+    <ClCompile Include="Script.cpp" />
     <ClCompile Include="Scriptable.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -19,6 +19,8 @@
     <ClInclude Include="deadline.hpp" />
     <ClInclude Include="format.h" />
     <ClInclude Include="Profile.h" />
+    <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="ResourceObject.h" />
     <ClInclude Include="task.h" />
     <ClInclude Include="tasks.h" />
     <ClInclude Include="kbekey.hpp" />
@@ -33,6 +35,7 @@
     <ClInclude Include="timestamp.hpp" />
     <ClInclude Include="user_settings.h" />
     <ClInclude Include="Watcher.h" />
+    <ClInclude Include="xml.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common.cpp" />
@@ -42,6 +45,8 @@
     <ClCompile Include="kbe_version.cpp" />
     <ClCompile Include="md5.cpp" />
     <ClCompile Include="Profile.cpp" />
+    <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="ResourceObject.cpp" />
     <ClCompile Include="rsa.cpp" />
     <ClCompile Include="sha1.cpp" />
     <ClCompile Include="timestamp.cpp" />
@@ -53,6 +58,9 @@
     </ProjectReference>
     <ProjectReference Include="..\openssl\vcbuild\ssleay32\ssleay32.vcxproj">
       <Project>{678e55f0-e0f7-4e52-82e4-9ad50f0753b8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\tinyxml\tinyxml_lib.vcxproj">
+      <Project>{c406daec-0886-4771-8dea-9d7329b46cc1}</Project>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">

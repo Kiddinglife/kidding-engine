@@ -4,7 +4,7 @@
 #include "ace\pre.h"
 #include "ace\Intrusive_Auto_Ptr.h"
 #include "common\common.h"
-//#include "net\Packet.h"
+#include "net\Packet.h"
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 #if KBE_PLATFORM == PLATFORM_WIN32

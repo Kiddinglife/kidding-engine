@@ -2,6 +2,7 @@
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 namespace PythonScripts
 {
+	extern bool g_debugEntity;
 	ScriptObject::SCRIPTOBJECT_TYPES ScriptObject::scriptObjectTypes;
 
 	//SCRIPT_METHOD_DECLARE_BEGIN(ScriptObject)
@@ -18,48 +19,47 @@ namespace PythonScripts
 	PyGetSetDef ScriptObject::_ScriptObject_scriptGetSeters[ ] = { { NULL } };
 
 	//SCRIPT_INIT(ScriptObject, 0, 0, 0, 0, 0)
-	//#define SCRIPT_INIT(CLASS, CALL, SEQ, MAP, ITER, ITERNEXT)  TEMPLATE_SCRIPT_INIT(;,CLASS, CLASS, CALL, SEQ, MAP, ITER, ITERNEXT)	
 	PyMethodDef* ScriptObject::_ScriptObject_lpScriptmethods = NULL;
 	PyMemberDef* ScriptObject::_ScriptObject_lpScriptmembers = NULL;
 	PyGetSetDef* ScriptObject::_ScriptObject_lpgetseters = NULL;
 	PyTypeObject ScriptObject::_scriptType =
 	{
 		PyVarObject_HEAD_INIT(&PyType_Type, 0)
-		"ScriptObject",							        /* tp_name            */
-		sizeof(ScriptObject),					        /* tp_basicsize       */
-		0,														/* tp_itemsize       */
-		(destructor) ScriptObject::_tp_dealloc,/* tp_dealloc        */
-		0,														/* tp_print            */
-		0,														/* tp_getattr         */
-		0,														/* tp_setattr         */
-		0,														/* tp_compare     */
-		ScriptObject::_tp_repr,				        /* tp_repr            */
+		"ScriptObject",							        /* tp_name */
+		sizeof(ScriptObject),					        /* tp_basicsize */
+		0,														/* tp_itemsize */
+		(destructor) ScriptObject::_tp_dealloc,/* tp_dealloc */
+		0,														/* tp_print */
+		0,														/* tp_getattr */
+		0,														/* tp_setattr */
+		0,														/* tp_compare */
+		ScriptObject::_tp_repr,				        /* tp_repr */
 		0,														/* tp_as_number  */
 		0,													    /* tp_as_sequence */
-		0,											            /* tp_as_mapping  */
+		0,											            /* tp_as_mapping */
 		0,														/* tp_hash */
-		0,												        /* tp_call  */
-		ScriptObject::_tp_str,					        /* tp_str   */
+		0,												        /* tp_call */
+		ScriptObject::_tp_str,					        /* tp_str */
 		(getattrofunc) ScriptObject::_tp_getattro,	/* tp_getattro */
-		(setattrofunc) ScriptObject::_tp_setattro,	/* tp_setattro  */
-		0,														    /* tp_as_buffer */
-		Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,/* tp_flags  */
+		(setattrofunc) ScriptObject::_tp_setattro,	/* tp_setattro */
+		0,														        /* tp_as_buffer */
+		Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,/* tp_flags */
 		"KBEngine::" "ScriptObject" " objects.",	/* tp_doc */
 		0,														/* tp_traverse */
 		0,														/* tp_clear */
 		0,														/* tp_richcompare */
-		0,														/* tp_weaklistoffset*/
-		0,													    /* tp_iter             */
-		0,											            /* tp_iternext      */
-		0,														/* tp_methods    */
-		0,														/* tp_members   */
-		0,														/* tp_getset        */
-		ScriptObject::getBaseScriptType(),	    /* tp_base          */
-		0,														/* tp_dict           */
-		0,														/* tp_descr_get  */
-		0,														/* tp_descr_set  */
+		0,														/* tp_weaklistoffset */
+		0,													    /* tp_iter  */
+		0,											            /* tp_iternext   */
+		0,														/* tp_methods */
+		0,														/* tp_members */
+		0,														/* tp_getset */
+		ScriptObject::getBaseScriptType(),	    /* tp_base */
+		0,														/* tp_dict */
+		0,														/* tp_descr_get */
+		0,														/* tp_descr_set */
 		ScriptObject::calcDictOffset(),            /* tp_dictoffset */
-		(initproc) ScriptObject::_tp_init,	        /* tp_init */
+		(initproc) ScriptObject::_tp_init,	        /* tp_init  */
 		0,														/* tp_alloc */
 		ScriptObject::_tp_new,				        /* tp_new  */
 		PyObject_GC_Del,							    /* tp_free  */
@@ -77,7 +77,6 @@ namespace PythonScripts
 			PyObject_INIT(static_cast<PyObject*>( this ), pyType);
 		}
 	}
-
 	ScriptObject::~ScriptObject()
 	{
 		ACE_ASSERT(this->ob_refcnt == 0 && "OB_REFCNT != 0 when destruct ");
@@ -91,6 +90,27 @@ namespace PythonScripts
 		return NULL;
 	}
 
+	PyObject* ScriptObject::tp_repr()
+	{
+		if( g_debugEntity )
+			return PyUnicode_FromFormat("%s object at %p, refc=%u.",
+			this->scriptName(),
+			this,
+			( ACE_UINT32 )static_cast<PyObject*>( this )->ob_refcnt);
+
+		return PyUnicode_FromFormat("%s object at %p.", this->scriptName(), this);
+	}
+	PyObject* ScriptObject::tp_str()
+	{
+		if( g_debugEntity )
+			return PyUnicode_FromFormat("%s object at %p, refc=%u.",
+			this->scriptName(),
+			this,
+			( ACE_UINT32 )static_cast<PyObject*>( this )->ob_refcnt);
+
+		return PyUnicode_FromFormat("%s object at %p.", this->scriptName(), this);
+	}
+
 	int ScriptObject::__py_readonly_descr(PyObject* self, PyObject* value, void* closure)
 	{
 		PyErr_Format(PyExc_TypeError,
@@ -100,7 +120,6 @@ namespace PythonScripts
 		PyErr_PrintEx(0);
 		return 0;
 	}
-
 	int ScriptObject::__py_writeonly_descr(PyObject* self, PyObject* value, void* closure)
 	{
 		PyErr_Format(PyExc_TypeError,
@@ -125,7 +144,6 @@ namespace PythonScripts
 			return nlen;
 		return ScriptObject::calcTotalMethodCount() + nlen;
 	}
-
 	int ScriptObject::calcTotalMemberCount(void)
 	{
 		int nlen = 0;
@@ -141,7 +159,6 @@ namespace PythonScripts
 			return nlen;
 		return ScriptObject::calcTotalMemberCount() + nlen;
 	}
-
 	int ScriptObject::calcTotalGetSetCount(void)
 	{
 		int nlen = 0;
@@ -205,7 +222,6 @@ namespace PythonScripts
 
 		ScriptObject::setupScriptMethodAndAttribute(lppmf, lppmd, lppgs);
 	}
-
 	void ScriptObject::installScript(PyObject* mod, const char* name)
 	{
 		int nMethodCount = ScriptObject::calcTotalMethodCount();

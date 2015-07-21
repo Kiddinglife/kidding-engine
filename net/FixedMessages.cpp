@@ -1,49 +1,74 @@
 ﻿#include "FixedMessages.h"
-
+#include "common\xml.h"
+#include "common\ResourceManager.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
-/**
- * @brief
- * if the msg with the specific name is stored in map, it is  fixed-len msg
- * \n
- * @param msgName
- *\n
- * @ret NULL if it is variable-len msg the pointer if it is fixed-len msg
- */
- FixedMessages::MSGInfo* FixedMessages::isFixed(const std::string& msgName)
+
+const FixedMessages::MSGInfo* FixedMessages::isFixed(const std::string& msgName)
 {
 	MSGINFO_MAP::iterator iter = infomap_.find(msgName);
 	return iter != infomap_.end() ? &iter->second : NULL;
 }
 
-/**
-* @brief
-* if the msg with the specific msgid is stored in map, it is  fixed-len msg
-*\n
-* @param msgid
-*\n
-* @ret false if it is variable-len msg or true if it is fixed-len msg
-*/
-bool FixedMessages::isFixed(MessageID msgid)
+const bool FixedMessages::isFixed(const MessageID msgid)
 {
 	MSGINFO_MAP::iterator iter = infomap_.begin();
 	while( iter != infomap_.end() )
 	{
-		FixedMessages::MSGInfo& infos = iter->second;
-		if( infos.msgid == msgid )
-			return true;
+		if( iter->second.msgid == msgid ) return true;
 		++iter;
 	}
 	return false;
 }
 
-bool FixedMessages::loadConfig(std::string fileName)
+const bool FixedMessages::loadConfig(const std::string fileName)
 {
-	//TRACE("FixedMessages::loadConfig()");
-	//TRACE_RETURN(true);
-	return true;
+	TRACE("FixedMessages::loadConfig()");
+
+	if( loaded_ ) return true;
+
+	ResourceManager* instance = ACE_Singleton<ResourceManager, ACE_Null_Mutex>::instance();
+	const char* name = instance->get_res_path(fileName).c_str();
+
+	TiXmlNode* node = NULL;
+	TiXmlNode* rootNode = NULL;
+
+	XML* xml = new XML(name);
+	if( !xml->isGood() )
+	{
+		loaded_ = false;
+		ACE_ERROR_RETURN(( LM_ERROR,
+			"[ERROR]: FixedMessages::loadConfig: load { %s } is failed!\n", fileName.c_str() ), false);
+	} else
+	{
+		loaded_ = true;
+	}
+
+	rootNode = xml->getRootNode();
+	if( rootNode != NULL )
+	{
+		XML_FOR_BEGIN(rootNode)
+		{
+			node = xml->enterNode(rootNode->FirstChild(), "id");
+
+			FixedMessages::MSGInfo info;
+			info.msgid = xml->getValInt(node);
+			info.msgname = xml->getKey(rootNode);
+
+			infomap_[info.msgname] = info;
+		}
+		XML_FOR_END(rootNode);
+	} else
+	{
+		// root节点下没有子节点了
+		return true;
+	}
+
+	delete xml;
+
+	TRACE_RETURN(true);
 }
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

@@ -19,16 +19,15 @@ TEST(PacketReaderTests, ctor_dtor_test)
 	ACE_TEST_ASSERT(TESTMSG::pmsg1 != NULL);
 
 	g_channelExternalEncryptType = 0;
-
-	Nub              pDispatcher;
+	Nub               pDispatcher;
 
 	ACE_INT32     extlisteningPort_min = 20001;
 	ACE_INT32     extlisteningPort_max = 20005;
-	const char *    extlisteningInterface = "192.168.2.47";
+	const char *    extlisteningInterface = "192.168.0.107";
 	ACE_UINT32   extrbuffer = 0;
 	ACE_UINT32   extwbuffer = 0;
 	ACE_INT32      intlisteningPort = 20006;
-	const char *    intlisteningInterface = "192.168.2.47";
+	const char *    intlisteningInterface = "192.168.0.107";
 	ACE_UINT32   intrbuffer = 0;
 	ACE_UINT32   intwbuffer = 0;
 

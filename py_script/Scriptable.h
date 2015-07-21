@@ -50,7 +50,7 @@ namespace PythonScripts
 		int onScriptSetAttribute(PyObject* attr, PyObject* value) { return PyObject_GenericSetAttr(static_cast<PyObject*>( this ), attr, value); }
 
 		// 脚本请求删除一个属性
-		int onScriptDelAttribute(PyObject* attr);
+		int onScriptDelAttribute(PyObject* attr) { return this->onScriptSetAttribute(attr, NULL); }
 
 		// 脚本请求初始化
 		int onScriptInit(PyObject* self, PyObject *args, PyObject* kwds) { return 0; }
