@@ -20,7 +20,6 @@
     <ClInclude Include="format.h" />
     <ClInclude Include="Profile.h" />
     <ClInclude Include="ResourceManager.h" />
-    <ClInclude Include="ResourceObject.h" />
     <ClInclude Include="task.h" />
     <ClInclude Include="tasks.h" />
     <ClInclude Include="kbekey.hpp" />
@@ -46,7 +45,6 @@
     <ClCompile Include="md5.cpp" />
     <ClCompile Include="Profile.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="ResourceObject.cpp" />
     <ClCompile Include="rsa.cpp" />
     <ClCompile Include="sha1.cpp" />
     <ClCompile Include="timestamp.cpp" />
