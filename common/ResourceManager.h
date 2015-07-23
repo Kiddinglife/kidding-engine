@@ -22,6 +22,9 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 #define RESOURCE_WRITE        0x00000004
 #define RESOURCE_APPEND     0x00000008
 
+struct ResourceObject;
+typedef ACE_Refcounted_Auto_Ptr<ResourceObject, ACE_Null_Mutex> ResourceObjectRefAutoPtr;
+
 /**
 * struct FixedMessages
 *
@@ -86,15 +89,13 @@ struct FileObject : public ResourceObject
 	FILE* fd_;
 };
 
-typedef ACE_Refcounted_Auto_Ptr<ResourceObject, ACE_Null_Mutex> ResourceObjectAutoPtr;
-
 struct ResourceManager : public ACE_Event_Handler
 {
 	// 引擎环境变量
-	struct KBEEnv
+	struct Env
 	{
-		std::string root;
-		std::string res_path;
+		std::string root_path;
+		std::string all_res_paths;
 		std::string bin_path;
 	};
 
@@ -103,10 +104,10 @@ struct ResourceManager : public ACE_Event_Handler
 	static ACE_UINT32 respool_checktick;
 
 	bool isInit_;
-	KBEEnv kb_env_;
+	Env kb_env_;
 	ACE_Thread_Mutex mutex_;
 	std::vector<std::string> respaths_;
-	UnorderedMap< std::string, ResourceObjectAutoPtr> respool_;
+	UnorderedMap< std::string, ResourceObjectRefAutoPtr> respool_;
 
 	ResourceManager();
 	virtual ~ResourceManager();
@@ -128,7 +129,11 @@ struct ResourceManager : public ACE_Event_Handler
 	/// 遍历所有的资源路径(环境变量中指定的)，匹配到完整的资源地址
 	/// 使用该路径打开资源
 	/// open the resource based on the conpleted path
-	FILE* open_res(const std::string res, const char* mode);
+	FILE* open_res(const std::string res_name, const char* mode);
+
+	/// 获得当前编译时的文件夹路径，并由此获取根文件夹路径，将所有需要的完整路径都
+	/// 存入env.all_res_paths中，以；来分割不同的文件夹路径
+	void set_env_res_path();
 };
 
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

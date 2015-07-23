@@ -1418,18 +1418,23 @@
 //	ACE_Utils::UUID* uptr = kbe_gen_uuid64();
 //	cout << uptr->to_string()->c_str() << endl;
 //}
-#include "ace\CDR_Base.h"
-TEST(ACE_ptr_align_binary_test, tests)
+//#include "ace\CDR_Base.h"
+//TEST(ACE_ptr_align_binary_test, tests)
+//{
+//	char a = 'a';
+//	char* aa = &a;
+//	char* bb = ACE_ptr_align_binary(aa, ACE_CDR::MAX_ALIGNMENT);
+//	std::cout << "aa =  " << reinterpret_cast<uintptr_t> ( aa )
+//		<< "bb = " << reinterpret_cast<uintptr_t> ( bb ) << ", 相差 " << bb - aa;
+//}
+//
+//#include "net\Packet.h"
+//TEST(packet_alignment_test, tests)
+//{
+//	Packet p;
+//}
+#include "common\ResourceManager.h"
+TEST(ResourceManagerTest, tests)
 {
-	char a = 'a';
-	char* aa = &a;
-	char* bb = ACE_ptr_align_binary(aa, ACE_CDR::MAX_ALIGNMENT);
-	std::cout << "aa =  " << reinterpret_cast<uintptr_t> ( aa )
-		<< "bb = " << reinterpret_cast<uintptr_t> ( bb ) << ", 相差 " << bb - aa;
-}
-
-#include "net\Packet.h"
-TEST(packet_alignment_test, tests)
-{
-	Packet p;
+	ResourceManager mgr;
 }

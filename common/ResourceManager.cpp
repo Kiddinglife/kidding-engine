@@ -97,13 +97,14 @@ ResourceManager::~ResourceManager()
 
 int ResourceManager::handle_timeout(const ACE_Time_Value &current_time, const void * data)
 {
+	//update();
 	return 0;
 }
 
 bool ResourceManager::initialize_watchers()
 {
-	CRATE_WATCH_OBJECT("syspaths/KBE_ROOT", kb_env_.root);
-	CRATE_WATCH_OBJECT("syspaths/KBE_RES_PATH", kb_env_.res_path);
+	CRATE_WATCH_OBJECT("syspaths/KBE_ROOT", kb_env_.root_path);
+	CRATE_WATCH_OBJECT("syspaths/KBE_RES_PATH", kb_env_.all_res_paths);
 	CRATE_WATCH_OBJECT("syspaths/KBE_BIN_PATH", kb_env_.bin_path);
 	return true;
 }
@@ -136,6 +137,8 @@ std::string ResourceManager::get_res_path(const char* res_name)
 
 const bool ResourceManager::if_res_exist(const std::string& res)
 {
+	TRACE("ResourceManager::if_res_exist");
+
 	FILE * f = NULL;
 	std::string fpath;
 	std::vector<std::string>::iterator iter = respaths_.begin();
@@ -151,16 +154,76 @@ const bool ResourceManager::if_res_exist(const std::string& res)
 		if( f != NULL )
 		{
 			fclose(f);
-			return true;
+			TRACE_RETURN(true);
+			//return true;
 		}
 	}
 
-	return false;
+	TRACE_RETURN(false);
+	//return false;
 }
 
-FILE* ResourceManager::open_res(const std::string res, const char* mode)
+FILE* ResourceManager::open_res(const std::string res_name, const char* mode)
 {
-	return nullptr;
+	TRACE("ResourceManager::open_res");
+
+	FILE * f = NULL;
+	std::string fpath;
+	std::vector<std::string>::iterator iter = respaths_.begin();
+
+	for( ; iter != respaths_.end(); ++iter )
+	{
+		fpath = ( ( *iter ) + res_name );
+
+		STRUTIL::kbe_replace(fpath, "\\", "/");
+		STRUTIL::kbe_replace(fpath, "//", "/");
+
+		f = ACE_OS::fopen(fpath.c_str(), "r");
+		if( f != NULL )
+		{
+			TRACE_RETURN(f);
+			//return f;
+		}
+	}
+
+	TRACE_RETURN(NULL);
+	//return NULL;
+}
+
+void ResourceManager::set_env_res_path()
+{
+	TRACE("ResourceManager::set_env_res_path");
+
+	char path[MAX_PATH];
+	if( ACE_OS::getcwd(path, MAX_PATH) == NULL )
+	{
+		ACE_DEBUG(( LM_ERROR, "getcwd fails\n" ));
+		return;
+	}
+
+	std::string s = path;
+	std::string::size_type pos1 = s.find("\\zmd\\bin\\");
+
+	if( pos1 == std::string::npos )
+		pos1 = s.find("/zmd/bin/");
+
+	if( pos1 == std::string::npos )
+	{
+		ACE_DEBUG(( LM_ERROR, "find \\zmd\\bin\\ \n" ));
+		return;
+	}
+
+	// get root paths
+	s = s.substr(0, pos1 + 1);
+	kb_env_.root_path = s;
+
+	kb_env_.all_res_paths =
+		kb_env_.root_path + "zmd/res/;" +
+		kb_env_.root_path + "zmd/assets/;" +
+		kb_env_.root_path + "/assets/scripts/;" +
+		kb_env_.root_path + "/assets/res/";
+
+	TRACE_RETURN_VOID();
 }
 
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL
