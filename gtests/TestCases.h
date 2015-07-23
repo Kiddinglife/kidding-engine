@@ -1437,4 +1437,8 @@
 TEST(ResourceManagerTest, tests)
 {
 	ResourceManager mgr;
+	mgr.set_env_res_paths();
+	std::string test_path = mgr.get_res_path("test");
+	ACE_DEBUG(( LM_DEBUG, "TEST PATH {%s}\n", test_path.c_str() ));
+
 }

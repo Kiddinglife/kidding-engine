@@ -104,7 +104,7 @@ struct ResourceManager : public ACE_Event_Handler
 	static ACE_UINT32 respool_checktick;
 
 	bool isInit_;
-	Env kb_env_;
+	Env env_;
 	ACE_Thread_Mutex mutex_;
 	std::vector<std::string> respaths_;
 	UnorderedMap< std::string, ResourceObjectRefAutoPtr> respool_;
@@ -116,6 +116,18 @@ struct ResourceManager : public ACE_Event_Handler
 
 	bool initialize_watchers();
 
+	/// 初始化所有资源对应的路径
+	/// initialize the paths of all the resources
+	bool init();
+
+	/// 所有路径的分隔符统一调整为 斜杠 /
+	/// ajust path slash /
+	void adjust_paths();
+
+	/// 遍历检查每一个res的有效性，删除过期或者无效的res
+	/// loop every resource objct and delete the overdue or invalid objects
+	void update_respool();
+
 	/// 遍历所有的资源路径(环境变量中指定的)，匹配到完整的资源地址
 	/// 检查文件是否存在，存在返回完整的路径，否则将文件名称原封不动的返回
 	/// get resource complete path based on the given resource name
@@ -124,7 +136,7 @@ struct ResourceManager : public ACE_Event_Handler
 
 	/// 遍历所有的资源路径(环境变量中指定的)，匹配到完整的资源地址
 	/// 检查文件是否存在，存在返回true，否则返回false
-	const bool if_res_exist(const std::string& res);
+	bool if_res_exist(const std::string& res);
 
 	/// 遍历所有的资源路径(环境变量中指定的)，匹配到完整的资源地址
 	/// 使用该路径打开资源
@@ -133,7 +145,9 @@ struct ResourceManager : public ACE_Event_Handler
 
 	/// 获得当前编译时的文件夹路径，并由此获取根文件夹路径，将所有需要的完整路径都
 	/// 存入env.all_res_paths中，以；来分割不同的文件夹路径
-	void set_env_res_path();
+	void set_env_res_paths();
+
+
 };
 
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

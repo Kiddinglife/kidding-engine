@@ -82,7 +82,7 @@ ACE_UINT32 ResourceManager::respool_buffersize = 0;
 ACE_UINT32 ResourceManager::respool_checktick = 0;
 
 ResourceManager::ResourceManager() :
-kb_env_(),
+env_(),
 respaths_(),
 isInit_(false),
 respool_(),
@@ -97,16 +97,142 @@ ResourceManager::~ResourceManager()
 
 int ResourceManager::handle_timeout(const ACE_Time_Value &current_time, const void * data)
 {
-	//update();
+	update_respool();
 	return 0;
 }
 
 bool ResourceManager::initialize_watchers()
 {
-	CRATE_WATCH_OBJECT("syspaths/KBE_ROOT", kb_env_.root_path);
-	CRATE_WATCH_OBJECT("syspaths/KBE_RES_PATH", kb_env_.all_res_paths);
-	CRATE_WATCH_OBJECT("syspaths/KBE_BIN_PATH", kb_env_.bin_path);
+	CRATE_WATCH_OBJECT("syspaths/ZMD_ROOT", env_.root_path);
+	CRATE_WATCH_OBJECT("syspaths/ZMD_RES_PATH", env_.all_res_paths);
+	CRATE_WATCH_OBJECT("syspaths/ZMD_BIN_PATH", env_.bin_path);
 	return true;
+}
+
+bool ResourceManager::init()
+{
+	// 获取引擎环境配置 get the env config
+	env_.root_path = ACE_OS::getenv("ZMD_ROOT") == NULL ?
+		"" : ACE_OS::getenv("KBE_ROOT");
+	env_.all_res_paths =
+		ACE_OS::getenv("ZMD_RES_PATH") == NULL ? "" : ACE_OS::getenv("KBE_RES_PATH");
+	env_.bin_path =
+		ACE_OS::getenv("ZMD_BIN_PATH") == NULL ? "" : ACE_OS::getenv("KBE_BIN_PATH");
+
+	/**
+	env_.root_path			    = "/home/kbengine/";
+	env_.bin_path		= "/home/kbengine/kbe/bin/server/";
+	env_.all_res_paths		=
+	"/home/kbengine/kbe/res/;/home/kbengine/assets/;
+	/home/kbengine/assets/scripts/;
+	/home/kbengine/assets/res/";
+	*/
+
+	adjust_paths();
+	return false;
+}
+
+void ResourceManager::adjust_paths()
+{
+	char ch;
+
+	// root_path 是一个非空的字符串
+	// root_path is not a null string
+	if( env_.root_path.size() > 0 )
+	{
+		// 得到末尾字符， 看情况是否需要添加 "/"
+		// get the last char to see if it is needed to add "/"
+		ch = env_.root_path.at(env_.root_path.size() - 1);
+		if( ch != '/' && ch != '\\' ) env_.root_path += "/";
+
+		// 将所有的 \\ 替换为 /
+		// repalce all \\ to /
+		STRUTIL::kbe_replace(env_.root_path, "\\", "/");
+		STRUTIL::kbe_replace(env_.root_path, "//", "/");
+
+		ACE_DEBUG(( LM_DEBUG, "env_.root_path {}\n", env_.root_path.c_str() ));
+	}
+
+	// bin_path 是一个非空的字符串
+	// bin_path is not a null string
+	if( env_.bin_path.size() > 0 )
+	{
+		// 得到末尾字符， 看情况是否需要添加 "/"
+		// get the last char to see if it is needed to add "/"
+		ch = env_.bin_path.at(env_.bin_path.size() - 1);
+		if( ch != '/' && ch != '\\' ) env_.bin_path += "/";
+
+		// 将所有的 \\ 替换为 /
+		// repalce all \\ to /
+		STRUTIL::kbe_replace(env_.bin_path, "\\", "/");
+		STRUTIL::kbe_replace(env_.bin_path, "//", "/");
+
+		ACE_DEBUG(( LM_DEBUG, "env_.bin_path {}\n", env_.bin_path.c_str()));
+	}
+
+	// 以 ; 分割所有的字符串，并将其把存在respaths_中
+	// slipt the string using ;, and store the result into @param respaths_
+	char splitFlag = ';';
+	respaths_.clear();
+	std::string tbuf = env_.all_res_paths;
+	STRUTIL::kbe_split<char>(tbuf, splitFlag, respaths_);
+
+	// windows用户不能分割冒号， 可能会把盘符给分割了
+#if KBE_PLATFORM != PLATFORM_WIN32
+	if( respaths_.size() < 2 )
+	{
+		respaths_.clear();
+		splitFlag = ':';
+		STRUTIL::kbe_split<char>(tbuf, splitFlag, respaths_);
+	}
+#endif
+
+	env_.all_res_paths = "";
+	std::vector<std::string>::iterator iter = respaths_.begin();
+	for( ; iter != respaths_.end(); ++iter )
+	{
+		if( ( *iter ).size() <= 0 )
+			continue;
+
+		ch = ( *iter ).at(( *iter ).size() - 1);
+		if( ch != '/' && ch != '\\' )
+			( *iter ) += "/";
+
+		env_.all_res_paths += ( *iter );
+		env_.all_res_paths += splitFlag;
+		STRUTIL::kbe_replace(env_.all_res_paths, "\\", "/");
+		STRUTIL::kbe_replace(env_.all_res_paths, "//", "/");
+	}
+
+	if( env_.all_res_paths.size() > 0 )
+		env_.all_res_paths.erase(env_.all_res_paths.size() - 1);
+}
+void ResourceManager::update_respool()
+{
+	TRACE("ResourceManager::get_res_path");
+
+	ACE_Guard<ACE_Thread_Mutex> guard(mutex_);
+	if( !guard.locked() )
+	{
+		// handle error ...
+		ACE_DEBUG(( LM_ERROR, "guard error\n" ));
+	} else
+	{
+		// perform critical operation requiring lock to be held ...
+		UnorderedMap< std::string, ResourceObjectRefAutoPtr>::iterator iter = respool_.begin();
+		for( ; iter != respool_.end(); )
+		{
+			if( !iter->second->valid() )
+			{
+				respool_.erase(iter++);
+			} else
+			{
+				iter++;
+			}
+		}
+	}
+
+	TRACE_RETURN_VOID();
 }
 
 std::string ResourceManager::get_res_path(const char* res_name)
@@ -135,7 +261,7 @@ std::string ResourceManager::get_res_path(const char* res_name)
 	//return res_name;
 }
 
-const bool ResourceManager::if_res_exist(const std::string& res)
+bool ResourceManager::if_res_exist(const std::string& res)
 {
 	TRACE("ResourceManager::if_res_exist");
 
@@ -190,7 +316,7 @@ FILE* ResourceManager::open_res(const std::string res_name, const char* mode)
 	//return NULL;
 }
 
-void ResourceManager::set_env_res_path()
+void ResourceManager::set_env_res_paths()
 {
 	TRACE("ResourceManager::set_env_res_path");
 
@@ -202,7 +328,10 @@ void ResourceManager::set_env_res_path()
 	}
 
 	std::string s = path;
-	std::string::size_type pos1 = s.find("\\zmd\\bin\\");
+	ACE_DEBUG(( LM_DEBUG, "cwd path {%s}\n", s.c_str() ));
+	//\ZMD-SERVER\MyTests1
+	//std::string::size_type pos1 = s.find("\\zmd\\bin\\");
+	std::string::size_type pos1 = s.find("\\ZMD-SERVER\\MyTests1");
 
 	if( pos1 == std::string::npos )
 		pos1 = s.find("/zmd/bin/");
@@ -213,16 +342,18 @@ void ResourceManager::set_env_res_path()
 		return;
 	}
 
-	// get root paths
+	// get root_path paths
 	s = s.substr(0, pos1 + 1);
-	kb_env_.root_path = s;
+	env_.root_path = s;
+	ACE_DEBUG(( LM_DEBUG, "env_.root_path {%s}\n", s.c_str() ));
 
-	kb_env_.all_res_paths =
-		kb_env_.root_path + "zmd/res/;" +
-		kb_env_.root_path + "zmd/assets/;" +
-		kb_env_.root_path + "/assets/scripts/;" +
-		kb_env_.root_path + "/assets/res/";
+	env_.all_res_paths =
+		env_.root_path + "zmd/res/;" +
+		env_.root_path + "zmd/assets/;" +
+		env_.root_path + "/assets/scripts/;" +
+		env_.root_path + "/assets/res/";
 
+	ACE_DEBUG(( LM_DEBUG, "env_.root_path {%s}\n", env_.all_res_paths.c_str() ));
 	TRACE_RETURN_VOID();
 }
 
