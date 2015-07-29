@@ -136,7 +136,7 @@ void ResourceManager::adjust_paths()
 {
 	char ch;
 
-	///// root_path 是一个非空的字符串 //////
+	// root_path 是一个非空的字符串
 	// root_path is not a null string
 	if( env_.root_path.size() > 0 )
 	{
@@ -153,7 +153,7 @@ void ResourceManager::adjust_paths()
 		ACE_DEBUG(( LM_DEBUG, "env_.root_path {}\n", env_.root_path.c_str() ));
 	}
 
-	///// bin_path 是一个非空的字符串 /////
+	// bin_path 是一个非空的字符串
 	// bin_path is not a null string
 	if( env_.bin_path.size() > 0 )
 	{
@@ -167,7 +167,7 @@ void ResourceManager::adjust_paths()
 		STRUTIL::kbe_replace(env_.bin_path, "\\", "/");
 		STRUTIL::kbe_replace(env_.bin_path, "//", "/");
 
-		ACE_DEBUG(( LM_DEBUG, "env_.bin_path {}\n", env_.bin_path.c_str() ));
+		ACE_DEBUG(( LM_DEBUG, "env_.bin_path {}\n", env_.bin_path.c_str()));
 	}
 
 	// 以 ; 分割所有的字符串，并将其把存在respaths_中
@@ -353,7 +353,7 @@ void ResourceManager::set_env_res_paths()
 		env_.root_path + "/assets/scripts/;" +
 		env_.root_path + "/assets/res/";
 
-	ACE_DEBUG(( LM_DEBUG, "env_.all_res_paths {%s}\n", env_.all_res_paths.c_str() ));
+	ACE_DEBUG(( LM_DEBUG, "env_.root_path {%s}\n", env_.all_res_paths.c_str() ));
 	TRACE_RETURN_VOID();
 }
 
