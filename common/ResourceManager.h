@@ -28,6 +28,11 @@ typedef ACE_Refcounted_Auto_Ptr<ResourceObject, ACE_Null_Mutex> ResourceObjectRe
 /**
 * struct FixedMessages
 *
+* getcwd()
+* 不过要注意一点，如果你使用VC编译调试，那么在里面点F5运行的时候，
+* 那个当前目录是指工程目录，而不是Debug文件夹里面。当然，你直接把
+* exe文件拿出来用的话就是一般意义下的当前目录了。
+*
 * @Brief
 *
 * @Notes

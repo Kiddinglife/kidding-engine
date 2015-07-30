@@ -17,7 +17,6 @@ int main(int argc, char* argv[ ])
 	| ACE_Log_Msg::MSG_CALLBACK | ACE_Log_Msg::CUSTOM,
 	logger_key);
 	*/
-
 	extern std::ofstream normal;
 	ACE_LOG_MSG->msg_ostream(&normal, 0);
 	ACE_LOG_MSG->open("kbengine tests", ACE_Log_Msg::STDERR | ACE_Log_Msg::OSTREAM);

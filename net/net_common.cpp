@@ -55,10 +55,9 @@ int g_trace_packet = 1;
 bool g_trace_packet_use_logfile = true;
 std::vector<std::string> g_trace_packet_disables;
 
-static const char* name = GET_KBE_SRV_COMPONENT_TYPE_NAME(g_componentType);
-static std::string n(name);
-std::ofstream normal(( n + ".log" ).c_str());
-
+/// initialize in the used project
+std::string* n = NULL;
+std::ofstream* normal = NULL;
 static  std::ofstream packetlogos("packetlogs.log");
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -142,10 +141,10 @@ void TRACE_MESSAGE_PACKET(
 
 	if( g_trace_packet_use_logfile )
 	{
-		ACE_LOG_MSG->msg_ostream(&normal);
+		ACE_LOG_MSG->msg_ostream(normal);
 		ACE_DEBUG(( LM_INFO,
 			"%M::TRACE_MESSAGE_PACKET::Log file is set back to %s\n",
-			( n + ".log" ).c_str() ));
+			( *n + ".log" ).c_str() ));
 	}
 
 	TRACE_RETURN_VOID();

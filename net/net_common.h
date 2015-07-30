@@ -118,7 +118,9 @@ apps发布状态, 可在脚本中获取该值
 extern bool g_appPublish;
 
 /*the normal log ofstream named with base.log ot callapp.log and so on*/
-extern std::ofstream normal;
+/// declare and initialize in the used project
+extern std::ofstream* normal;
+extern std::string* n;
 
 struct Message;
 struct Packet;

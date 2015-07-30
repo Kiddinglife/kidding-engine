@@ -16,9 +16,15 @@ int main(int argc, char* argv[ ])
 	| ACE_Log_Msg::MSG_CALLBACK | ACE_Log_Msg::CUSTOM,
 	logger_key);
 	*/
-	extern std::ofstream normal;
-	ACE_LOG_MSG->msg_ostream(&normal, 0);
-	ACE_LOG_MSG->open("kbengine tests", ACE_Log_Msg::STDERR | ACE_Log_Msg::OSTREAM);
+	//extern KBE_SRV_COMPONENT_TYPE g_componentType;
+
+	g_componentType = DB_MGR_TYPE;
+	std::string nn(GET_KBE_SRV_COMPONENT_TYPE_NAME(g_componentType));
+	std::ofstream normaln(( nn + ".log" ).c_str());
+	n = &nn;
+	normal = &normaln;
+	ACE_LOG_MSG->msg_ostream(normal, 0);
+	ACE_LOG_MSG->open("dbmgr", ACE_Log_Msg::STDERR | ACE_Log_Msg::OSTREAM);
 	TRACE("main");
 	testing::InitGoogleTest(&argc, argv);
 	TRACE_RETURN(RUN_ALL_TESTS());

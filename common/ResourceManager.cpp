@@ -329,16 +329,14 @@ void ResourceManager::set_env_res_paths()
 
 	std::string s = path;
 	ACE_DEBUG(( LM_DEBUG, "cwd path {%s}\n", s.c_str() ));
-	//\ZMD-SERVER\MyTests1
-	//std::string::size_type pos1 = s.find("\\zmd\\bin\\");
-	std::string::size_type pos1 = s.find("\\ZMD-SERVER\\MyTests1");
+	std::string::size_type pos1 = s.find("\\zmd\\bins\\");
 
 	if( pos1 == std::string::npos )
-		pos1 = s.find("/zmd/bin/");
+		pos1 = s.find("/zmd/bins/");
 
 	if( pos1 == std::string::npos )
 	{
-		ACE_DEBUG(( LM_ERROR, "find \\zmd\\bin\\ \n" ));
+		ACE_DEBUG(( LM_ERROR, "not find \\zmd\\bins\\ \n" ));
 		return;
 	}
 
@@ -348,12 +346,14 @@ void ResourceManager::set_env_res_paths()
 	ACE_DEBUG(( LM_DEBUG, "env_.root_path {%s}\n", s.c_str() ));
 
 	env_.all_res_paths =
-		env_.root_path + "zmd/res/;" +
+		env_.root_path + "zmd/resources/;" +
 		env_.root_path + "zmd/assets/;" +
-		env_.root_path + "/assets/scripts/;" +
-		env_.root_path + "/assets/res/";
+		env_.root_path + "assets/scripts/;" +
+		env_.root_path + "assets/resources/";
 
 	ACE_DEBUG(( LM_DEBUG, "env_.all_res_paths {%s}\n", env_.all_res_paths.c_str() ));
+
+	system("pause");
 	TRACE_RETURN_VOID();
 }
 
