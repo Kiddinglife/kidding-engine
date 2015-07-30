@@ -1,6 +1,6 @@
 ﻿#include "SRV_TestCases.h"
 #include "net\net_common.h"
-
+#include "common\ResourceManager.h"
 int main(int argc, char* argv[ ])
 {
 	

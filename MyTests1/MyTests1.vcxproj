@@ -42,6 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <OutDir>..\..\bins\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -88,13 +89,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\gtests\My_Log_Msg_Callback.h" />
-    <ClInclude Include="..\gtests\TestCases.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\gtests\test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{efcdd3b4-0106-4169-9ecc-ecf119f51e66}</Project>
     </ProjectReference>
@@ -104,6 +98,13 @@
     <ProjectReference Include="..\py_script\py_script.vcxproj">
       <Project>{0fef9af2-20c4-42a5-9c2b-1f41c53fbf05}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="My_Log_Msg_Callback.h" />
+    <ClInclude Include="TestCases.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
