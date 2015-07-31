@@ -1444,8 +1444,8 @@ TEST(ResourceManagerTest, tests)
 	//mgr.print_env_paths();
 	if( mgr.exist("server.xml") )
 	{
-		ACE_DEBUG(( LM_DEBUG, "%M %l server.xml exists\n" ));
-		ACE_DEBUG(( LM_DEBUG, "   %M %l server.xml exists\n" ));
+		ACE_DEBUG(( LM_DEBUG, "%D %M %t Line:%l server.xml exists\n" ));
+		ACE_DEBUG(( LM_DEBUG, "  %D %M %t Line:%l server.xml exists\n" ));
 	} else
 	{
 		ACE_DEBUG(( LM_DEBUG, "%M %I server.xml not exists\n" ));
