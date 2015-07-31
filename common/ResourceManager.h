@@ -100,9 +100,11 @@ struct ResourceManager : public ACE_Event_Handler
 	struct Env
 	{
 		std::string root_path;
-		std::string all_res_paths;
+		std::string all_used_paths;
 		std::string bin_path;
 		std::string python_native_libs_path;
+		std::string python_user_scripts_path;
+		std::string python_user_res_path;
 	};
 
 	static ACE_UINT64 respool_timeout;
@@ -110,37 +112,20 @@ struct ResourceManager : public ACE_Event_Handler
 	static ACE_UINT32 respool_checktick;
 
 	bool isInit_;
-	Env env_;
+	Env env_; // store all the paths used in one string
+	std::vector<std::string> all_used_paths_vector_; // store all the paths in many strings
 	ACE_Thread_Mutex mutex_;
-	std::vector<std::string> respaths_;
-	UnorderedMap< std::string, ResourceObjectRefAutoPtr> respool_;
+	UnorderedMap< std::string, ResourceObjectRefAutoPtr> respool_; // store all the opened res
 
 	ResourceManager();
 	virtual ~ResourceManager();
 
 	virtual int handle_timeout(const ACE_Time_Value &current_time, const void * data = 0);
 
-	bool initialize_watchers();
-
-	/**
-	sample paths of this project
-
-	env_.root_path = { D:/Programming/VS2013Projects/zmd-server-copy/ }
-
-	env_.bin_path = { D:/Programming/VS2013Projects/zmd-server-copy/zmd/bins/ }
-
-	env_.python_native_libs_path = 
-	{D:/Programming/VS2013Projects/zmd-server-copy/zmd/resources/scripts/common/Lib/}
-
-	env_.all_res_paths = {
-	D:/Programming/VS2013Projects/zmd-server-copy/zmd/resources/;
-	D:/Programming/VS2013Projects/zmd-server-copy/zmd/assets/;
-	D:/Programming/VS2013Projects/zmd-server-copy/assets/scripts/;
-	D:/Programming/VS2013Projects/zmd-server-copy/assets/resources/ }
+	bool init_watchers();
 
 	/// 初始化所有资源对应的路径
 	/// initialize the paths of all the resources
-	*/
 	bool init();
 
 	/// 所有路径的分隔符统一调整为 斜杠 /
@@ -157,13 +142,10 @@ struct ResourceManager : public ACE_Event_Handler
 	std::string get_res_path(const std::string& res_name) { return get_res_path(res_name.c_str()); };
 	std::string get_res_path(const char* res_name);
 
-	/// get the python system libs' absolute path
-	std::string get_python_lib_path();
-
 	/// 遍历所有的资源路径(环境变量中指定的)，匹配到完整的资源地址
 	/// 检查文件是否存在，存在返回true，否则返回false
 	/// Tested
-	bool if_res_exist(const std::string& res);
+	bool exist(const std::string res);
 
 	/// 遍历所有的资源路径(环境变量中指定的)，匹配到完整的资源地址
 	/// 使用该路径打开资源
@@ -173,8 +155,34 @@ struct ResourceManager : public ACE_Event_Handler
 	/// 获得当前编译时的文件夹路径，并由此获取根文件夹路径，将所有需要的完整路径都
 	/// 存入env.all_res_paths中，以；来分割不同的文件夹路径
 	/// Tested
-	void set_env_res_paths();
+	void auto_set_env_res_paths(void);
 
+	/** Sample Results for this project dir structure
+
+	ZMD_ROOT_PATH ( env_.root_path )
+	{ D:/Programming/VS2013Projects/zmd-server-copy/ }
+
+	ZMD_BINS_PATH ( env_.bin_path )
+	{ D:/Programming/VS2013Projects/zmd-server-copy/zmd/bins/ }
+
+	ZMD_ALL_USED_PATHS ( env_.all_used_paths )
+	{
+	D:/Programming/VS2013Projects/zmd-server-copy/zmd/resources/;
+	D:/Programming/VS2013Projects/zmd-server-copy/zmd/assets/;
+	D:/Programming/VS2013Projects/zmd-server-copy/assets/scripts/;
+	D:/Programming/VS2013Projects/zmd-server-copy/assets/resources/
+	}
+
+	USER_SCRIPTS_PATH ( env_.python_user_scripts_path )
+	{ D:/Programming/VS2013Projects/zmd-server-copy/assets/scripts/ }
+
+	USER_RESOURCES_PATH ( env_.python_user_res_path )
+	{ D:/Programming/VS2013Projects/zmd-server-copy/assets/resources/ }
+
+	PYTHON_NATIVE_LIBS_PATH ( env_.python_native_libs_path )
+	{ D:/Programming/VS2013Projects/zmd-server-copy/zmd/resources/scripts/common/Lib/ }
+	*/
+	void print_env_paths(void);
 
 };
 
