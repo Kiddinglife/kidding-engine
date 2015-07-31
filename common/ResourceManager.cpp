@@ -88,6 +88,8 @@ isInit_(false),
 respool_(),
 mutex_()
 {
+	init();
+	ACE_OS::system("pause");
 }
 
 ResourceManager::~ResourceManager()
@@ -112,28 +114,25 @@ bool ResourceManager::initialize_watchers()
 bool ResourceManager::init()
 {
 	// 获取引擎环境配置 get the env config
-	env_.root_path = ACE_OS::getenv("ZMD_ROOT") == NULL ?
-		"" : ACE_OS::getenv("KBE_ROOT");
-	env_.all_res_paths =
-		ACE_OS::getenv("ZMD_RES_PATH") == NULL ? "" : ACE_OS::getenv("KBE_RES_PATH");
-	env_.bin_path =
-		ACE_OS::getenv("ZMD_BIN_PATH") == NULL ? "" : ACE_OS::getenv("KBE_BIN_PATH");
-
-	/**
-	env_.root_path			    = "/home/kbengine/";
-	env_.bin_path		= "/home/kbengine/kbe/bin/server/";
-	env_.all_res_paths		=
-	"/home/kbengine/kbe/res/;/home/kbengine/assets/;
-	/home/kbengine/assets/scripts/;
-	/home/kbengine/assets/res/";
-	*/
+	if( ( env_.root_path = ACE_OS::getenv("ZMD_ROOT") == NULL ?
+		"" : ACE_OS::getenv("ZMD_ROOT") ) == "" ||
+		( env_.all_res_paths = ACE_OS::getenv("ZMD_RESOURCES_PATH") == NULL ?
+		"" : ACE_OS::getenv("ZMD_RESOURCES_PATH") ) == "" ||
+		( env_.bin_path = ACE_OS::getenv("ZMD_BINS_PATH") == NULL ?
+		"" : ACE_OS::getenv("ZMD_BINS_PATH") ) == "" )
+	{
+		set_env_res_paths();
+	}
 
 	adjust_paths();
-	return false;
+
+	return true;
 }
 
 void ResourceManager::adjust_paths()
 {
+	TRACE("ResourceManager::adjust_paths");
+
 	char ch;
 
 	///// root_path 是一个非空的字符串 //////
@@ -143,14 +142,18 @@ void ResourceManager::adjust_paths()
 		// 得到末尾字符， 看情况是否需要添加 "/"
 		// get the last char to see if it is needed to add "/"
 		ch = env_.root_path.at(env_.root_path.size() - 1);
-		if( ch != '/' && ch != '\\' ) env_.root_path += "/";
+		if( ch != '/' && ch != '\\' && ch != ';' )
+			env_.root_path += "/";
+		else if( ch == ';' )
+		{
 
+		}
 		// 将所有的 \\ 替换为 /
 		// repalce all \\ to /
 		STRUTIL::kbe_replace(env_.root_path, "\\", "/");
 		STRUTIL::kbe_replace(env_.root_path, "//", "/");
 
-		ACE_DEBUG(( LM_DEBUG, "env_.root_path {}\n", env_.root_path.c_str() ));
+		ACE_DEBUG(( LM_DEBUG, "env_.root_path {%s}\n", env_.root_path.c_str() ));
 	}
 
 	///// bin_path 是一个非空的字符串 /////
@@ -167,7 +170,24 @@ void ResourceManager::adjust_paths()
 		STRUTIL::kbe_replace(env_.bin_path, "\\", "/");
 		STRUTIL::kbe_replace(env_.bin_path, "//", "/");
 
-		ACE_DEBUG(( LM_DEBUG, "env_.bin_path {}\n", env_.bin_path.c_str() ));
+		ACE_DEBUG(( LM_DEBUG, "env_.bin_path {%s}\n", env_.bin_path.c_str() ));
+	}
+
+	///// bin_path 是一个非空的字符串 /////
+	// bin_path is not a null string
+	if( env_.python_native_libs_path.size() > 0 )
+	{
+		// 得到末尾字符， 看情况是否需要添加 "/"
+		// get the last char to see if it is needed to add "/"
+		ch = env_.python_native_libs_path.at(env_.python_native_libs_path.size() - 1);
+		if( ch != '/' && ch != '\\' ) env_.python_native_libs_path += "/";
+
+		// 将所有的 \\ 替换为 /
+		// repalce all \\ to /
+		STRUTIL::kbe_replace(env_.python_native_libs_path, "\\", "/");
+		STRUTIL::kbe_replace(env_.python_native_libs_path, "//", "/");
+
+		ACE_DEBUG(( LM_DEBUG, "env_.python_native_libs_path {%s}\n", env_.python_native_libs_path.c_str() ));
 	}
 
 	// 以 ; 分割所有的字符串，并将其把存在respaths_中
@@ -187,6 +207,13 @@ void ResourceManager::adjust_paths()
 	}
 #endif
 
+	//ACE_DEBUG(( LM_DEBUG, "env_.all_res_paths {%s}\n", env_.all_res_paths.c_str() ));
+	//std::vector<std::string>::iterator iterr = respaths_.begin();
+	//for( ; iterr != respaths_.end(); ++iterr )
+	//{
+	//	ACE_DEBUG(( LM_DEBUG, " {%s} ", ( *iterr ).c_str() ));
+	//}
+
 	env_.all_res_paths = "";
 	std::vector<std::string>::iterator iter = respaths_.begin();
 	for( ; iter != respaths_.end(); ++iter )
@@ -204,9 +231,12 @@ void ResourceManager::adjust_paths()
 		STRUTIL::kbe_replace(env_.all_res_paths, "//", "/");
 	}
 
-	if( env_.all_res_paths.size() > 0 )
-		env_.all_res_paths.erase(env_.all_res_paths.size() - 1);
+	if( env_.all_res_paths.size() > 0 ) env_.all_res_paths.erase(env_.all_res_paths.size() - 1);
+	ACE_DEBUG(( LM_DEBUG, "env_.all_res_paths {%s}\n", env_.all_res_paths.c_str() ));
+
+	TRACE_RETURN_VOID();
 }
+
 void ResourceManager::update_respool()
 {
 	TRACE("ResourceManager::get_res_path");
@@ -261,6 +291,15 @@ std::string ResourceManager::get_res_path(const char* res_name)
 	//return res_name;
 }
 
+std::string ResourceManager::get_python_lib_path()
+{
+	static std::string path("");
+	if( path == "" )
+	{
+
+	}
+	return "";
+}
 bool ResourceManager::if_res_exist(const std::string& res)
 {
 	TRACE("ResourceManager::if_res_exist");
@@ -328,7 +367,7 @@ void ResourceManager::set_env_res_paths()
 	}
 
 	std::string s = path;
-	ACE_DEBUG(( LM_DEBUG, "cwd path {%s}\n", s.c_str() ));
+	//ACE_DEBUG(( LM_DEBUG, "cwd path {%s}\n", s.c_str() ));
 	std::string::size_type pos1 = s.find("\\zmd\\bins\\");
 
 	if( pos1 == std::string::npos )
@@ -343,17 +382,14 @@ void ResourceManager::set_env_res_paths()
 	// get root_path paths
 	s = s.substr(0, pos1 + 1);
 	env_.root_path = s;
-	ACE_DEBUG(( LM_DEBUG, "env_.root_path {%s}\n", s.c_str() ));
-
+	env_.bin_path = env_.root_path + "zmd/bins/";
+	env_.python_native_libs_path = env_.root_path + "zmd/resources/scripts/common/Lib/";
 	env_.all_res_paths =
 		env_.root_path + "zmd/resources/;" +
 		env_.root_path + "zmd/assets/;" +
 		env_.root_path + "assets/scripts/;" +
 		env_.root_path + "assets/resources/";
 
-	ACE_DEBUG(( LM_DEBUG, "env_.all_res_paths {%s}\n", env_.all_res_paths.c_str() ));
-
-	system("pause");
 	TRACE_RETURN_VOID();
 }
 

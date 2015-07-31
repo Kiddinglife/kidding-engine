@@ -1305,6 +1305,7 @@
 //	pool->Dtor(p);
 //
 //}
+
 //#include "common\Profile.h"
 //void hello()
 //{
@@ -1328,6 +1329,7 @@
 //		}
 //	}
 //}
+
 //#include "net\ErrorStatsMgr.h"
 //#include "net\Nub.h"
 //TEST(ErrorStatsMgr, tESTTS)
@@ -1412,6 +1414,7 @@
 //
 //	std::cout << "a()" << a;
 //}
+
 //#include "common/common.h"
 //TEST(Commonhpp, TestGnUUID64)
 //{
@@ -1433,12 +1436,9 @@
 //{
 //	Packet p;
 //}
+
 #include "common\ResourceManager.h"
 TEST(ResourceManagerTest, tests)
 {
 	ResourceManager mgr;
-	mgr.set_env_res_paths();
-	std::string test_path = mgr.get_res_path("test");
-	ACE_DEBUG(( LM_DEBUG, "TEST PATH {%s}\n", test_path.c_str() ));
-
 }

@@ -173,7 +173,7 @@ namespace STRUTIL
 		}*/
 		const std::basic_string<T> ss = s;
 		ACE_Tokenizer_T<T> tok(const_cast<T*>( ss.c_str() ));
-		tok.delimiter_replace('/', 0);
+		tok.delimiter_replace(c, 0);
 		for( T *p = tok.next(); p; p = tok.next() )
 			v.push_back(p);
 	}
