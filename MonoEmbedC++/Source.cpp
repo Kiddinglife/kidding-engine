@@ -31,6 +31,7 @@
 
 #include "common\Profile.h"
 #include <iostream>
+
 using namespace monobind;
 
 /*
@@ -42,7 +43,6 @@ using namespace monobind;
 * 	./teste TestFun.exe
 */
 static MonoString* gimme(int b, int a) { return mono_string_new(mono_domain_get(), "All your monos are belong to us!"); }
-
 
 class Base
 {
@@ -105,8 +105,6 @@ class TestClass3
 	}
 };
 
-
-
 class Test
 {
 	public:
@@ -115,7 +113,6 @@ class Test
 		//return 0;
 	}
 };
-
 
 class MObject
 {
@@ -134,7 +131,6 @@ class MObject
 	MonoObject* result_;
 };
 
-
 class TestCS : public MObject
 {
 	public:
@@ -147,6 +143,7 @@ class TestCS : public MObject
 		mono_runtime_invoke(method, m_monoObject, NULL, NULL);
 		method_ = mono_class_get_method_from_name(m_monoClass, "test", 0);
 	}
+
 	void TestFun()
 	{
 		result_ = mono_runtime_invoke(method_, mono_gchandle_get_target(m_gc_handle_), NULL, NULL);
@@ -176,6 +173,7 @@ void InvokeManagedCode(MonoObject* obj)
 	}
 	( obj->*my_callback )( );
 }
+
 int main(int argc, char* argv[ ])
 {
 	MonoDomain *domain;
@@ -220,15 +218,15 @@ int main(int argc, char* argv[ ])
 				SCOPED_PROFILE(_localProfile);
 				testCS->TestFun();
 			};
-			ACE_DEBUG(( LM_DEBUG,
-				"%s::lastIntTime(%f ms), lastTime(%f ms), sumTime(%f ms),"
-				"sumIntTime(%f ms),runningTime(%f ms) \n",
-				_localProfile.name(),
-				_localProfile.lastIntTimeInSeconds()*1000,
-				_localProfile.lastTimeInSeconds()*1000,
-				_localProfile.sumTimeInSeconds()*1000,
-				_localProfile.sumIntTimeInSeconds()*1000,
-				(double) runningTime() / stampsPerSecondD()*1000 ));
+			//ACE_DEBUG(( LM_DEBUG,
+			//	"%s::lastIntTime(%f ms), lastTime(%f ms), sumTime(%f ms),"
+			//	"sumIntTime(%f ms),runningTime(%f ms) \n",
+			//	_localProfile.name(),
+			//	_localProfile.lastIntTimeInSeconds() * 1000,
+			//	_localProfile.lastTimeInSeconds() * 1000,
+			//	_localProfile.sumTimeInSeconds() * 1000,
+			//	_localProfile.sumIntTimeInSeconds() * 1000,
+			//	(double) runningTime() / stampsPerSecondD() * 1000 ));
 		}
 	}
 	delete testCS;

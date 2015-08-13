@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{267581A8-0BA5-4577-855A-015BD82DB85E}"
 EndProject
@@ -1635,7 +1635,6 @@ Global
 		{0E9791DB-593A-465F-98BC-681011311618}.Debug|Win32.ActiveCfg = Debug|Win32
 		{0E9791DB-593A-465F-98BC-681011311618}.Debug|Win32.Build.0 = Debug|Win32
 		{0E9791DB-593A-465F-98BC-681011311618}.Debug|x64.ActiveCfg = Debug|x64
-		{0E9791DB-593A-465F-98BC-681011311618}.Debug|x64.Build.0 = Debug|x64
 		{0E9791DB-593A-465F-98BC-681011311618}.dummy|Any CPU.ActiveCfg = Debug|Win32
 		{0E9791DB-593A-465F-98BC-681011311618}.dummy|Mixed Platforms.ActiveCfg = Debug|Win32
 		{0E9791DB-593A-465F-98BC-681011311618}.dummy|Mixed Platforms.Build.0 = Debug|Win32
@@ -1761,7 +1760,6 @@ Global
 		{17E1E049-C309-4D79-843F-AE483C264AEA}.Debug|Win32.ActiveCfg = Debug|Win32
 		{17E1E049-C309-4D79-843F-AE483C264AEA}.Debug|Win32.Build.0 = Debug|Win32
 		{17E1E049-C309-4D79-843F-AE483C264AEA}.Debug|x64.ActiveCfg = Debug|x64
-		{17E1E049-C309-4D79-843F-AE483C264AEA}.Debug|x64.Build.0 = Debug|x64
 		{17E1E049-C309-4D79-843F-AE483C264AEA}.dummy|Any CPU.ActiveCfg = Debug|Win32
 		{17E1E049-C309-4D79-843F-AE483C264AEA}.dummy|Mixed Platforms.ActiveCfg = Debug|Win32
 		{17E1E049-C309-4D79-843F-AE483C264AEA}.dummy|Mixed Platforms.Build.0 = Debug|Win32
@@ -1887,7 +1885,6 @@ Global
 		{86937F53-C189-40EF-8CE8-8759D8E7D480}.Debug|Win32.ActiveCfg = Debug|Win32
 		{86937F53-C189-40EF-8CE8-8759D8E7D480}.Debug|Win32.Build.0 = Debug|Win32
 		{86937F53-C189-40EF-8CE8-8759D8E7D480}.Debug|x64.ActiveCfg = Debug|x64
-		{86937F53-C189-40EF-8CE8-8759D8E7D480}.Debug|x64.Build.0 = Debug|x64
 		{86937F53-C189-40EF-8CE8-8759D8E7D480}.dummy|Any CPU.ActiveCfg = Debug|Win32
 		{86937F53-C189-40EF-8CE8-8759D8E7D480}.dummy|Mixed Platforms.ActiveCfg = Debug|Win32
 		{86937F53-C189-40EF-8CE8-8759D8E7D480}.dummy|Mixed Platforms.Build.0 = Debug|Win32
@@ -2013,7 +2010,6 @@ Global
 		{447F05A8-F581-4CAC-A466-5AC7936E207E}.Debug|Win32.ActiveCfg = Debug|Win32
 		{447F05A8-F581-4CAC-A466-5AC7936E207E}.Debug|Win32.Build.0 = Debug|Win32
 		{447F05A8-F581-4CAC-A466-5AC7936E207E}.Debug|x64.ActiveCfg = Debug|x64
-		{447F05A8-F581-4CAC-A466-5AC7936E207E}.Debug|x64.Build.0 = Debug|x64
 		{447F05A8-F581-4CAC-A466-5AC7936E207E}.dummy|Any CPU.ActiveCfg = Debug|Win32
 		{447F05A8-F581-4CAC-A466-5AC7936E207E}.dummy|Mixed Platforms.ActiveCfg = Debug|Win32
 		{447F05A8-F581-4CAC-A466-5AC7936E207E}.dummy|Mixed Platforms.Build.0 = Debug|Win32
