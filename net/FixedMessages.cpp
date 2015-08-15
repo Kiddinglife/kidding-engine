@@ -15,7 +15,7 @@ const FixedMessages::MSGInfo* FixedMessages::isFixed(const char* msgName)
 
 const bool FixedMessages::isFixed(const MessageID msgid)
 {
-	TRACE("FixedMessages::isFixed(const char* msgName)");
+	TRACE("FixedMessages::isFixed(const MessageID msgid)");
 
 	MSGINFO_MAP::iterator iter = infomap_.begin();
 	while( iter != infomap_.end() )

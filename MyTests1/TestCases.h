@@ -1479,30 +1479,48 @@
 //
 //}
 
-#include "common\ResourceManager.h"
-#include "net\FixedMessages.h"
-TEST(FixedMessagesTest, loadConfig)
-{
-	FixedMessages msg;
-	msg.loadConfig("fixedmsg.xml");
-
-	const FixedMessages::MSGInfo* info = msg.isFixed("Client::onEntityEnterWorld");
-	if( info == NULL )
-	{
-		ACE_DEBUG(( MY_DEBUG"Client::onEntityEnterWorld not fixed\n" ));
-	} else
-	{
-		ACE_DEBUG(( MY_DEBUG"Client::onEntityEnterWorld is fixed\n" ));
-		info->print();
-	}
-
-	info = msg.isFixed("Client::Entity");
-	if( info == NULL )
-	{
-		ACE_DEBUG(( MY_DEBUG"Client::Entity not fixed\n" ));
-	} else
-	{
-		ACE_DEBUG(( MY_DEBUG"Client::Entity is fixed\n" ));
-		info->print();
-	}
-}
+//#include "common\ResourceManager.h"
+//#include "net\FixedMessages.h"
+//TEST(FixedMessagesTest, loadConfig_isFixed)
+//{
+//	FixedMessages msg;
+//	msg.loadConfig("fixedmsg.xml");
+//
+//	const FixedMessages::MSGInfo* info = msg.isFixed("Client::onEntityEnterWorld");
+//	if( info == NULL )
+//	{
+//		ACE_DEBUG(( MY_DEBUG"Client::onEntityEnterWorld not fixed\n" ));
+//	} else
+//	{
+//		ACE_DEBUG(( MY_DEBUG"Client::onEntityEnterWorld is fixed\n" ));
+//		info->print();
+//	}
+//
+//	info = msg.isFixed("Client::Entity");
+//	if( info == NULL )
+//	{
+//		ACE_DEBUG(( MY_DEBUG"Client::Entity not fixed\n" ));
+//	} else
+//	{
+//		ACE_DEBUG(( MY_DEBUG"Client::Entity is fixed\n" ));
+//		info->print();
+//	}
+//
+//	bool fool = msg.isFixed(1);
+//	if( !fool )
+//	{
+//		ACE_DEBUG(( MY_DEBUG"id 1 not fixed\n" ));
+//	} else
+//	{
+//		ACE_DEBUG(( MY_DEBUG"id 1 is fixed\n" ));
+//	}
+//
+//	fool = msg.isFixed(10000);
+//	if( !fool )
+//	{
+//		ACE_DEBUG(( MY_DEBUG"id 10000 not fixed\n" ));
+//	} else
+//	{
+//		ACE_DEBUG(( MY_DEBUG"id 10000 is fixed\n" ));
+//	}
+//}
