@@ -29,7 +29,7 @@ KBEKey::KBEKey(const std::string& pubkeyname, const std::string& prikeyname) : K
 	{
 		ACE_ASSERT(pubkeyname.size() > 0);
 
-		if( g_componentType != CLIENT_TYPE )
+		if( g_componentType != CLIENT )
 		{
 			ACE_ASSERT(prikeyname.size() > 0);
 
@@ -56,7 +56,7 @@ KBEKey::KBEKey(const std::string& pubkeyname, const std::string& prikeyname) : K
 //-------------------------------------------------------------------------------------
 bool KBEKey::isGood()const
 {
-	if( g_componentType == CLIENT_TYPE )
+	if( g_componentType == CLIENT )
 	{
 		return rsa_public != NULL;
 	}

@@ -274,8 +274,8 @@ void PacketReader::processMessages(Messages* pMsgs, Channel::RecvPackets& packet
 				/// This situation is like an error where the client send the packet exceeds the max
 				/// but we need remind the user this happened and will discard the rest of bytes in this packet
 				if( pChannel_->channelScope_ == Channel::ChannelScope::EXTERNAL&&
-					g_componentType != KBE_BOTS_TYPE &&
-					g_componentType != CLIENT_TYPE &&
+					g_componentType != BOTS &&
+					g_componentType != CLIENT &&
 					currMsgLen_ > NETWORK_MESSAGE_MAX_SIZE )
 				{
 					//ACE_DEBUG(( LM_DEBUG,

@@ -387,40 +387,39 @@ const char ENTITY_MAILBOX_TYPE_NAMES[ ][8] =
 /// 定义服务器组件类型
 enum KBE_SRV_COMPONENT_TYPE
 {
-	UNKNOWN_COMPONENT_TYPE = 0,
-	DB_MGR_TYPE = 1,
-	LOGINAPP_TYPE = 2,
-	BASEAPP_MGR_TYPE = 3,
-	CELLAPP_MGR_TYPE = 4,
-	CELLAPP_TYPE = 5,
-	BASEAPP_TYPE = 6,
-	CLIENT_TYPE = 7,
-	KBE_MACHINE_TYPE = 8,
-	KBE_CONSOLE_TYPE = 9,
-	KBE_MSGLOG_TYPE = 10,
-	KBE_BOTS_TYPE = 11,
-	KBE_WATCHER_TYPE = 12,
-	KBE_BILLING_TYPE = 13,
-
-	KBE_SRV_COMPONENT_END_TYPE = 14,
+	UNKNOWN = 0,
+	DBMGR = 1,
+	LOGIN = 2,
+	BASEMGR = 3,
+	CELLMGR = 4,
+	CELL = 5,
+	BASE = 6,
+	CLIENT = 7,
+	MACHINE = 8,
+	CONSOLE = 9,
+	MSGLOG = 10,
+	BOTS = 11,
+	WATCHER = 12,
+	BILLING = 13,
+	End = 14,
 };
 /// 定义服务器各组件类型对应str名称 
 const char KBE_SRV_COMPONENT_TYPE_NAMES[ ][255] =
 {
 	"unknown", //0
 	"dbmgr",//1
-	"loginapp",//2
-	"baseappmgr",//3
-	"cellappmgr",//4
-	"cellapp",//5
-	"baseapp",//6
+	"login",//2
+	"basemgr",//3
+	"cellmgr",//4
+	"cell",//5
+	"base",//6
 	"client",//7
-	"kbmachine",//8
-	"kbe_console",//9
-	"kbe_msglog",//10
-	"kbebots",//11
-	"kbe_watcher",//12
-	"kbe_billing",//13
+	"machine",//8
+	"console",//9
+	"msglog",//10
+	"bots",//11
+	"watcher",//12
+	"billing",//13
 	"end"//14
 };
 /// 定义服务器各组件类型对应str名称 
@@ -428,107 +427,107 @@ const char KBE_SRV_COMPONENT_TYPE_NAMES1[ ][255] =
 {
 	"unknown", //0
 	"dbmgr",//1
-	"loginapp",//2
-	"baseappmgr",//3
-	"cellappmgr",//4
-	"cellapp",//5
-	"baseapp",//6
+	"login",//2
+	"basemgr",//3
+	"cellmgr",//4
+	"cell",//5
+	"base",//6
 	"client",//7
-	"kbmachine",//8
-	"kbe_console",//9
-	"kbe_msglog",//10
-	"kbebots",//11
-	"kbe_watcher",//12
-	"kbe_billing",//13
+	"machine",//8
+	"console",//9
+	"msglog",//10
+	"bots",//11
+	"watcher",//12
+	"billing",//13
 	"end"//14
 };
 
 inline const char*  GET_KBE_SRV_COMPONENT_TYPE_NAME(KBE_SRV_COMPONENT_TYPE TYPE)
 {
-	if( TYPE < 0 || TYPE >= KBE_SRV_COMPONENT_END_TYPE )
+	if( TYPE < 0 || TYPE >= End )
 	{
-		return KBE_SRV_COMPONENT_TYPE_NAMES[UNKNOWN_COMPONENT_TYPE];
+		return KBE_SRV_COMPONENT_TYPE_NAMES[UNKNOWN];
 	}
 	return KBE_SRV_COMPONENT_TYPE_NAMES[TYPE];
 }
 inline const char* GET_KBE_SRV_COMPONENT_TYPE_NAME_EX_1(KBE_SRV_COMPONENT_TYPE TYPE)
 {
-	if( TYPE < 0 || TYPE >= KBE_SRV_COMPONENT_END_TYPE )
+	if( TYPE < 0 || TYPE >= End )
 	{
-		return KBE_SRV_COMPONENT_TYPE_NAMES1[UNKNOWN_COMPONENT_TYPE];
+		return KBE_SRV_COMPONENT_TYPE_NAMES1[UNKNOWN];
 	}
 
 	return KBE_SRV_COMPONENT_TYPE_NAMES1[TYPE];
 }
 inline KBE_SRV_COMPONENT_TYPE KBE_SRV_COMPONENT_TYPE2NAME(const char* name)
 {
-	for( int i = 0; i < (int) KBE_SRV_COMPONENT_END_TYPE; i++ )
+	for( int i = 0; i < (int) End; i++ )
 	{
 		if( kbe_stricmp(KBE_SRV_COMPONENT_TYPE_NAMES[i], name) == 0 )
 			return (KBE_SRV_COMPONENT_TYPE) i;
 	}
-	return UNKNOWN_COMPONENT_TYPE;
+	return UNKNOWN;
 }
 
 // 所有的组件列表
 const KBE_SRV_COMPONENT_TYPE ALL_COMPONENT_TYPES[ ] =
 {
-	BASEAPP_MGR_TYPE,
-	CELLAPP_MGR_TYPE,
-	DB_MGR_TYPE,
-	CELLAPP_TYPE,
-	BASEAPP_TYPE,
-	LOGINAPP_TYPE,
-	KBE_MACHINE_TYPE,
+	BASEMGR,
+	CELLMGR,
+	DBMGR,
+	CELL,
+	BASE,
+	LOGIN,
+	MACHINE,
 
-	KBE_CONSOLE_TYPE,
-	KBE_MSGLOG_TYPE,
-	KBE_WATCHER_TYPE,
-	KBE_BILLING_TYPE,
-	KBE_BOTS_TYPE,
+	CONSOLE,
+	MSGLOG,
+	WATCHER,
+	BILLING,
+	BOTS,
 
-	UNKNOWN_COMPONENT_TYPE
+	UNKNOWN
 };
 // 所有的后端组件列表
 const KBE_SRV_COMPONENT_TYPE ALL_SERVER_COMPONENT_TYPES[ ] =
 {
-	BASEAPP_MGR_TYPE,
-	CELLAPP_MGR_TYPE,
-	DB_MGR_TYPE,
-	CELLAPP_TYPE,
-	BASEAPP_TYPE,
-	LOGINAPP_TYPE,
-	KBE_MACHINE_TYPE,
+	BASEMGR,
+	CELLMGR,
+	DBMGR,
+	CELL,
+	BASE,
+	LOGIN,
+	MACHINE,
 
-	KBE_MSGLOG_TYPE,
-	KBE_WATCHER_TYPE,
-	KBE_BILLING_TYPE,
-	KBE_BOTS_TYPE,
+	MSGLOG,
+	WATCHER,
+	BILLING,
+	BOTS,
 
-	UNKNOWN_COMPONENT_TYPE
+	UNKNOWN
 };
 // 所有的后端组件列表
 const KBE_SRV_COMPONENT_TYPE ALL_GAME_SERVER_COMPONENT_TYPES[ ] =
 {
-	BASEAPP_MGR_TYPE,
-	CELLAPP_MGR_TYPE,
-	DB_MGR_TYPE,
-	CELLAPP_TYPE,
-	BASEAPP_TYPE,
-	LOGINAPP_TYPE,
-	KBE_BILLING_TYPE,
+	BASEMGR,
+	CELLMGR,
+	DBMGR,
+	CELL,
+	BASE,
+	LOGIN,
+	BILLING,
 
-	UNKNOWN_COMPONENT_TYPE
+	UNKNOWN
 };
 // 所有的辅助性组件
 const KBE_SRV_COMPONENT_TYPE ALL_HELPER_COMPONENT_TYPE[ ] =
 {
-	KBE_MSGLOG_TYPE,
-	UNKNOWN_COMPONENT_TYPE
+	MSGLOG,
+	UNKNOWN
 };
 
 // 返回是否是一个有效的组件
-#define ISVALIDCOMPONENT(C_TYPE) ((C_TYPE) > 0 && (C_TYPE) < KBE_SRV_COMPONENT_END_TYPE)
+#define ISVALIDCOMPONENT(C_TYPE) ((C_TYPE) > 0 && (C_TYPE) < End)
 
 /// 检查是否为一个游戏服务端组件类别 
 inline bool isGameServerComponentType(KBE_SRV_COMPONENT_TYPE componentType)
@@ -537,7 +536,7 @@ inline bool isGameServerComponentType(KBE_SRV_COMPONENT_TYPE componentType)
 	while( true )
 	{
 		KBE_SRV_COMPONENT_TYPE t = ALL_GAME_SERVER_COMPONENT_TYPES[i++];
-		if( t == UNKNOWN_COMPONENT_TYPE )
+		if( t == UNKNOWN )
 			break;
 
 		if( t == componentType )

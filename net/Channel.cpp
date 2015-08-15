@@ -37,7 +37,7 @@ proxyID_(0),
 strextra_(""),
 timerID_(-1),
 channelType_(CHANNEL_NORMAL),
-componentID_(UNKNOWN_COMPONENT_TYPE),
+componentID_(UNKNOWN),
 pMsgs_(NULL)
 {
 	/*clearBundles();*/

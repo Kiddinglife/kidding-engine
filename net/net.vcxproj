@@ -43,11 +43,13 @@
     <OutDir>$(SolutionDir)\libs\$(Configuration)\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath); </IncludePath>
+    <IntDir>../_objs\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)\libs\$(Configuration)\</OutDir>
     <TargetName>$(ProjectName)_r</TargetName>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IntDir>../_objs\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

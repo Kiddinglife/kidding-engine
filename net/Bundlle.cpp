@@ -332,7 +332,7 @@ void Bundle::calculate_then_fill_variable_len_field(void)
 	//	"g_componentType = %d, g_componentType = %d\n",
 	//	g_componentType, g_componentType ));
 
-	if( g_componentType == KBE_BOTS_TYPE || g_componentType == CLIENT_TYPE )
+	if( g_componentType == BOTS || g_componentType == CLIENT )
 	{
 		ACE_ASSERT(currMsgLength_ <= NETWORK_MESSAGE_MAX_SIZE);
 	}

@@ -133,7 +133,6 @@ bool ResourceManager::init()
 	adjust_paths();
 	isInit_ = true;
 	respool_.clear();
-
 	return true;
 }
 
@@ -332,7 +331,7 @@ bool ResourceManager::exist(const std::string res)
 	TRACE("ResourceManager::exist");
 
 	FILE * f = NULL;
-	std::string fpath;
+	std::string fpath; 
 	std::vector<std::string>::iterator iter = all_used_paths_vector_.begin();
 
 	for( ; iter != all_used_paths_vector_.end(); ++iter )
@@ -387,7 +386,7 @@ void ResourceManager::auto_set_env_res_paths()
 	}
 
 	std::string s = path;
-	//ACE_DEBUG(( LM_DEBUG, "cwd path {%s}\n", s.c_str() ));
+	ACE_DEBUG(( LM_DEBUG, "cwd path {%s}\n", s.c_str() ));
 	std::string::size_type pos1 = s.find("\\zmd\\bins\\");
 
 	if( pos1 == std::string::npos )
