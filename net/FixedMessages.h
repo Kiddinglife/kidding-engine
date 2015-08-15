@@ -44,7 +44,16 @@ ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance();
 struct FixedMessages
 {
 	/// 固定的协议数据结构
-	struct MSGInfo { MessageID msgid; std::string msgname; };
+	struct MSGInfo
+	{
+		MessageID msgid;
+		std::string msgname;
+		void print() const
+		{
+			ACE_DEBUG(( MY_DEBUG"MSGInfo.msgid{%d} MSGInfo.msgname{%s}\n",
+				msgid, msgname.c_str() ));
+		}
+	};
 
 	typedef UnorderedMap<std::string, MSGInfo> MSGINFO_MAP;
 	MSGINFO_MAP infomap_;
@@ -58,7 +67,7 @@ struct FixedMessages
 	* @param-msgName : it is actually the function signature
 	* @ret NULL if it is variable-len msg otherwise the pointer if it is fixed-len msg
 	*/
-	const FixedMessages::MSGInfo*  isFixed(const std::string& msgName);
+	const FixedMessages::MSGInfo*  isFixed(const char* msgName);
 
 	/**
 	* if the msg with the specific msgid is stored in map, it is  fixed-len msg

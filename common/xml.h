@@ -60,10 +60,9 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 #define XML_FOR_BEGIN(node) \
 do{if(node->Type() != TiXmlNode::TINYXML_ELEMENT)	 continue;				
-
 #define XML_FOR_END(node)     } while((node = node->NextSibling()));         
 
-struct  XML : public Intrusive_Auto_Ptr
+struct  XML
 {
 	TiXmlDocument* txdoc_;
 	TiXmlElement* rootElement_;

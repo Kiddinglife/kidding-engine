@@ -6,67 +6,67 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
 
-const FixedMessages::MSGInfo* FixedMessages::isFixed(const std::string& msgName)
+const FixedMessages::MSGInfo* FixedMessages::isFixed(const char* msgName)
 {
+	TRACE("FixedMessages::isFixed(const char* msgName)");
 	MSGINFO_MAP::iterator iter = infomap_.find(msgName);
-	return iter != infomap_.end() ? &iter->second : NULL;
+	TRACE_RETURN(iter != infomap_.end() ? &( iter->second ) : NULL);
 }
 
 const bool FixedMessages::isFixed(const MessageID msgid)
 {
+	TRACE("FixedMessages::isFixed(const char* msgName)");
+
 	MSGINFO_MAP::iterator iter = infomap_.begin();
 	while( iter != infomap_.end() )
 	{
 		if( iter->second.msgid == msgid ) return true;
 		++iter;
 	}
-	return false;
+
+	TRACE_RETURN(false);
 }
 
 const bool FixedMessages::loadConfig(const std::string fileName)
 {
 	TRACE("FixedMessages::loadConfig()");
 
-	if( loaded_ ) return true;
-
-	ResourceManager* instance = ACE_Singleton<ResourceManager, ACE_Null_Mutex>::instance();
-	const char* name = instance->get_res_path(fileName).c_str();
+	if( loaded_ ) 	TRACE_RETURN(true);
 
 	TiXmlNode* node = NULL;
 	TiXmlNode* rootNode = NULL;
+	ResourceManagerPtr(instance);
+	XML xml(instance->get_res_path(fileName).c_str());
 
-	XML* xml = new XML(name);
-	if( !xml->isGood() )
+	if( !xml.isGood() )
 	{
 		loaded_ = false;
-		ACE_ERROR_RETURN(( LM_ERROR,
-			"[ERROR]: FixedMessages::loadConfig: load { %s } is failed!\n", fileName.c_str() ), false);
+		ACE_ERROR_RETURN(( MY_ERROR
+			"[ERROR]: FixedMessages::loadConfig: load { %s } is failed!\n",
+			fileName.c_str() ),
+			false);
 	} else
 	{
 		loaded_ = true;
 	}
 
-	rootNode = xml->getRootNode();
+	rootNode = xml.getRootNode();
 	if( rootNode != NULL )
 	{
 		XML_FOR_BEGIN(rootNode)
 		{
-			node = xml->enterNode(rootNode->FirstChild(), "id");
-
-			FixedMessages::MSGInfo info;
-			info.msgid = xml->getValInt(node);
-			info.msgname = xml->getKey(rootNode);
-
-			infomap_[info.msgname] = info;
+			node = xml.enterNode(rootNode->FirstChild(), "id");
+			std::string msgname = xml.getKey(rootNode);
+			infomap_[msgname].msgid = xml.getValInt(node);
+			infomap_[msgname].msgname = msgname;
+			//infomap_[msgname].print();
 		}
 		XML_FOR_END(rootNode);
 	} else
 	{
 		// root节点下没有子节点了
-		return true;
+		TRACE_RETURN(true);
 	}
-
-	delete xml;
 
 	TRACE_RETURN(true);
 }

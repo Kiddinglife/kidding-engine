@@ -6,12 +6,11 @@
 #ifndef ResourceManager_h_
 #define ResourceManager_h_
 
-#include "ace/pre.h"
-//#include "ace/Mutex.h"
+#include "ace\pre.h"
 #include "ace\Null_Mutex.h"
 #include "ace\Refcounted_Auto_Ptr.h"
-#include "ace/Event_Handler.h"
-#include "common/common.h"
+#include "ace\Event_Handler.h"
+#include "common\common.h"
 #include "common\timestamp.hpp"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
@@ -25,6 +24,8 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 struct ResourceObject;
 typedef ACE_Refcounted_Auto_Ptr<ResourceObject, ACE_Null_Mutex> ResourceObjectRefAutoPtr;
 
+#define ResourceManagerPtr(instance) \
+ResourceManager* instance = ACE_Singleton<ResourceManager, ACE_Null_Mutex>::instance()
 /**
 * struct FixedMessages
 *
@@ -77,6 +78,8 @@ struct ResourceObject
 	inline bool valid() const;
 
 	inline void update();
+
+	virtual void* get() { return NULL; }
 };
 
 struct FileObject : public ResourceObject
@@ -85,7 +88,7 @@ struct FileObject : public ResourceObject
 	FileObject(const char* res, ACE_UINT32 flags, const char* model);
 	virtual ~FileObject();
 
-	FILE* fd() { return fd_; }
+	virtual void* get() { return fd_; }
 
 	bool seek(ACE_UINT32 idx, int flags = SEEK_SET);
 	ACE_UINT32 read(char* buf, ACE_UINT32 cnt);
@@ -147,11 +150,11 @@ struct ResourceManager : public ACE_Event_Handler
 	/// Tested
 	bool exist(const std::string res);
 
-	/// 遍历所有的资源路径(环境变量中指定的)，匹配到完整的资源地址
-	/// 使用该路径打开资源
+	/// 遍历所有的资源路径(环境变量中指定的)，匹配到完整的资源地址 使用该路径打开资源
 	/// open the resource based on the conpleted path
-	FILE* open_res(const std::string res_name, const char* mode = "r");
-
+	FILE* open_res_fd(const std::string res_name, const char* mode = "r");
+	ResourceObjectRefAutoPtr open_res_obj(const char* res, const char* model = "r",
+		ACE_UINT32 flags = RESOURCE_NORMAL);
 	/// 获得当前编译时的文件夹路径，并由此获取根文件夹路径，将所有需要的完整路径都
 	/// 存入env.all_res_paths中，以；来分割不同的文件夹路径
 	/// Tested

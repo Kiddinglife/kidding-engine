@@ -30,12 +30,13 @@ Message*  Messages::add_msg(const std::string& ihName, MessageArgs* args,
 	}
 
 	/// 初始化msg的id
-	const FixedMessages::MSGInfo* msgInfo = ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->isFixed(ihName);
+	FixedMessagesPtrGetter(instance);
+	const FixedMessages::MSGInfo* msgInfo = instance->isFixed(ihName.c_str());
 
 	if( msgInfo == NULL )
 	{
 		//ACE_DEBUG(( LM_DEBUG, "Messages::@1::msgInfo == NULL\n" ));
-		while( ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance()->isFixed(msgID_) )
+		while( instance->isFixed(msgID_) )
 		{
 			msgID_++;
 		}

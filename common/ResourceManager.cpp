@@ -42,8 +42,7 @@ ResourceObject(res, flags)
 	if( fd_ == NULL )
 	{
 		invalid_ = true;
-		ACE_DEBUG(( LM_ERROR,
-			"FileObject::FileObject(): open({%s}) {%s} error!\n", model, res_name_ ));
+		ACE_DEBUG(( MY_ERROR"FileObject::FileObject(): open({%s}) {%s} error!\n", model, res_name_ ));
 	}
 }
 
@@ -56,7 +55,7 @@ bool FileObject::seek(ACE_UINT32 idx, int flags)
 {
 	if( invalid_ || fd_ == NULL )
 	{
-		ACE_ERROR_RETURN(( LM_ERROR, "FileObject::seek: { %s } invalid!\n", res_name_ ), false);
+		ACE_ERROR_RETURN(( MY_ERROR"FileObject::seek: { %s } invalid!\n", res_name_ ), false);
 	}
 	update();
 	return ACE_OS::fseek(fd_, idx, flags) != -1;
@@ -66,7 +65,7 @@ ACE_UINT32 FileObject::read(char* buf, ACE_UINT32 cnt)
 {
 	if( invalid_ || fd_ == NULL )
 	{
-		ACE_ERROR_RETURN(( LM_ERROR, "FileObject::read: {%s} invalid!\n", res_name_ ), 0);
+		ACE_ERROR_RETURN(( MY_ERROR"FileObject::read: {%s} invalid!\n", res_name_ ), 0);
 	}
 	update();
 	return ACE_OS::fread(buf, sizeof(char), cnt, fd_);
@@ -76,7 +75,7 @@ ACE_UINT32 FileObject::tell()
 {
 	if( invalid_ || fd_ == NULL )
 	{
-		ACE_ERROR_RETURN(( LM_ERROR, "FileObject::tell: {%s} invalid!\n", res_name_ ), 0);
+		ACE_ERROR_RETURN(( MY_ERROR"FileObject::tell: {%s} invalid!\n", res_name_ ), 0);
 	}
 	update();
 	return ACE_OS::ftell(fd_);
@@ -350,7 +349,7 @@ bool ResourceManager::exist(const std::string res)
 	TRACE_RETURN(false);;
 }
 
-FILE* ResourceManager::open_res(const std::string res_name, const char* mode)
+FILE* ResourceManager::open_res_fd(const std::string res_name, const char* mode)
 {
 	TRACE("ResourceManager::open_res");
 
@@ -377,6 +376,42 @@ FILE* ResourceManager::open_res(const std::string res_name, const char* mode)
 	//return NULL;
 }
 
+ResourceObjectRefAutoPtr ResourceManager::open_res_obj(const char* res, const char* model,
+	ACE_UINT32 flags)
+{
+	TRACE("ResourceManager::open_res");
+
+	std::string res_path = get_res_path(res);
+	if( ResourceManager::respool_checktick == 0 )
+	{
+		ResourceObjectRefAutoPtr ptr(new FileObject(res_path.c_str(), flags, model));
+		TRACE_RETURN(ptr);
+	}
+
+	UnorderedMap< std::string, ResourceObjectRefAutoPtr>::iterator iter;
+	ACE_Guard<ACE_Thread_Mutex> guard(mutex_);
+	if( !guard.locked() )
+	{
+		// handle error ...
+		ACE_DEBUG(( MY_ERROR"guard error\n" ));
+	} else
+	{
+		// perform critical operation requiring lock to be held ...
+		iter = respool_.find(res_path);
+		if( iter == respool_.end() )
+		{
+			FileObject* fobj = new FileObject(res_path.c_str(), flags, model);
+			respool_[res_path].reset(fobj);
+			fobj->update();
+			TRACE_RETURN(respool_[res_path]);
+		} else
+		{
+			iter->second->update();
+			TRACE_RETURN(iter->second);
+		}
+	}
+}
+
 void ResourceManager::auto_set_env_res_paths()
 {
 	TRACE("ResourceManager::set_env_res_path");
@@ -384,7 +419,7 @@ void ResourceManager::auto_set_env_res_paths()
 	char path[MAX_PATH];
 	if( ACE_OS::getcwd(path, MAX_PATH) == NULL )
 	{
-		ACE_DEBUG(( LM_ERROR, "getcwd fails\n" ));
+		ACE_DEBUG(( MY_ERROR"getcwd fails\n" ));
 		return;
 	}
 
@@ -397,7 +432,7 @@ void ResourceManager::auto_set_env_res_paths()
 
 	if( pos1 == std::string::npos )
 	{
-		ACE_DEBUG(( LM_ERROR, "not find \\zmd\\bins\\ \n" ));
+		ACE_DEBUG(( MY_ERROR"not find \\zmd\\bins\\ \n" ));
 		return;
 	}
 
@@ -425,8 +460,7 @@ void ResourceManager::auto_set_env_res_paths()
 
 void ResourceManager::print_env_paths(void)
 {
-	ACE_DEBUG((
-		LM_DEBUG,
+	ACE_DEBUG(( MY_DEBUG
 		"ZMD_ROOT_PATH { %s }\n"
 		"ZMD_BINS_PATH { %s }\n"
 		"ZMD_ALL_USED_PATHS { %s }\n"
@@ -438,8 +472,7 @@ void ResourceManager::print_env_paths(void)
 		env_.all_used_paths.c_str(),
 		env_.python_user_scripts_path.c_str(),
 		env_.python_user_res_path.c_str(),
-		env_.python_native_libs_path.c_str()
-		));
+		env_.python_native_libs_path.c_str() ));
 }
 
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

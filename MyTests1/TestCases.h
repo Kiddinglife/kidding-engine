@@ -1437,36 +1437,72 @@
 //	Packet p;
 //}
 
+//#include "common\ResourceManager.h"
+//TEST(ResourceManagerTest, tests)
+//{
+//	ResourceManager mgr;
+//	mgr.print_env_paths();
+//
+//	std::string path = mgr.get_res_path("fixedmsg.xml");
+//	if( path != "fixedmsg.xml" )
+//	{
+//		ACE_DEBUG(( MY_DEBUG"fixedmsg.xml path {%s}\n", path.c_str() ));
+//	} else
+//	{
+//		ACE_DEBUG(( MY_DEBUG"fixedmsg.xml path not exists\n" ));
+//	}
+//
+//	if( mgr.exist("fixedmsg.xml") )
+//	{
+//		ACE_DEBUG(( MY_DEBUG"fixedmsg.xml exists\n" ));
+//	} else
+//	{
+//		ACE_DEBUG(( MY_DEBUG"fixedmsg.xml not exists\n" ));
+//	}
+//
+//	FILE* fd = mgr.open_res_fd("fixedmsg.xml");
+//	if(fd != NULL )
+//	{
+//		ACE_DEBUG(( MY_DEBUG"fixedmsg.xml FD open successfully\n" ));
+//	} else
+//	{
+//		ACE_DEBUG(( MY_DEBUG"fixedmsg.xml FD not open\n" ));
+//	}
+//
+//	if( mgr.open_res_obj("fixedmsg.xml").get() != NULL )
+//	{
+//		ACE_DEBUG(( MY_DEBUG"fixedmsg.xml open OBJ successfully\n" ));
+//	} else
+//	{
+//		ACE_DEBUG(( MY_DEBUG"fixedmsg.xml not OBJ open\n" ));
+//	}
+//
+//}
+
 #include "common\ResourceManager.h"
-TEST(ResourceManagerTest, tests)
+#include "net\FixedMessages.h"
+TEST(FixedMessagesTest, loadConfig)
 {
-	ResourceManager mgr;
-	mgr.print_env_paths();
+	FixedMessages msg;
+	msg.loadConfig("fixedmsg.xml");
 
-	std::string path = mgr.get_res_path("server.xml");
-	if( path != "server.xml" )
+	const FixedMessages::MSGInfo* info = msg.isFixed("Client::onEntityEnterWorld");
+	if( info == NULL )
 	{
-		ACE_DEBUG(( MY_DEBUG"server.xml path {%s}\n", path.c_str() ));
+		ACE_DEBUG(( MY_DEBUG"Client::onEntityEnterWorld not fixed\n" ));
 	} else
 	{
-		ACE_DEBUG(( MY_DEBUG"server.xml path not exists\n" ));
+		ACE_DEBUG(( MY_DEBUG"Client::onEntityEnterWorld is fixed\n" ));
+		info->print();
 	}
 
-	if( mgr.exist("server.xml") )
+	info = msg.isFixed("Client::Entity");
+	if( info == NULL )
 	{
-		ACE_DEBUG(( MY_DEBUG"server.xml exists\n" ));
+		ACE_DEBUG(( MY_DEBUG"Client::Entity not fixed\n" ));
 	} else
 	{
-		ACE_DEBUG(( MY_DEBUG"server.xml not exists\n" ));
+		ACE_DEBUG(( MY_DEBUG"Client::Entity is fixed\n" ));
+		info->print();
 	}
-
-	if( mgr.open_res("server.xml") != NULL )
-	{
-		ACE_DEBUG(( MY_DEBUG"server.xml open successfully\n" ));
-	} else
-	{
-		ACE_DEBUG(( MY_DEBUG"server.xml not open\n" ));
-	}
-
-
 }
