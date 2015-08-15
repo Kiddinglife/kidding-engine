@@ -21,7 +21,7 @@ ResourceObject::~ResourceObject()
 {
 	if( ResourceManager::respool_timeout > 0 )
 	{
-		ACE_DEBUG(( LM_DEBUG, "ResourceObject::~ResourceObject(): {%s}\n", res_name_ ));
+		ACE_DEBUG(( MY_DEBUG"ResourceObject::~ResourceObject(): {%s}\n", res_name_ ));
 	}
 }
 
@@ -276,15 +276,17 @@ void ResourceManager::update_respool()
 {
 	TRACE("ResourceManager::get_res_path");
 
+	UnorderedMap< std::string, ResourceObjectRefAutoPtr>::iterator iter;
 	ACE_Guard<ACE_Thread_Mutex> guard(mutex_);
+
 	if( !guard.locked() )
 	{
 		// handle error ...
-		ACE_DEBUG(( LM_ERROR, "guard error\n" ));
+		ACE_DEBUG(( MY_ERROR"guard error\n" ));
 	} else
 	{
 		// perform critical operation requiring lock to be held ...
-		UnorderedMap< std::string, ResourceObjectRefAutoPtr>::iterator iter = respool_.begin();
+		iter = respool_.begin();
 		for( ; iter != respool_.end(); )
 		{
 			if( !iter->second->valid() )
@@ -303,6 +305,7 @@ void ResourceManager::update_respool()
 std::string ResourceManager::get_res_path(const char* res_name)
 {
 	TRACE("ResourceManager::get_res_path");
+
 	FILE * f = NULL;
 	std::string fpath;
 	std::vector<std::string>::iterator iter = all_used_paths_vector_.begin();
@@ -317,7 +320,7 @@ std::string ResourceManager::get_res_path(const char* res_name)
 		f = ACE_OS::fopen(fpath.c_str(), "r");
 		if( f != NULL )
 		{
-			fclose(f);
+			ACE_OS::fclose(f);
 			TRACE_RETURN(fpath);
 			//return fpath;
 		}
@@ -331,7 +334,7 @@ bool ResourceManager::exist(const std::string res)
 	TRACE("ResourceManager::exist");
 
 	FILE * f = NULL;
-	std::string fpath; 
+	std::string fpath;
 	std::vector<std::string>::iterator iter = all_used_paths_vector_.begin();
 
 	for( ; iter != all_used_paths_vector_.end(); ++iter )
@@ -386,7 +389,7 @@ void ResourceManager::auto_set_env_res_paths()
 	}
 
 	std::string s = path;
-	ACE_DEBUG(( LM_DEBUG, "cwd path {%s}\n", s.c_str() ));
+	//ACE_DEBUG(( LM_DEBUG, "cwd path {%s}\n", s.c_str() ));
 	std::string::size_type pos1 = s.find("\\zmd\\bins\\");
 
 	if( pos1 == std::string::npos )

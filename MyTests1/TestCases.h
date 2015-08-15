@@ -1442,11 +1442,31 @@ TEST(ResourceManagerTest, tests)
 {
 	ResourceManager mgr;
 	mgr.print_env_paths();
-	if( mgr.exist("server.xml") )
+
+	std::string path = mgr.get_res_path("server.xml");
+	if( path != "server.xml" )
 	{
-		ACE_DEBUG(( LM_DEBUG, "%D %M %t Line:%l server.xml exists\n" ));
+		ACE_DEBUG(( MY_DEBUG"server.xml path {%s}\n", path.c_str() ));
 	} else
 	{
-		ACE_DEBUG(( LM_DEBUG, "%M %I server.xml not exists\n" ));
+		ACE_DEBUG(( MY_DEBUG"server.xml path not exists\n" ));
 	}
+
+	if( mgr.exist("server.xml") )
+	{
+		ACE_DEBUG(( MY_DEBUG"server.xml exists\n" ));
+	} else
+	{
+		ACE_DEBUG(( MY_DEBUG"server.xml not exists\n" ));
+	}
+
+	if( mgr.open_res("server.xml") != NULL )
+	{
+		ACE_DEBUG(( MY_DEBUG"server.xml open successfully\n" ));
+	} else
+	{
+		ACE_DEBUG(( MY_DEBUG"server.xml not open\n" ));
+	}
+
+
 }

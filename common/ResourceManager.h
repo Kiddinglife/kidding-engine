@@ -150,7 +150,7 @@ struct ResourceManager : public ACE_Event_Handler
 	/// 遍历所有的资源路径(环境变量中指定的)，匹配到完整的资源地址
 	/// 使用该路径打开资源
 	/// open the resource based on the conpleted path
-	FILE* open_res(const std::string res_name, const char* mode);
+	FILE* open_res(const std::string res_name, const char* mode = "r");
 
 	/// 获得当前编译时的文件夹路径，并由此获取根文件夹路径，将所有需要的完整路径都
 	/// 存入env.all_res_paths中，以；来分割不同的文件夹路径
