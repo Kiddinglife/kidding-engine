@@ -150,12 +150,7 @@ typedef void(*ChannelDeregisterHandler)( Channel * pChannel );
 //	virtual void onChannelDeregister(Channel * pChannel) = 0;
 //};
 
-/* 此类接口用于监听消息跟踪事件 */
-struct MsgTraceHandler
-{
-	virtual void onSendMessage(const Message* msgHandler, int size) = 0;
-	virtual void onRecvMessage(const Message* msgHandler, int size) = 0;
-};
+
 typedef void(*OnSendMessage)( const Message& msgHandler, int size );
 typedef void(*OnRecvMessage)( const Message& msgHandler, int size );
 //extern OnSendMessage g_onSendMessage;

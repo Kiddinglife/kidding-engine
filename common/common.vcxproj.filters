@@ -11,9 +11,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="base64.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ace_object_pool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -53,17 +50,11 @@
     <ClInclude Include="common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="timestamp.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="deadline.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="kbekey.hpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="memorystream_converter.hpp">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tasks.h">
       <Filter>Header Files</Filter>
@@ -81,6 +72,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base64.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="memorystream_converter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="timestamp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

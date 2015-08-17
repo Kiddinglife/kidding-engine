@@ -11,7 +11,7 @@
 #include "ace\Refcounted_Auto_Ptr.h"
 #include "ace\Event_Handler.h"
 #include "common\common.h"
-#include "common\timestamp.hpp"
+#include "common\timestamp.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 

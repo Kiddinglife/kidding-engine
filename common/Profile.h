@@ -1,6 +1,6 @@
 ﻿#include "ace\pre.h"
 #include "common.h"
-#include "timestamp.hpp"
+#include "timestamp.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 

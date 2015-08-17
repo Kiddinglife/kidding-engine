@@ -1,11 +1,11 @@
-#ifndef NUB_H_
+﻿#ifndef NUB_H_
 #define NUB_H_
 
 #include "ace\pre.h"
 #include "ace/Reactor.h"
 #include "ace/Reactor_Impl.h"
 #include "ace/Timer_Queue.h"
-#include "common\timestamp.hpp"
+#include "common\timestamp.h"
 #include "common\tasks.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
@@ -13,6 +13,7 @@ NETWORK_NAMESPACE_BEGIN_DECL
 
 struct NetworkInterface;
 struct ErrorStatMgr;
+
 struct Nub
 {
 	public:

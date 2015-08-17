@@ -1,4 +1,4 @@
-#include "timestamp.hpp"
+ï»¿#include "timestamp.h"
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 #ifdef KBE_USE_RDTSC
@@ -199,14 +199,14 @@ static ACE_UINT64 calcStampsPerSecond()
 
 #endif // PLAYSTATION3
 
-/// Ã¿ÃëcpuËùºÄÊ±¼ä
+/// æ¯ç§’cpuæ‰€è€—æ—¶é—´
 ACE_UINT64 stampsPerSecond()
 {
 	static ACE_UINT64 _stampsPerSecondCache = calcStampsPerSecond();
 	return _stampsPerSecondCache;
 }
 
-//// Ã¿ÃëcpuËùºÄÊ±¼ä double°æ±¾
+//// æ¯ç§’cpuæ‰€è€—æ—¶é—´ doubleç‰ˆæœ¬
 double stampsPerSecondD()
 {
 	static double stampsPerSecondCacheD = double(stampsPerSecond());

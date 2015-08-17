@@ -1,12 +1,13 @@
 ﻿/**
  * Reviewed by Jackie Zhang on 19/07/2015
+ * Reviewed by Jackie Zhang on 17/08/2015
  */
 
 #ifndef Packet_H_
 #define Packet_H_
 
 #include "ace\pre.h"
-#include "ace/CDR_Stream.h"
+#include "ace\CDR_Stream.h"
 #include "net_common.h"
 
 ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
@@ -62,7 +63,8 @@ struct Packet
 	 */
 	Packet(MessageID msgID = 0, ProtocolType pt = PROTOCOL_TCP) :
 		os(pt == PROTOCOL_TCP ?
-		PACKET_MAX_SIZE_TCP - ACE_CDR::MAX_ALIGNMENT : PACKET_MAX_SIZE_UDP - ACE_CDR::MAX_ALIGNMENT),
+		PACKET_MAX_SIZE_TCP - ACE_CDR::MAX_ALIGNMENT :
+		PACKET_MAX_SIZE_UDP - ACE_CDR::MAX_ALIGNMENT),
 		osbuff_(const_cast<ACE_Message_Block*>( os.begin() )),
 		in(osbuff_->base(), osbuff_->size()),
 		inbuff_(const_cast<ACE_Message_Block*>( in.start() )),

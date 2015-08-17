@@ -53,13 +53,14 @@ const bool FixedMessages::loadConfig(const std::string fileName)
 	rootNode = xml.getRootNode();
 	if( rootNode != NULL )
 	{
+		std::string msgname;
 		XML_FOR_BEGIN(rootNode)
 		{
 			node = xml.enterNode(rootNode->FirstChild(), "id");
-			std::string msgname = xml.getKey(rootNode);
+			msgname = xml.getKey(rootNode);
 			infomap_[msgname].msgid = xml.getValInt(node);
 			infomap_[msgname].msgname = msgname;
-			//infomap_[msgname].print();
+			infomap_[msgname].print();
 		}
 		XML_FOR_END(rootNode);
 	} else

@@ -1,5 +1,6 @@
 ﻿/**
-* Reviewed by Jackie Zhang on 20/07/2015 at 21:19 PM
+* Reviewed by Jackie Zhang on 20/07/2015
+* Reviewed by Jackie Zhang on 17/08/2015
 */
 
 #ifndef FixedMessages_H_
@@ -13,8 +14,7 @@ ACE_KBE_BEGIN_VERSIONED_NAMESPACE_DECL
 NETWORK_NAMESPACE_BEGIN_DECL
 
 #define FixedMessagesPtrGetter(FixedMessagesName) \
-FixedMessages* FixedMessagesName = \
-ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance();
+FixedMessages* FixedMessagesName = ACE_Singleton<FixedMessages, ACE_Null_Mutex>::instance();
 
 /**
 * struct FixedMessages
@@ -50,8 +50,10 @@ struct FixedMessages
 		std::string msgname;
 		void print() const
 		{
-			ACE_DEBUG(( MY_DEBUG"MSGInfo.msgid{%d} MSGInfo.msgname{%s}\n",
-				msgid, msgname.c_str() ));
+			ACE_DEBUG(( MY_DEBUG
+				"MSGInfo.msgid{%d} MSGInfo.msgname{%s}\n",
+				msgid,
+				msgname.c_str() ));
 		}
 	};
 
@@ -63,20 +65,24 @@ struct FixedMessages
 	~FixedMessages() { infomap_.clear(); }
 
 	/**
-	* if the msg with the specific name is stored in map, it is  fixed-len msg
-	* @param-msgName : it is actually the function signature
-	* @ret NULL if it is variable-len msg otherwise the pointer if it is fixed-len msg
-	*/
+	 * if the msg with the specific name is stored in map, it is  fixed-len msg
+	 * @param-msgName : it is actually the function signature like Client::resLogin
+	 * @ret NULL if it is variable-len msg otherwise the pointer if it is fixed-len msg
+	 */
 	const FixedMessages::MSGInfo*  isFixed(const char* msgName);
 
 	/**
-	* if the msg with the specific msgid is stored in map, it is  fixed-len msg
-	* @param-msgid : 消息id
-	* @ret false if it is variable-len msg or true if it is fixed-len msg
-	*/
+	 * if the msg with the specific msgid is stored in map, it is  fixed-len msg
+	 * @param-msgid : 消息id
+	 * @ret false if it is variable-len msg or true if it is fixed-len msg
+	 */
 	const bool  isFixed(const MessageID msgid);
 
-	//@todo
+	/**
+	 * Read and then load the fixedmsgs.xml,
+	 * each msg id and name will be stored in MSGInfo struct
+	 * and each MSGInfo struct will be stored in @member infomap_ for furture peocess
+	 */
 	const bool loadConfig(const std::string fileName);
 };
 

@@ -13,7 +13,7 @@
   <ItemGroup>
     <ClInclude Include="ace_kbe_version_namespace.h" />
     <ClInclude Include="ace_object_pool.h" />
-    <ClInclude Include="base64.hpp" />
+    <ClInclude Include="base64.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="deadline.hpp" />
@@ -26,12 +26,12 @@
     <ClInclude Include="kbe_blowfish.hpp" />
     <ClInclude Include="kbe_version.h" />
     <ClInclude Include="md5.hpp" />
-    <ClInclude Include="memorystream_converter.hpp" />
+    <ClInclude Include="memorystream_converter.h" />
     <ClInclude Include="rsa.hpp" />
     <ClInclude Include="sha1.hpp" />
     <ClInclude Include="stringconv.hpp" />
     <ClInclude Include="strulti.h" />
-    <ClInclude Include="timestamp.hpp" />
+    <ClInclude Include="timestamp.h" />
     <ClInclude Include="user_settings.h" />
     <ClInclude Include="Watcher.h" />
     <ClInclude Include="xml.h" />

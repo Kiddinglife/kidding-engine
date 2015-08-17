@@ -187,10 +187,9 @@ void ErrorStatMgr::reportPendingExceptions(bool reportBelowThreshold)
 
 int ErrorStatMgr::handle_timeout(const ACE_Time_Value &current_time, const void* act)
 {
-	//TRACE("ErrorStatMgr::handle_timeout()");
+	TRACE("ErrorStatMgr::handle_timeout()");
 	this->reportPendingExceptions();
-	return 0;
-	//TRACE_RETURN(0);
+	TRACE_RETURN(0);
 }
 NETWORK_NAMESPACE_END_DECL
 ACE_KBE_END_VERSIONED_NAMESPACE_DECL

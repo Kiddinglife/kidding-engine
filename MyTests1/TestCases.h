@@ -1330,24 +1330,24 @@
 //	}
 //}
 
-//#include "net\ErrorStatsMgr.h"
-//#include "net\Nub.h"
-//TEST(ErrorStatsMgr, tESTTS)
-//{
-//	ErrorSat stat;
-//	stat.lastReportStamps = timestamp();
-//	stat.count = 10;
-//	Nub nub;
-//	ErrorStatMgr mgr(&nub);
-//
-//	std::string error = "The send buf is full";
-//	ACE_INET_Addr addr(20001, ACE_LOCALHOST);
-//	/// if exceeeds the max report period it will be reported otherwise coutn_ will be updated
-//	mgr.reportError(addr, "%s, %d", error.c_str(), 12);
-//	/// report all errors true report all erros false report id it exceeds max report period
-//	mgr.reportPendingExceptions(true);
-//	nub.startLoop();
-//}
+#include "net\ErrorStatsMgr.h"
+#include "net\Nub.h"
+TEST(ErrorStatsMgrTest, tests)
+{
+	ErrorSat stat;
+	stat.lastReportStamps = timestamp();
+	stat.count = 10;
+	Nub nub;
+	ErrorStatMgr mgr(&nub);
+
+	std::string error = "The send buf is full";
+	ACE_INET_Addr addr(20001, ACE_LOCALHOST);
+	/// if exceeeds the max report period it will be reported otherwise coutn_ will be updated
+	mgr.reportError(addr, "%s, %d", error.c_str(), 12);
+	/// report all errors true report all erros false report id it exceeds max report period
+	mgr.reportPendingExceptions(true);
+	nub.startLoop();
+}
 
 //#include "common\Watcher.h"
 //#include "net\Packet.h"
